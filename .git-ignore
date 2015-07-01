@@ -1,0 +1,21 @@
+.DS_Store
+*.pyc
+__pycache__
+dist
+build
+docs/build
+docs/build/*
+tests/cover
+tests/.coverage
+*.egg-info
+
+# Test state / virtualenvs
+.tox
+.coverage
+coverage.xml
+nosetests.xml
+
+# Common virtualenv names
+venv
+env2
+env3

@@ -1,0 +1,45 @@
+amis:
+
+  ubuntu-12.04-lts:
+      us-east-1: ami-59a4a230
+      us-west-1: ami-660c3023
+      us-west-2: ami-fa9cf1ca
+      sa-east-1: ami-1da90a00
+      eu-west-1: ami-808675f7
+      eu-central-1: ami-043d0b19
+      ap-southeast-1: ami-3c39686e
+      ap-southeast-2: ami-09f26b33
+      ap-northeast-1: ami-f381f5f2
+
+  ubuntu-12.04-lts-hvm:
+      us-east-1: ami-5fa4a236
+      us-west-1: ami-620c3027
+      us-west-2 : ami-fc9cf1cc
+      sa-east-1: ami-1fa90a02
+      eu-west-1: ami-8c8675fb
+      eu-central-1: ami-003d0b1d
+      ap-southeast-1: ami-22396870
+      ap-southeast-2: ami-0ff26b35
+      ap-northeast-1: ami-f581f5f4
+
+    ubuntu-14.04-lts:
+      us-east-1: ami-9eaa1cf6
+      us-west-1: ami-0cbdba49
+      us-west-2: ami-2799da17
+      eu-west-1: ami-e90dc49e
+      sa-east-1: ami-13d57a0e
+      eu-central-1: ami-9a380b87
+      ap-southeast-1: ami-2ce7c07e
+      ap-southeast-2: ami-b53e5a8f
+      ap-northeast-1: ami-67fab366
+
+    ubuntu-14.04-lts-hvm:
+      us-east-1: ami-9a562df2
+      us-west-1: ami-5c120b19
+      us-west-2: ami-29ebb519
+      eu-west-1: ami-234ecc54
+      sa-east-1: ami-69f54974
+      eu-central-1: ami-9a380b87
+      ap-southeast-1: ami-ca381398
+      ap-southeast-2: ami-abeb9e91
+      ap-northeast-1: ami-20b6aa21

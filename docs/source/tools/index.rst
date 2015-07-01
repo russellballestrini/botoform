@@ -14,7 +14,7 @@ Create a new VPC and related services, modeled after the given YAML template.
 destroy
 -------
 
-.. Note:: this is destructive!
+.. warning:: this is destructive!
 
 Destroy a VPC and all related services.
 
@@ -34,7 +34,7 @@ Refresh VPC by adding "things" defined but missing in given YAML template.
 reflect
 -------
 
-.. Note:: this is destructive!
+.. warning:: this is destructive!
 
 Make VPC reflect given YAML template by adding and removing "things".
 

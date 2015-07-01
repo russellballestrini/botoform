@@ -13,8 +13,9 @@ Define AMIs using the following schema:
 
         region-name: ami-id
 
-:download:`amis.yaml <examples/amis.yaml>`:
 
-.. literalinclude:: examples/amis.yaml
+Example code snippet from :download:`amis.yaml <../examples/amis.yaml>`:
+
+.. literalinclude:: ../examples/amis.yaml
    :language: yaml
-   :emphasize-lines: 1,3,5
+   :lines: 1-20

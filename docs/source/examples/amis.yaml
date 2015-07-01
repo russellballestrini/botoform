@@ -1,6 +1,7 @@
 amis:
 
   ubuntu-12.04-lts:
+
       us-east-1: ami-59a4a230
       us-west-1: ami-660c3023
       us-west-2: ami-fa9cf1ca
@@ -12,6 +13,7 @@ amis:
       ap-northeast-1: ami-f381f5f2
 
   ubuntu-12.04-lts-hvm:
+
       us-east-1: ami-5fa4a236
       us-west-1: ami-620c3027
       us-west-2 : ami-fc9cf1cc
@@ -23,6 +25,7 @@ amis:
       ap-northeast-1: ami-f581f5f4
 
     ubuntu-14.04-lts:
+
       us-east-1: ami-9eaa1cf6
       us-west-1: ami-0cbdba49
       us-west-2: ami-2799da17
@@ -34,6 +37,7 @@ amis:
       ap-northeast-1: ami-67fab366
 
     ubuntu-14.04-lts-hvm:
+
       us-east-1: ami-9a562df2
       us-west-1: ami-5c120b19
       us-west-2: ami-29ebb519

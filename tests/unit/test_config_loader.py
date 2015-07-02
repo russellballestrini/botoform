@@ -35,18 +35,19 @@ class TestBFConfigLoader(TestCase):
         self.assertTrue('cidrblock' in loader.context_vars.keys())
 
     def test_load_template_string_without_context(self):
-        loader = BFConfigLoader()
+        loader = BFConfigLoader(self.template_dir)
         config = loader.load(template_string=self.template_string)
-        self.assertEqual(len(config), 7)
+        self.assertEqual(len(config), 8)
         self.assertEqual(len(config['instance_roles']), 1)
+        self.assertEqual(len(config['amis']), 4)
         self.assertEqual(len(config['security_groups']), 2)
         self.assertEqual(len(config['security_groups']['web']), 1)
 
     def test_load_template_file_without_context(self):
         loader = BFConfigLoader(self.template_dir)
         config = loader.load(template_file = self.template_file)
-        self.assertEqual(len(config), 7)
+        self.assertEqual(len(config), 8)
         self.assertEqual(len(config['instance_roles']), 1)
+        self.assertEqual(len(config['amis']), 4)
         self.assertEqual(len(config['security_groups']), 2)
         self.assertEqual(len(config['security_groups']['web']), 1)
-

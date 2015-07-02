@@ -23,7 +23,7 @@ class BFConfigLoader:
         """Return Jinja2 render of template_str with context_vars."""
         return self._render_template(Template(template_string))
 
-    def _load(self, template_file, template_string):
+    def _load(self, template_file=None, template_string=None):
         if template_file is None and template_string is None:
             raise Exception('missing template template_file or template_string')
         if template_string:
@@ -32,19 +32,25 @@ class BFConfigLoader:
             rendered = self.render(template_file)
         return yaml.load(rendered)
 
+    def _load_includes(self, config):
+        """Load YAML path includes and return config. Will clobber existing."""
+        for key, path in config['inlcudes'].items():
+            config[key] = self._load(template_file=path)[key]
+        return config
+
     def _remove_excluded_roles(self, config, exclude_roles):
         """remove excluded roles and security groups from config"""
         exclude_roles = exclude_roles if exclude_roles is not None else []
         for role in exclude_roles:
 
-            # remove excluded service_role sg references.
+            # remove excluded sg references.
             for key, value in config['instance_roles'].items():
                 if role in value['security_groups']:
                     config['instances'][key]['security_groups'].remove(role)
 
             # remove excluded instance roles.
-            if role in config.get('instances', {}):
-                del config['instances'][role]
+            if role in config.get('instance_roles', {}):
+                del config['instance_roles'][role]
 
             # remove excluded security_groups.
             if role in config.get('security_groups', {}):
@@ -75,6 +81,7 @@ class BFConfigLoader:
         return Python representation of JSON config.
         """
         config = self._load(template_file, template_string)
+        config = self._load_includes(config)
         #config = self._remove_excluded_roles(config, exclude_roles)
         #config = self._mutate_port_ranges(config)
         return config

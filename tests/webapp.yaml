@@ -1,8 +1,8 @@
 # The "Name" tag of the new VPC. All `bf` commands filter on this tag.
 vpc_name: webapp01
 
-# Avoid repeating yourself, import YAML files here.
-paths:
+# Avoid repeating yourself, include other YAML files here.
+inlcudes:
   # route_tables: /path/to/common_route_tables_layout.yaml
   # subnets: /path/to/webapp_subnets_formation.yaml
 

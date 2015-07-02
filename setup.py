@@ -23,7 +23,7 @@ setup(
 
     install_requires = requires,
     entry_points = {
-      'console_scripts': ['botoform=botoform.cli:main',],
+      'console_scripts': ['bf=botoform.cli:main',],
     },
     classifiers=[
         'Intended Audience :: Developers, Operators, System Administrators',

@@ -1,10 +1,12 @@
 Tools
 #####
 
-botoform
-========
+bf
+==
 
-For a list commands and interactive help, run `botoform --help`.
+All of botoform tools are namespaced under the `bf` command.
+
+For a list subcommands and interactive help, run `bf --help`.
 
 create
 ------

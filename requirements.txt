@@ -7,3 +7,4 @@ jinja2
 # tests
 nose
 pytest
+mock

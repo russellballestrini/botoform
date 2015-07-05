@@ -16,15 +16,14 @@ class EnrichedVPC(object):
         self.region_name = region_name
         if profile_name is not None:
             boto3.setup_default_session(profile_name = profile_name)
-
-        # instantiate a boto3 ec2 resource object, attach to self.
-        self.ec2 = boto3.resource('ec2', region_name = region_name)
-
         if vpc_name is not None:
             self.init(vpc_name)
 
     def init(self, vpc_name):
         """Finish init process, attach related Boto3 resources and clients."""
+        # instantiate a boto3 ec2 resource object, attach to self.
+        self.ec2 = boto3.resource('ec2', region_name = region_name)
+
         self.vpc = self.get_vpc_by_name_tag(vpc_name)
 
         # reflect all attributes of boto3's vpc resource object into self.
@@ -34,10 +33,14 @@ class EnrichedVPC(object):
         self.rds = boto3.client('rds', region_name = self.region_name)
         self.elasticache = boto3.client('elasticache', region_name = self.region_name)
 
+    def _get_vpcs_by_filter(self, vpc_filter):
+        # external API call to AWS.
+        return list(self.ec2.vpcs.filter(Filters=vpc_filter))
+
     def get_vpc_by_name_tag(self, vpc_name):
         """lookup vpc by vpc_name tag. Raises exceptions on insanity."""
         vpc_name_tag_filter = [{'Name':'tag:Name', 'Values':[vpc_name]}]
-        vpcs = list(self.ec2.vpcs.filter(Filters=vpc_name_tag_filter))
+        vpcs = self._get_vpcs_by_filter(vpc_name_tag_filter)
         if len(vpcs) > 1:
             raise Exception('Multiple VPCs match tag Name:{}'.format(vpc_name))
         if len(vpcs) == 0:
@@ -45,9 +48,13 @@ class EnrichedVPC(object):
         return vpcs[0]
 
     def ec2_to_enriched_instances(self, ec2_instances):
-        """Convert list of boto.ec2.instance.Instance to HuskyInstance"""
+        """Convert list of boto.ec2.instance.Instance to EnrichedInstance"""
         return [EnrichedInstance(e, self) for e in ec2_instances]
+
+    def _ec2_instances(self):
+        # external API call to AWS.
+        return list(self.vpc.instances.all())
 
     @property
     def einstances(self): 
-        return self.ec2_to_enriched_instances(list(self.vpc.instances.all()))
+        return self.ec2_to_enriched_instances(self._ec2_instances())

@@ -57,5 +57,6 @@ class EnrichedInstance(object):
             raise Exception(
               "Invalid Name=%s tag, custid-<role>NN" % (self.hostname)
             )
+        return match.group(1)
 
-    
+

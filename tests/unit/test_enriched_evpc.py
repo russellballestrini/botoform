@@ -10,6 +10,7 @@ class TestEnrichedVPC(TestCase):
 
     def test_get_vpc_by_name_tag(self):
         # mock the self.ec2.vpcs.filter method to return a list with one vpc.
+        pass
 
     def test_get_vpc_by_name_tag_no_vpc_error(self):
         # mock the self.ec2.vpcs.filter method to return an empty list.

@@ -51,3 +51,5 @@ class TestBFConfigLoader(TestCase):
         self.assertEqual(len(config['amis']), 4)
         self.assertEqual(len(config['security_groups']), 2)
         self.assertEqual(len(config['security_groups']['web']), 1)
+
+

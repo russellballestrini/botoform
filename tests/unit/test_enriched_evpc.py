@@ -1,10 +1,6 @@
-from unittest import TestCase
+from helpers import BotoformTestCase
 
-from botoform.evpc import EnrichedVPC
-
-class TestEnrichedVPC(TestCase):
-    def setUp(self):
-        self.evpc1 = EnrichedVPC()
+class TestEnrichedVPC(BotoformTestCase):
 
     def test_get_vpc_by_name_tag(self):
         # mock the _get_vpcs_by_filter method to return a list with one vpc.
@@ -22,3 +18,5 @@ class TestEnrichedVPC(TestCase):
         self.evpc1._get_vpcs_by_filter = lambda x : [1, 2]
         with self.assertRaises(Exception):
             self.evpc1.get_vpc_by_name_tag('webapp*')
+
+

@@ -58,3 +58,5 @@ class EnrichedVPC(object):
     @property
     def einstances(self): 
         return self.ec2_to_enriched_instances(self._ec2_instances())
+
+

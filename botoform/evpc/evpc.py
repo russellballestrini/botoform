@@ -22,7 +22,7 @@ class EnrichedVPC(object):
     def init(self, vpc_name):
         """Finish init process, attach related Boto3 resources and clients."""
         # instantiate a boto3 ec2 resource object, attach to self.
-        self.ec2 = boto3.resource('ec2', region_name = region_name)
+        self.ec2 = boto3.resource('ec2', region_name = self.region_name)
 
         self.vpc = self.get_vpc_by_name_tag(vpc_name)
 

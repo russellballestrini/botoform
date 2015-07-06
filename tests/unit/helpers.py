@@ -13,6 +13,8 @@ class MockInstanceSpec1(object):
     id   = 'i-mock1111'
     tags = [{u'Value': 'vpc-mock1111', u'Key': 'vpc-id'},
             {u'Value': 'webapp01-web01', u'Key': 'Name'}]
+    public_ip_address = None
+    private_ip_address = '192.168.1.35'
 
 
 class MockInstanceSpec2(object):
@@ -20,6 +22,8 @@ class MockInstanceSpec2(object):
     id   = 'i-mock2222'
     tags = [{u'Value': 'vpc-mock1111', u'Key': 'vpc-id'},
             {u'Value': 'webapp01-proxy02', u'Key': 'Name'}]
+    public_ip_address = '54.1.1.1'
+    private_ip_address = '192.168.1.36'
 
 
 class BotoformTestCase(TestCase):

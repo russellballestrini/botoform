@@ -37,6 +37,16 @@ class EnrichedInstance(object):
     def hostname(self):
         return self.tag_dict.get('Name', None)
 
+    def _regex_hostname(self, regex):
+        if self.hostname is None:
+            return None
+        match = re.match(regex, self.hostname)
+        if match is None:
+            raise Exception(
+              "Invalid Name=%s tag, custid-<role>NN" % (self.hostname)
+            )
+        return match.group(1)
+
     @property
     def shortname(self):
         """get shortname from instance Name tag, ex: proxy02, web01, ..."""
@@ -49,14 +59,14 @@ class EnrichedInstance(object):
         #    return self.autoscale_groupname.split('-')[-1]
         return self._regex_hostname(r".*?-(.*?)\d+$")
 
-    def _regex_hostname(self, regex):
-        if self.hostname is None:
-            return None
-        match = re.match(regex, self.hostname)
-        if match is None:
-            raise Exception(
-              "Invalid Name=%s tag, custid-<role>NN" % (self.hostname)
-            )
-        return match.group(1)
+    @property
+    def identifiers(self):
+        """Return a tuple of "unique" identifier strings for instance."""
+        _identifiers = (self.hostname, self.shortname, self.id,
+                       self.private_ip_address, self.public_ip_address)
+        return [x for x in _identifiers if x is not None]
+
+    @property
+    def identity(self): return self.hostname or self.id
 
 

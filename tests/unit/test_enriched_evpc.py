@@ -19,4 +19,22 @@ class TestEnrichedVPC(BotoformTestCase):
         with self.assertRaises(Exception):
             self.evpc1.get_vpc_by_name_tag('webapp*')
 
+    def test_instances(self):
+        self.assertEqual(len(self.evpc1.instances), 2)
+
+    def test_roles(self):
+        self.assertEqual(len(self.evpc1.roles), 2)
+
+    def test_get_role(self):
+        role_web   = self.evpc1.get_role('web')
+        role_proxy = self.evpc1.get_role('proxy')
+        self.assertEqual(len(role_web), 1)
+        self.assertEqual(len(role_proxy), 1)
+        self.assertEqual(role_web[0].hostname, 'webapp01-web01')
+        self.assertEqual(role_proxy[0].hostname, 'webapp01-proxy02')
+
+    def test_get_role_missing_is_key_error(self):
+        with self.assertRaises(KeyError):
+            self.evpc1.get_role('taco')
+
 

@@ -56,7 +56,27 @@ class EnrichedVPC(object):
         return list(self.vpc.instances.all())
 
     @property
-    def einstances(self): 
+    def instances(self):
+        """Return a list of each EnrichedInstance object related to this VPC."""
         return self.ec2_to_enriched_instances(self._ec2_instances())
+
+    @property
+    def roles(self): return self.get_roles()
+
+    def get_roles(self):
+        """
+        Return a dict of lists where role is the key and
+        a list of EnrichedInstance objects is the value.
+        """
+        roles = {}
+        for instance in self.instances:
+            if instance.role not in roles:
+                roles[instance.role] = []
+            roles[instance.role].append(instance)
+        return roles
+
+    def get_role(self, role_name):
+        """Return a list of EnrichedInstance objects with the given role_name"""
+        return self.get_roles()[role_name]
 
 

@@ -1,6 +1,6 @@
 import re
 
-from ..util import reflect_attrs
+from botoform.util import reflect_attrs
 
 class EnrichedInstance(object):
     """
@@ -29,7 +29,7 @@ class EnrichedInstance(object):
     @property
     def tag_dict(self):
         tags = {}
-        for tag in self.instance.tags:
+        for tag in self.tags:
             tags[tag['Key']] = tag['Value']
         return tags
 

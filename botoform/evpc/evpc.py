@@ -1,6 +1,6 @@
 import boto3
 
-from ..util import reflect_attrs
+from botoform.util import reflect_attrs
 
 from instance import EnrichedInstance
 
@@ -79,4 +79,10 @@ class EnrichedVPC(object):
         """Return a list of EnrichedInstance objects with the given role_name"""
         return self.get_roles()[role_name]
 
+    @property
+    def tag_dict(self):
+        tags = {}
+        for tag in self.tags:
+            tags[tag['Key']] = tag['Value']
+        return tags
 

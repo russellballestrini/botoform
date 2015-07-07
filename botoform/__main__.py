@@ -26,3 +26,6 @@ def main():
              region_name=args.region
            )
     print(evpc.tag_dict['Name'])
+
+if __name__ == '__main__':
+    main()

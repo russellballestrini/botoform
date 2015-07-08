@@ -17,10 +17,16 @@ def load_parsers_from_plugins(subparser, plugins):
         # create a parser object for the plugin.
         plugin_parser = subparser.add_parser(
                                     plugin_name,
-                                    description = plugin_class.description,
+                                    description = plugin_class.__doc__,
                                   )
-        plugin_class.setup_parser(plugin_parser)
-        plugin_parser.set_defaults(func = plugin_class.main)
+
+        try:
+            # Assume class plugin with 'setup_parser' and 'main' staticmethods.
+            plugin_class.setup_parser(plugin_parser)
+            plugin_parser.set_defaults(func = plugin_class.main)
+        except AttributeError:
+            # Assume function plugin w/o 'setup_parser' or 'main' staticmethods.
+            plugin_parser.set_defaults(func = plugin_class)
 
 def build_parser(description):
     """build argparser and attach each plugin's parser to subparser."""

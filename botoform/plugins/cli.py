@@ -14,24 +14,13 @@ try:
 except ImportError:
     pass
 
-class cli(object):
-
-    description="Open an Interactive prompt with access to evpc object"
-
-    @staticmethod
-    def setup_parser(parser):
-        pass
-
-    @staticmethod
-    def main(args, evpc):
-        """Main plugin application logic."""
-        msg = 'You now have access to the evpc object, for example: evpc.roles'
-        print('\n' + msg + '\n')
-        if interpreter == 'bpython':
-            bpython.embed(locals_ = locals(), banner = '\n' + msg + '\n')
-        elif interpreter == 'ipython':
-            IPython.embed()
-        elif interpreter is None:
-            code.interact(local = locals())
-
+def cli(args, evpc):
+    """Open an Interactive prompt with access to evpc object"""
+    msg = '\nYou now have access to the evpc object, for example: evpc.roles\n'
+    if interpreter == 'bpython':
+        bpython.embed(locals_ = locals(), banner = msg)
+    elif interpreter == 'ipython':
+        IPython.embed(banner2 = msg)
+    elif interpreter is None:
+        code.interact(local = locals(), banner = msg)
 

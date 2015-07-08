@@ -2,9 +2,29 @@ import argparse
 
 from botoform.evpc import EnrichedVPC
 
-def base_parser(description):
-    """base parser that all subcommands seem to need."""
-    parser = argparse.ArgumentParser(description=description)
+from pkg_resources import iter_entry_points
+
+def load_entry_points(group_name):
+    """Return a dictionary of entry_points related to given group_name"""
+    entry_points = {}
+    for entry_point in iter_entry_points(group=group_name, name=None):
+        entry_points[entry_point.name] = entry_point.load()
+    return entry_points
+
+def load_parsers_from_plugins(subparser, plugins):
+    """iterate over all plugins and load their parser."""
+    for plugin_name, plugin_class in plugins.items():
+        # create a parser object for the plugin.
+        plugin_parser = subparser.add_parser(
+                                    plugin_name,
+                                    description = plugin_class.description,
+                                  )
+        plugin_class.setup_parser(plugin_parser)
+        plugin_parser.set_defaults(func = plugin_class.main)
+
+def build_parser(description):
+    """build argparser and attach each plugin's parser to subparser."""
+    parser = argparse.ArgumentParser(description = description)
     parser.add_argument('-p', '--profile', default=None,
       help='botocore profile name for AWS creds and other vars.')
     parser.add_argument('-r', '--region', default=None,
@@ -14,10 +34,23 @@ def base_parser(description):
     parser.add_argument('--quiet', action='store_true', default=False,
       help='prevent status messages to STDOUT')
     parser.add_argument('vpc_name')
+
+    # create a subparser for our plugins to attach to.
+    subparser = parser.add_subparsers(
+                          title = 'subcommands',
+                          description = 'valid subcommands',
+                          help = '--help for additional subcommand help'
+                 )
+
+    plugins = load_entry_points('botoform.plugins')
+    load_parsers_from_plugins(subparser, plugins)
+
     return parser
 
 def main():
-    parser = base_parser('taco')
+    parser = build_parser(
+      'Manage infrastructure running on AWS using YAML templates.',
+    )
     args = parser.parse_args()
 
     evpc = EnrichedVPC(
@@ -25,7 +58,9 @@ def main():
              profile_name=args.profile,
              region_name=args.region
            )
-    print(evpc.tag_dict['Name'])
+
+    # call the plugin_class main static method.
+    args.func(args, evpc)
 
 if __name__ == '__main__':
     main()

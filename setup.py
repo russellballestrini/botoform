@@ -1,7 +1,7 @@
 # installation: pip install botoform
 from setuptools import (
   setup,
-  #find_packages,
+  find_packages,
 )
 
 # read requirements.txt for requres, filter comments and newlines.
@@ -22,14 +22,16 @@ setup(
 
     license = 'Apache License 2.0',
 
-    packages = ['botoform', 'botoform.evpc'],
-    #packages = find_packages(),
+    #packages = ['botoform', 'botoform.evpc'],
+    packages = find_packages(),
 
     install_requires = requires,
     entry_points = {
-      'botoform.plugins' : [],
+      'botoform.plugins' : [
+        'cli = botoform.plugins.cli:cli',
+      ],
       'console_scripts': [
-        'bf=botoform.__main__:main',
+        'bf = botoform.__main__:main',
       ],
     },
     classifiers=[

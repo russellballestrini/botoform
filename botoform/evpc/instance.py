@@ -26,6 +26,9 @@ class EnrichedInstance(object):
     def __hash__(self):
         return hash(self.id)
 
+    def __str__(self):
+        return self.identity
+
     @property
     def tag_dict(self):
         tags = {}
@@ -36,6 +39,9 @@ class EnrichedInstance(object):
     @property
     def hostname(self):
         return self.tag_dict.get('Name', None)
+
+    @property
+    def identity(self): return self.hostname or self.id
 
     def _regex_hostname(self, regex):
         if self.hostname is None:
@@ -65,8 +71,5 @@ class EnrichedInstance(object):
         _identifiers = (self.hostname, self.shortname, self.id,
                        self.private_ip_address, self.public_ip_address)
         return [x for x in _identifiers if x is not None]
-
-    @property
-    def identity(self): return self.hostname or self.id
 
 

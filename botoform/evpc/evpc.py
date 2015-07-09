@@ -47,6 +47,21 @@ class EnrichedVPC(object):
             raise Exception('VPC not found with tag Name:{}'.format(vpc_name))
         return vpcs[0]
 
+    @property
+    def tag_dict(self):
+        tags = {}
+        for tag in self.tags:
+            tags[tag['Key']] = tag['Value']
+        return tags
+
+    @property
+    def name(self): return self.tag_dict.get('Name', None)
+
+    @property
+    def identity(self): return self.name or self.id
+
+    def __str__(self): return self.identity
+
     def ec2_to_enriched_instances(self, ec2_instances):
         """Convert list of boto.ec2.instance.Instance to EnrichedInstance"""
         return [EnrichedInstance(e, self) for e in ec2_instances]
@@ -75,26 +90,83 @@ class EnrichedVPC(object):
         """Return a list of EnrichedInstance objects with the given role_name"""
         return self.get_roles()[role_name]
 
-    @property
-    def tag_dict(self):
-        tags = {}
-        for tag in self.tags:
-            tags[tag['Key']] = tag['Value']
-        return tags
+    @staticmethod
+    def _set(x):
+        """Return a set of the given iterable, return emtpy set if None."""
+        return set() if x is None else set(x)
 
-    def exclude_instances(self, identifiers=None, roles=None):
+    def _identify_instance(self, i, identifiers, roles):
+        return identifiers.intersection(i.identifiers) or i.role in roles
+
+    def find_instance(self, identifier):
+        """
+        Given an identifier, return an instance or None.
+        Raises exception if multiple instances match identifier.
+        """
+        instances = []
+        for instance in self.get_instances():
+            if identifier in instance.identifiers:
+                instances.append(instance)
+        if len(instances) > 1:
+            msg = "Multiple instances '{}' have '{}' identifier."
+            raise Exception(msg.format(', '.join(instances), identifier))
+        if len(instances) == 0:
+            return None
+        return instances[0]
+
+    def find_instances(
+          self,
+          identifiers = None,
+          roles = None,
+          exclude_identifiers = None,
+          exclude_roles = None
+        ):
+        """
+        Accept optional identifiers, roles, exclude_identifiers, exclude_roles.
+        Return a list of instances that qualify.
+
+        Note:
+         This method returns no instances if all qualifiers are None.
+
+        Danger:
+         If either exclude_identifiers or exclude_roles are not None,
+         we could end up returning all instances.
+        """
+        identifiers = self._set(identifiers)
+        roles = self._set(roles)
+        exclude_identifiers = self._set(exclude_identifiers)
+        exclude_roles = self._set(exclude_roles)
+        instances = []
+        for i in self.get_instances():
+            if self._identify_instance(i, identifiers, roles):
+                instances.append(i)
+            if len(exclude_identifiers) != 0 or len(exclude_roles) != 0:
+                if not self._identify_instance(i, exclude_identifiers, exclude_roles):
+                    instances.append(i)
+        return instances
+
+    def include_instances(self, identifiers = None, roles = None):
+        """
+        Accept a list of identifiers and/or roles.
+        Return a list of instances which match either qualifier list.
+
+        Note:
+         This method returns no instances if both identfiers and roles is None.
+        """
+        return self.find_instances(identifiers = identifiers, roles = roles)
+
+    def exclude_instances(self, identifiers = None, roles = None):
         """
         Accept a list of identifiers and/or roles.
         Return a list of instances which do *not* match either qualifier list.
+
+        Note:
+         This method returns all instances if both identfiers and roles is None.
         """
-        identifiers = set() if identifiers is None else set(identifiers)
-        roles = set() if roles is None else set(roles)
-        instances = []
-        for i in self.get_instances():
-            if i.role in roles or identifiers.intersection(i.identifiers):
-                continue
-            instances.append(i)
-        return instances
+        return self.find_instances(
+                   exclude_identifiers = identifiers,
+                   exclude_roles = roles
+               )
 
     @property
     def instances(self): return self.get_instances()

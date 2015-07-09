@@ -5,7 +5,7 @@ from mock import MagicMock
 class TestEnrichedInstance(BotoformTestCase):
 
     def test_equal(self):
-        self.assertEqual(self.instance1, self.instance3)
+        self.assertEqual(self.instance1, self.instance1b)
 
     def test_not_equal(self):
         self.assertNotEqual(self.instance1, self.instance2)
@@ -31,7 +31,8 @@ class TestEnrichedInstance(BotoformTestCase):
 
     def test_identifiers(self):
         self.assertEqual(len(self.instance1.identifiers), 4)
-        # instance2 has a public_ip_address identifier.
-        self.assertEqual(len(self.instance2.identifiers), 5)
+        self.assertEqual(len(self.instance2.identifiers), 4)
+        # instance3 has a public_ip_address identifier.
+        self.assertEqual(len(self.instance3.identifiers), 5)
 
 

@@ -55,13 +55,9 @@ class EnrichedVPC(object):
         # external API call to AWS.
         return list(self.vpc.instances.all())
 
-    @property
-    def instances(self):
+    def get_instances(self):
         """Return a list of each EnrichedInstance object related to this VPC."""
         return self.ec2_to_enriched_instances(self._ec2_instances())
-
-    @property
-    def roles(self): return self.get_roles()
 
     def get_roles(self):
         """
@@ -85,4 +81,25 @@ class EnrichedVPC(object):
         for tag in self.tags:
             tags[tag['Key']] = tag['Value']
         return tags
+
+    def exclude_instances(self, identifiers=None, roles=None):
+        """
+        Accept a list of identifiers and/or roles.
+        Return a list of instances which do *not* match either qualifier list.
+        """
+        identifiers = set() if identifiers is None else set(identifiers)
+        roles = set() if roles is None else set(roles)
+        instances = []
+        for i in self.get_instances():
+            if i.role in roles or identifiers.intersection(i.identifiers):
+                continue
+            instances.append(i)
+        return instances
+
+    @property
+    def instances(self): return self.get_instances()
+
+    @property
+    def roles(self): return self.get_roles()
+
 

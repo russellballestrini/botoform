@@ -80,7 +80,7 @@ class EnrichedVPC(object):
         a list of EnrichedInstance objects is the value.
         """
         roles = {}
-        for instance in self.instances:
+        for instance in self.get_instances():
             if instance.role not in roles:
                 roles[instance.role] = []
             roles[instance.role].append(instance)
@@ -89,14 +89,6 @@ class EnrichedVPC(object):
     def get_role(self, role_name):
         """Return a list of EnrichedInstance objects with the given role_name"""
         return self.get_roles()[role_name]
-
-    @staticmethod
-    def _set(x):
-        """Return a set of the given iterable, return emtpy set if None."""
-        return set() if x is None else set(x)
-
-    def _identify_instance(self, i, identifiers, roles):
-        return identifiers.intersection(i.identifiers) or i.role in roles
 
     def find_instance(self, identifier):
         """
@@ -113,6 +105,14 @@ class EnrichedVPC(object):
         if len(instances) == 0:
             return None
         return instances[0]
+
+    @staticmethod
+    def _set(x):
+        """Return a set of the given iterable, return emtpy set if None."""
+        return set() if x is None else set(x)
+
+    def _identify_instance(self, i, identifiers, roles):
+        return identifiers.intersection(i.identifiers) or i.role in roles
 
     def find_instances(
           self,

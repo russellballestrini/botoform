@@ -14,8 +14,10 @@ try:
 except ImportError:
     pass
 
-def cli(args, evpc):
-    """Open an Interactive prompt with access to evpc object"""
+def REPL(args, evpc):
+    """
+    Open an interactive REPL (read-eval-print-loop) with access to evpc object
+    """
     msg = '\nYou now have access to the evpc object, for example: evpc.roles\n'
     if interpreter == 'bpython':
         bpython.embed(locals_ = locals(), banner = msg)
@@ -23,4 +25,5 @@ def cli(args, evpc):
         IPython.embed(banner2 = msg)
     elif interpreter is None:
         code.interact(local = locals(), banner = msg)
+
 

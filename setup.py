@@ -28,7 +28,9 @@ setup(
     install_requires = requires,
     entry_points = {
       'botoform.plugins' : [
-        'cli = botoform.plugins.cli:cli',
+        'repl = botoform.plugins.repl:REPL',
+        'dump-instances = botoform.plugins.dump:Instances',
+        'dump-security-groups = botoform.plugins.dump:SecurityGroups',
       ],
       'console_scripts': [
         'bf = botoform.__main__:main',

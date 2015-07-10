@@ -114,35 +114,41 @@ class EnrichedVPC(object):
     def _identify_instance(self, i, identifiers, roles):
         return identifiers.intersection(i.identifiers) or i.role in roles
 
-    def find_instances(
-          self,
-          identifiers = None,
-          roles = None,
-          exclude_identifiers = None,
-          exclude_roles = None
-        ):
+    def find_instances(self, identifiers=None, roles=None, exclude=False):
         """
-        Accept optional identifiers, roles, exclude_identifiers, exclude_roles.
-        Return a list of instances that qualify.
+        Accept a list of identifiers and/or roles.
+        Return a list of instances which match either qualifier list.
 
-        Note:
-         This method returns no instances if all qualifiers are None.
+        identifiers:
+          A list of identifiers to qualify instances by, for example:
+            * custid-ui01
+            * ui01
+            * 192.168.1.9
+            * i-01234567
+
+        roles:
+          A list of roles to qualify instances by, for example:
+            * ui
+            * api
+            * proxy
+
+        exclude:
+          If True, qualifiers exclude instead of include!
+          Defaults to False.
 
         Danger:
-         If either exclude_identifiers or exclude_roles are not None,
-         we could end up returning all instances.
+          This method will return *no* instances if all qualifiers are None.
+          However, if *exclude* is True we could return *all* instances!
         """
         identifiers = self._set(identifiers)
         roles = self._set(roles)
-        exclude_identifiers = self._set(exclude_identifiers)
-        exclude_roles = self._set(exclude_roles)
         instances = []
         for i in self.get_instances():
-            if self._identify_instance(i, identifiers, roles):
+            qualified = self._identify_instance(i, identifiers, roles)
+            if qualified and exclude == False:
                 instances.append(i)
-            if len(exclude_identifiers) != 0 or len(exclude_roles) != 0:
-                if not self._identify_instance(i, exclude_identifiers, exclude_roles):
-                    instances.append(i)
+            elif not qualified and exclude == True:
+                instances.append(i)
         return instances
 
     def include_instances(self, identifiers = None, roles = None):
@@ -153,7 +159,7 @@ class EnrichedVPC(object):
         Note:
          This method returns no instances if both identfiers and roles is None.
         """
-        return self.find_instances(identifiers = identifiers, roles = roles)
+        return self.find_instances(identifiers, roles, exclude=False)
 
     def exclude_instances(self, identifiers = None, roles = None):
         """
@@ -163,10 +169,7 @@ class EnrichedVPC(object):
         Note:
          This method returns all instances if both identfiers and roles is None.
         """
-        return self.find_instances(
-                   exclude_identifiers = identifiers,
-                   exclude_roles = roles
-               )
+        return self.find_instances(identifiers, roles, exclude=True)
 
     @property
     def instances(self): return self.get_instances()

@@ -117,6 +117,6 @@ This is mostly an example for how to write a botoform plugin.
 dump-security-groups
 --------------------
 
-Dump Security Groups in a format that is compatible with Botoform templates.
+Output Security Groups in a Botoform compatible format.
 
 

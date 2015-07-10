@@ -28,7 +28,7 @@ class Instances(object):
 
 
 class SecurityGroups(object):
-    """Output a list of security groups and rules. (example botoform plugin)"""
+    """Output Security Groups in a Botoform compatible format."""
 
     @staticmethod
     def setup_parser(parser):

@@ -56,7 +56,7 @@ class SecurityGroups(object):
 
     @staticmethod
     def main(args, evpc):
-        """Output Security Groups in a Botoform compatable format."""
+        """Output Security Groups in a Botoform compatible format."""
         sgs = list(evpc.security_groups.all())
         sgs = {}
         for sg in evpc.security_groups.all():

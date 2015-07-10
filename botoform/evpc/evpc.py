@@ -12,7 +12,7 @@ class EnrichedVPC(object):
     """
 
     def __init__(self, vpc_name=None, region_name=None, profile_name=None):
-        """Create boto3 ec2 resource object and attach to self."""
+        """Set region_name, setup boto3 session, optionally continue to init."""
         self.region_name = region_name
         if profile_name is not None:
             boto3.setup_default_session(profile_name = profile_name)
@@ -101,7 +101,8 @@ class EnrichedVPC(object):
                 instances.append(instance)
         if len(instances) > 1:
             msg = "Multiple instances '{}' have '{}' identifier."
-            raise Exception(msg.format(', '.join(instances), identifier))
+            instance_names = ', '.join(map(str, instances))
+            raise Exception(msg.format(instance_names, identifier))
         if len(instances) == 0:
             return None
         return instances[0]

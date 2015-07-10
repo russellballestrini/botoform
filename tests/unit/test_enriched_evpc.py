@@ -12,12 +12,14 @@ class TestEnrichedVPC(BotoformTestCase):
     def test_get_vpc_by_name_tag_no_vpc_error(self):
         # mock the _get_vpcs_by_filter method to return an empty list.
         self.evpc1._get_vpcs_by_filter = MagicMock(return_value=[])
+        # TODO: define custom exceptions for botoform.
         with self.assertRaises(Exception):
             self.evpc1.get_vpc_by_name_tag('webapple01')
 
     def test_get_vpc_by_name_tag_multi_vpcs_error(self):
         # mock the _get_vpcs_by_filter method to return a list with two vpcs.
         self.evpc1._get_vpcs_by_filter = MagicMock(return_value=[1, 2])
+        # TODO: define custom exceptions for botoform.
         with self.assertRaises(Exception):
             self.evpc1.get_vpc_by_name_tag('webapp*')
 
@@ -112,6 +114,7 @@ class TestEnrichedVPC(BotoformTestCase):
                                        self.instance1b,
                                      ]
                                    )
+        # TODO: define custom exceptions for botoform.
         with self.assertRaises(Exception):
             web01 = self.evpc1.find_instance('web01')
 

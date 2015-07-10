@@ -6,7 +6,8 @@ class Instances(object):
     @staticmethod
     def setup_parser(parser):
         parser.add_argument('--all', action='store_true', default=False)
-        parser.add_argument('--exclude', action='store_true', default=False)
+        parser.add_argument('--exclude', action='store_true', default=False,
+          help='make qualifiers exclude instead of include!')
         parser.add_argument('-r', '--roles',
           metavar='role', default=list(), nargs='*',
           help='examples: api ui persistence search proxy')

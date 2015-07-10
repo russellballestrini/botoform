@@ -70,6 +70,6 @@ class EnrichedInstance(object):
         """Return a tuple of "unique" identifier strings for instance."""
         _identifiers = (self.hostname, self.shortname, self.id,
                        self.private_ip_address, self.public_ip_address)
-        return [x for x in _identifiers if x is not None]
+        return tuple([x for x in _identifiers if x is not None])
 
 

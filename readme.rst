@@ -12,8 +12,12 @@ Botoform_ allows reproduction of any environment, no matter how complex.
 
 Botoform_ abstracts and enriches the Boto3_ and Botocore_ projects.
 
+Documentation
+=============
+
+We use Sphinx_ and https://botoform.readthedocs.org/
 
 .. _Botoform: http://botoform.com
 .. _Botocore: http://botocore.com
 .. _Boto3: http://boto3.com
-
+.. _Sphinx: https://github.com/russellballestrini/botoform/tree/master/docs

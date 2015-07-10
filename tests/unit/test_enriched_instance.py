@@ -22,12 +22,14 @@ class TestEnrichedInstance(BotoformTestCase):
     def test_id(self):
         self.assertEqual('i-mock1111', self.instance1.id)
 
-    def test_identity(self):
+    def test_identity_and_str(self):
         """The identity property of EnrichedInstance returns hostname or id."""
         self.assertEqual('webapp01-web01', self.instance1.identity)
+        self.assertEqual('webapp01-web01', self.instance1.__str__())
         # remove Name tag to cause hostname to be None.
         self.instance1.tags = []
         self.assertEqual('i-mock1111', self.instance1.identity)
+        self.assertEqual('i-mock1111', self.instance1.__str__())
 
     def test_identifiers(self):
         self.assertEqual(len(self.instance1.identifiers), 4)

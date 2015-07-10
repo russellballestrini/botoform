@@ -6,7 +6,7 @@ bf
 
 All of botoform tools are namespaced under the `bf` command.
 
-For a list subcommands and interactive help, run `bf --help`.
+For a list built-in subcommands and interactive help, run `bf --help`.
 
 create
 ------
@@ -78,3 +78,45 @@ untag
 -------
 
 Untag all ec2objects with given tags.
+
+repl
+----
+
+Open an interactive REPL (read-eval-print-loop) with access to evpc object.
+
+Once you have a shell, try running *evpc.roles* or *evpc.instances*.
+
+.. code-block:: bash
+
+ usage: bf vpc_name repl [-h]
+
+Note:
+ Install *bpython* into your environment for more fun.
+
+.. code-block:: bash
+
+ bf webapp01 repl
+
+ You now have access to the evpc object, for example: evpc.roles
+
+ >>> evpc.instances
+ [<botoform.evpc.instance.EnrichedInstance object at 0x10e3346d0>,
+ <botoform.evpc.instance.EnrichedInstance object at 0x10c9b9190>]
+
+ >>> map(str, evpc.instances)
+ ['webapp01-web01', 'webapp01-web02']
+
+dump-instances
+--------------
+
+Dump instance names in various ways...
+
+This is mostly an example for how to write a botoform plugin.
+
+
+dump-security-groups
+--------------------
+
+Dump Security Groups in a format that is compatible with Botoform templates.
+
+

@@ -40,6 +40,32 @@ class TestEnrichedVPC(BotoformTestCase):
         with self.assertRaises(KeyError):
             self.evpc1.get_role('taco')
 
+    def test_include_instances_identifiers(self):
+        web01 = self.evpc1.include_instances(identifiers=['web01'])
+        self.assertEqual(len(web01), 1)
+        self.assertEqual(web01[0].shortname, 'web01')
+
+        ip_32 = self.evpc1.include_instances(identifiers=['192.168.1.32'])
+        self.assertEqual(len(ip_32), 1)
+        self.assertEqual(ip_32[0].shortname, 'web02')
+
+        mix = self.evpc1.include_instances(identifiers=['web02', 'proxy01'])
+        self.assertEqual(len(mix), 2)
+
+    def test_include_instances_roles(self):
+        proxy = self.evpc1.include_instances(roles=['proxy'])
+        self.assertEqual(len(proxy), 1)
+
+        web   = self.evpc1.include_instances(roles=['web'])
+        self.assertEqual(len(web), 2)
+
+    def test_include_instances_identifiers_and_roles(self):
+        mix = self.evpc1.include_instances(
+                                   identifiers=['web02'],
+                                   roles=['proxy']
+                                 )
+        self.assertEqual(len(mix), 2)
+
     def test_exclude_instances_identifiers(self):
         without_web01 = self.evpc1.exclude_instances(identifiers=['web01'])
         self.assertEqual(len(without_web01), 2)
@@ -66,5 +92,27 @@ class TestEnrichedVPC(BotoformTestCase):
                                  )
         self.assertEqual(len(without_mix), 1)
         self.assertEqual(without_mix[0].shortname, 'web01')
+
+    def test_find_instance(self):
+        web01 = self.evpc1.find_instance('web01')
+        web02 = self.evpc1.find_instance('192.168.1.32')
+        proxy01 = self.evpc1.find_instance('webapp01-proxy01')
+        taco01 = self.evpc1.find_instance('taco')
+
+        self.assertEqual(web01.hostname, 'webapp01-web01')
+        self.assertEqual(web02.hostname, 'webapp01-web02')
+        self.assertEqual(proxy01.hostname, 'webapp01-proxy01')
+        self.assertEqual(taco01, None)
+
+    def test_find_instance_multi_exception(self):
+        # cause two instances to match 'web01' identifier.
+        self.evpc1.get_instances = MagicMock(
+                                     return_value = [
+                                       self.instance1,
+                                       self.instance1b,
+                                     ]
+                                   )
+        with self.assertRaises(Exception):
+            web01 = self.evpc1.find_instance('web01')
 
 

@@ -1,22 +1,4 @@
-import yaml
-import json
-
-class BotoformDumper(yaml.Dumper):
-    """A custom YAML dumper that is pretty."""
-    def increase_indent(self, flow=False, indentless=False):
-        return super(BotoformDumper, self).increase_indent(flow, False)
-
-def output(data, output_format='newline'):
-    """Print data in the optional output_format."""
-    if output_format.lower() == 'newline':
-        output = '\n'.join(data)
-    elif output_format.upper() == 'CSV':
-        output = ', '.join(data)
-    elif output_format.upper() == 'YAML':
-        output = yaml.dump(data, Dumper=BotoformDumper)
-    elif output_format.upper() == 'JSON':
-        output = json.dumps(data, indent=2)
-    print(output)
+from botoform.util import output_formatter
 
 class Instances(object):
     """Output a list of instance names. (example botoform plugin)"""
@@ -42,7 +24,7 @@ class Instances(object):
             instances = evpc.instances
         else:
             instances = evpc.find_instances(args.identifiers, args.roles, args.exclude)
-        output(map(str, instances), args.output_format)
+        print(output_formatter(map(str, instances), args.output_format))
 
 
 class SecurityGroups(object):
@@ -84,6 +66,6 @@ class SecurityGroups(object):
                         rule.append(port_range)
                         sgs[sg.group_name].append(rule)
 
-        output({'security_groups' : sgs}, args.output_format)
+        print(output_formatter({'security_groups' : sgs}, args.output_format))
 
 

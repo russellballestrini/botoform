@@ -1,18 +1,23 @@
-Extending bf
-############
+bf plugins
+###########
 
 You may extend the ``bf`` tool by writing a plugin.
 
-``bf`` plugins come in two forms: `function plugin`_ or `class plugin`_
+A ``bf`` plugin has two forms:
 
-We write all ``bf`` subcommands in this way, so there are plenty of examples.
+#. `function plugin`_
+#. `class plugin`_
 
-Create an entry_point in your *setup.py* in the botoform.plugins group.
-The *entry_point* may point to a function or a special plugin class.
+All ``bf`` subcommands have been implemented in one of these ways.
+
+In your plugin project's *setup.py* create an `entry point`_ in the
+``botoform.plugins`` group.
+
+The name of the `entry point`_ will be the subcommand on the CLI.
 
 .. _function plugin:
 
-function plugin
+Function plugin
 ===============
 
 *setup.py*:
@@ -21,17 +26,18 @@ function plugin
 
     entry_points = {
       'botoform.plugins' : [
-        'dump-instances = botoform.plugins.dump:dump_instances',
+        'dump-instances = mybotoform.plugins.dump:dump_instances',
       ]
     }
 
-The name of the entry_point will be the name of the subcommand on the CLI.
 
-In this case the entry_point / subcommand name will be ``dump-instances``.
+In this case the `entry point`_ / subcommand name will be ``dump-instances``.
 
 ``dump-instances`` points to the location of the function *dump_instances*.
 
 The function needs to accept *args* and the *evpc* object.
+
+*mybotoform.plugins.dump.py*:
 
 .. code-block:: python
 
@@ -42,10 +48,10 @@ The function needs to accept *args* and the *evpc* object.
 
 .. _class plugin:
 
-class plugin
+Class Plugin
 ============
 
-If additional args and flags need to be defined, our plugin must take this form:
+If additional args and flags need to be defined, the plugin must take this form:
 
 *setup.py*:
 
@@ -53,9 +59,11 @@ If additional args and flags need to be defined, our plugin must take this form:
 
     entry_points = {
       'botoform.plugins' : [
-        'dump-instances = botoform.plugins.dump:Instances',
+        'dump-instances = mybotoform.plugins.dump:Instances',
       ]
     }
+
+*mybotoform.plugins.dump.py*:
 
 .. code-block:: python
 
@@ -63,19 +71,19 @@ If additional args and flags need to be defined, our plugin must take this form:
 
  class Instances(object):
      """Output a list of instance names. (example botoform plugin)"""
- 
+
      @staticmethod
      def setup_parser(parser):
          parser.add_argument('--output-format',
            choices=['csv', 'yaml', 'json', 'newline'], default='newline',
            help='the desired format of any possible output')
- 
+
      @staticmethod
      def main(args, evpc):
          """Output a list of instance names. (example botoform plugin)"""
          instances = evpc.instances
          print(output_formatter(map(str, instances), args.output_format))
- 
+
 This is a special class that has two staticmethods.
 
 setup_parser:
@@ -83,4 +91,17 @@ setup_parser:
 
 main:
  main logic for this plugin.
+
+Terms
+=====
+
+.. _entry point:
+
+entry point:
+  An entry point is a Python object identified in a project's ``setup.py`` file.
+  The object is referenced by group and name to make it discoverable.
+  This means that another Python application can search the installed software.
+  During the search, often the entry point group filters relevant objects.
+
+  Botoform uses this method to allow plugins to load at run time.
 

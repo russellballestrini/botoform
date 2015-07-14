@@ -113,7 +113,10 @@ class EnrichedVPC(object):
         return set() if x is None else set(x)
 
     def _identify_instance(self, i, identifiers, roles):
-        return identifiers.intersection(i.identifiers) or i.role in roles
+        """Return True if instance is identified / qualified, else False"""
+        identifiers = self._set(identifiers)
+        roles       = self._set(roles)
+        return bool(identifiers.intersection(i.identifiers) or i.role in roles)
 
     def find_instances(self, identifiers=None, roles=None, exclude=False):
         """
@@ -141,8 +144,6 @@ class EnrichedVPC(object):
           This method will return *no* instances if all qualifiers are None.
           However, if *exclude* is True we could return *all* instances!
         """
-        identifiers = self._set(identifiers)
-        roles = self._set(roles)
         instances = []
         for i in self.get_instances():
             qualified = self._identify_instance(i, identifiers, roles)

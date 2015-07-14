@@ -35,7 +35,7 @@ Tools
    :maxdepth: 3
    :glob:
 
-   tools/*
+   tools/index.rst
 
 Schema Reference
 ================

@@ -5,7 +5,6 @@ class Instances(object):
 
     @staticmethod
     def setup_parser(parser):
-        parser.add_argument('--all', action='store_true', default=False)
         parser.add_argument('--exclude', action='store_true', default=False,
           help='make qualifiers exclude instead of include!')
         parser.add_argument('-r', '--roles',
@@ -21,10 +20,10 @@ class Instances(object):
     @staticmethod
     def main(args, evpc):
         """Output a list of instance names. (example botoform plugin)"""
-        if args.all:
-            instances = evpc.instances
-        else:
+        if args.identifiers or args.roles or args.exclude:
             instances = evpc.find_instances(args.identifiers, args.roles, args.exclude)
+        else:
+            instances = evpc.instances
         print(output_formatter(map(str, instances), args.output_format))
 
 

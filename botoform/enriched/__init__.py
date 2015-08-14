@@ -1,2 +1,2 @@
-from evpc import EnrichedVPC
+from vpc import EnrichedVPC
 from instance import EnrichedInstance

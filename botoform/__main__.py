@@ -1,6 +1,6 @@
 import argparse
 
-from botoform.evpc import EnrichedVPC
+from botoform.enriched import EnrichedVPC
 
 from pkg_resources import iter_entry_points
 

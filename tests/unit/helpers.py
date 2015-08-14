@@ -5,8 +5,8 @@ from mock import (
   MagicMock,
 )
 
-from botoform.evpc import EnrichedVPC
-from botoform.evpc import EnrichedInstance
+from botoform.enriched import EnrichedVPC
+from botoform.enriched import EnrichedInstance
 
 class MockInstanceSpec1(object):
     """Mock Boto3's ec2.Instance class."""

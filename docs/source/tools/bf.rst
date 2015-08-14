@@ -97,8 +97,8 @@ Note:
  You now have access to the evpc object, for example: evpc.roles
 
  >>> evpc.instances
- [<botoform.evpc.instance.EnrichedInstance object at 0x10e3346d0>,
- <botoform.evpc.instance.EnrichedInstance object at 0x10c9b9190>]
+ [<botoform.enriched.instance.EnrichedInstance object at 0x10e194350>,
+ <botoform.enriched.instance.EnrichedInstance object at 0x10e1944d0>
 
  >>> map(str, evpc.instances)
  ['webapp01-web01', 'webapp01-web02']

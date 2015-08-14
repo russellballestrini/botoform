@@ -22,7 +22,6 @@ setup(
 
     license = 'Apache License 2.0',
 
-    #packages = ['botoform', 'botoform.evpc'],
     packages = find_packages(),
 
     install_requires = requires,

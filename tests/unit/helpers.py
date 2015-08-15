@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from mock import (
+  mock,
   Mock,
   MagicMock,
 )
@@ -37,6 +38,8 @@ class MockInstanceSpec3(object):
 
 class BotoformTestCase(TestCase):
 
+    @mock.patch('botoform.enriched.EnrichedVPC.attach_boto_clients',
+                mock.Mock(return_value=None))
     def setUp(self):
         MockInstance1 = Mock(name="Instance", return_value = MockInstanceSpec1())
         self.instance1 = EnrichedInstance(MockInstance1())

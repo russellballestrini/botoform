@@ -12,24 +12,17 @@ class EnrichedVPC(object):
     """
 
     def __init__(self, vpc_name=None, region_name=None, profile_name=None):
-        """Set region_name, setup boto3 session, optionally continue to init."""
+        """Set region_name, setup boto3 session, attach boto clients"""
         self.region_name = region_name
         if profile_name is not None:
             boto3.setup_default_session(profile_name = profile_name)
+        self.attach_boto_clients()
         if vpc_name is not None:
-            self.init(vpc_name)
+            self.connect(vpc_name)
 
-    def init(self, vpc_name):
-        """Finish init process, attach related Boto3 resources and clients."""
-        # instantiate a boto3 ec2 resource object, attach to self.
+    def attach_boto_clients(self):
+        """Attach related Boto3 resources and clients."""
         self.ec2 = boto3.resource('ec2', region_name = self.region_name)
-
-        self.vpc = self.get_vpc_by_name_tag(vpc_name)
-
-        # reflect all attributes of boto3's vpc resource object into self.
-        reflect_attrs(self, self.vpc)
-
-        # attach a bunch of Boto3 resources and clients:
         self.rds = boto3.client('rds', region_name = self.region_name)
         self.elasticache = boto3.client('elasticache', region_name = self.region_name)
 
@@ -46,6 +39,12 @@ class EnrichedVPC(object):
         if len(vpcs) == 0:
             raise Exception('VPC not found with tag Name:{}'.format(vpc_name))
         return vpcs[0]
+
+    def connect(self, vpc_name):
+        """connect to VPC and reflect all attributes into self."""
+        self.vpc = self.get_vpc_by_name_tag(vpc_name)
+        # reflect all attributes of boto3's vpc resource object into self.
+        reflect_attrs(self, self.vpc)
 
     @property
     def tag_dict(self):

@@ -7,7 +7,7 @@ from jinja2 import (
 
 #from util import get_port_range
 
-class BFConfigLoader:
+class ConfigLoader:
     def __init__(self, template_dir="templates", context_vars=None):
         self.jinja2_env = Environment(loader=FileSystemLoader(template_dir))
         self.context_vars = context_vars if context_vars is not None else {}

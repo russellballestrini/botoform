@@ -1,5 +1,6 @@
 # The "Name" tag of the new VPC. All `bf` commands filter on this tag.
 vpc_name: webapp01
+cidrblock: 192.168.1.0/24
 
 # Avoid repeating yourself, include other YAML files here.
 inlcudes:

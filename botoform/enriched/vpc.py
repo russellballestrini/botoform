@@ -1,6 +1,8 @@
-import boto3
-
-from botoform.util import reflect_attrs
+from botoform.util import (
+  BotoConnections,
+  reflect_attrs,
+  make_tag_dict,
+)
 
 from instance import EnrichedInstance
 
@@ -12,23 +14,13 @@ class EnrichedVPC(object):
     """
 
     def __init__(self, vpc_name=None, region_name=None, profile_name=None):
-        """Set region_name, setup boto3 session, attach boto clients"""
-        self.region_name = region_name
-        if profile_name is not None:
-            boto3.setup_default_session(profile_name = profile_name)
-        self.attach_boto_clients()
+        self.boto = BotoConnections(region_name, profile_name)
         if vpc_name is not None:
             self.connect(vpc_name)
 
-    def attach_boto_clients(self):
-        """Attach related Boto3 resources and clients."""
-        self.ec2 = boto3.resource('ec2', region_name = self.region_name)
-        self.rds = boto3.client('rds', region_name = self.region_name)
-        self.elasticache = boto3.client('elasticache', region_name = self.region_name)
-
     def _get_vpcs_by_filter(self, vpc_filter):
         # external API call to AWS.
-        return list(self.ec2.vpcs.filter(Filters=vpc_filter))
+        return list(self.boto.ec2.vpcs.filter(Filters=vpc_filter))
 
     def get_vpc_by_name_tag(self, vpc_name):
         """lookup vpc by vpc_name tag. Raises exceptions on insanity."""
@@ -48,10 +40,7 @@ class EnrichedVPC(object):
 
     @property
     def tag_dict(self):
-        tags = {}
-        for tag in self.tags:
-            tags[tag['Key']] = tag['Value']
-        return tags
+        return make_tag_dict(self)
 
     @property
     def name(self): return self.tag_dict.get('Name', None)

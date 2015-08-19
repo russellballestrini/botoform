@@ -1,6 +1,9 @@
 import re
 
-from botoform.util import reflect_attrs
+from botoform.util import (
+  reflect_attrs,
+  make_tag_dict,
+)
 
 class EnrichedInstance(object):
     """
@@ -31,10 +34,7 @@ class EnrichedInstance(object):
 
     @property
     def tag_dict(self):
-        tags = {}
-        for tag in self.tags:
-            tags[tag['Key']] = tag['Value']
-        return tags
+        return make_tag_dict(self)
 
     @property
     def hostname(self):

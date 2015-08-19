@@ -38,7 +38,7 @@ class MockInstanceSpec3(object):
 
 class BotoformTestCase(TestCase):
 
-    @mock.patch('botoform.enriched.EnrichedVPC.attach_boto_clients',
+    @mock.patch('botoform.util.BotoConnections.refresh_boto_connections',
                 mock.Mock(return_value=None))
     def setUp(self):
         MockInstance1 = Mock(name="Instance", return_value = MockInstanceSpec1())

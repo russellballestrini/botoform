@@ -1,8 +1,8 @@
 import argparse
 
-from botoform.enriched import EnrichedVPC
-
 from pkg_resources import iter_entry_points
+
+from botoform.enriched import EnrichedVPC
 
 def load_entry_points(group_name):
     """Return a dictionary of entry_points related to given group_name"""
@@ -54,18 +54,19 @@ def build_parser(description):
     return parser
 
 def main():
-    parser = build_parser(
-      'Manage infrastructure running on AWS using YAML templates.',
-    )
+    parser = build_parser('Manage infrastructure on AWS using YAML')
     args = parser.parse_args()
 
-    evpc = EnrichedVPC(
-             vpc_name=args.vpc_name,
-             profile_name=args.profile,
-             region_name=args.region
-           )
+    if 'skip_evpc' in args.__dict__:
+        evpc = None
+    else:
+        evpc = EnrichedVPC(
+                 vpc_name=args.vpc_name,
+                 region_name=args.region,
+                 profile_name=args.profile,
+               )
 
-    # call the plugin_class main static method.
+    # call the plugin main ethod.
     args.func(args, evpc)
 
 if __name__ == '__main__':

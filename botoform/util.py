@@ -76,14 +76,14 @@ def make_tag_dict(ec2_object):
         tag_dict[tag['Key']] = tag['Value']
     return tag_dict
 
-def add_tags(ec2_object, **kwargs):
-    """Given a tagable ec2_object, create missing_tags from keyword args"""
-    missing_tags = []
+def update_tags(ec2_object, **kwargs):
+    """Given a tagable ec2_object, add or update tags to reflect keyword args"""
+    tags_to_update = []
     tag_dict = make_tag_dict(ec2_object)
     for key, value in kwargs.iteritems():
-        if key not in tag_dict:
-            missing_tags.append({'Key' : key, 'Value' : value})
-    ec2_object.create_tags(Tags = missing_tags)
+        if tag_dict.get(key, None) != value:
+            tags_to_update.append({'Key' : key, 'Value' : value})
+    ec2_object.create_tags(Tags = tags_to_update)
 
 def dict_to_key_value(data, sep='=', pair_sep=','):
     """turns {'key1':'value1','key2':'value2'} into key1=value1,key2=value2"""

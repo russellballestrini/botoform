@@ -1,10 +1,4 @@
 boto3
-
 # config
 pyyaml
 jinja2
-
-# tests
-nose
-pytest
-mock

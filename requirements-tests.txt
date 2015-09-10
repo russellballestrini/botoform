@@ -1,0 +1,7 @@
+# tests
+nose
+pytest
+
+# janky but mock requires funcsigs but doesn't declare it...
+mock
+funcsigs

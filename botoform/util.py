@@ -49,6 +49,59 @@ class BotoformDumper(yaml.Dumper):
         return super(BotoformDumper, self).increase_indent(flow, False)
 
 
+class Log(object):
+    """Handles emitting logs to syslog and stdout."""
+    def __init__(self, desired_level='debug', syslog=True, stdout=True, program='botoform'):
+        """
+        Setup Log object with desired parameters
+
+        desired_level:
+          The lowest severity level to log (default debug).
+
+        stdout:
+          Boolean to determine if messages should emit to STDOUT (default True).
+
+        stdout:
+          Boolean to determine if messages should emit to syslog (default True).
+
+        program:
+          The program field used by syslog (default botoform).
+        """
+        # order matters.
+        self.all_levels  = ['debug', 'info', 'warning', 'error']
+        self.desired_level = desired_level
+        self.stdout  = stdout
+        self.syslog  = syslog
+        self.program = program
+
+    @property
+    def levels(self):
+        """Return a list of levels on and beyond desired_level."""
+        return self.all_levels[self.all_levels.index(self.desired_level):]
+
+    def emit(self, message, level='info'):
+        """
+        Emit message if level meets requirement.
+
+        message:
+          Any object that has a __str__ method.
+
+        level:
+          The level or severity of this message (default info)
+        """
+        if level not in self.levels:
+            return False
+
+        if self.stdout == True:
+            print(message)
+
+        if self.syslog == True:
+            # TODO: some sysloggy stuff here.
+            pass
+
+        return True
+
+
 def output_formatter(data, output_format='newline'):
     """Print data in the optional output_format."""
     if output_format.lower() == 'newline':

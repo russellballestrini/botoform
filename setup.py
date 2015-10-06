@@ -4,7 +4,7 @@ from setuptools import (
   find_packages,
 )
 
-# read requirements.txt for requres, filter comments and newlines.
+# read requirements.txt for requires, filter comments and newlines.
 sanitize = lambda x : not x.startswith('#') and not x.startswith('\n')
 with open('requirements.txt', 'r') as f:
     requires = filter(sanitize, f.readlines())

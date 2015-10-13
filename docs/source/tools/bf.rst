@@ -20,7 +20,7 @@ Destroy a VPC and all related services.
 refresh
 -------
 
-Refresh VPC by adding "things" defined but missing in given YAML template.
+Refresh VPC by adding resources defined but missing in given YAML template.
 
 * instances
 * security groups
@@ -35,7 +35,7 @@ reflect
 
 .. warning:: this is destructive!
 
-Make VPC reflect given YAML template by adding and removing "things".
+Make VPC reflect given YAML template by adding and removing resources.
 
 * instances
 * security groups

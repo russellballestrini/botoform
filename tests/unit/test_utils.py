@@ -4,6 +4,7 @@ from botoform.util import (
   Log,
   dict_to_key_value,
   key_value_to_dict,
+  snake_to_camel_case,
 )
 
 class TestLog(TestCase):
@@ -27,6 +28,30 @@ class TestLog(TestCase):
         """test that emit returns True if message level in levels."""
         self.assertTrue(self.log.emit('taco', 'info'))
 
+
+class TestSnakeToCamelCase(TestCase):
+    """Test Suite for snake_to_camel_case function."""
+    def setUp(self):
+        self.answers = {'http_response':'HTTPResponse'}
+
+    def test_name_cidr_block(self):
+        self.assertEqual(
+          snake_to_camel_case('cidr_block'),
+          'CidrBlock'
+        )
+
+    def test_name_http_response(self):
+        # this tests short circut of answers.
+        self.assertEqual(
+          snake_to_camel_case('http_response', answers=self.answers),
+          'HTTPResponse'
+        )
+
+    def test_name_vpc_id(self):
+        self.assertEqual(
+          snake_to_camel_case('vpc_id'),
+          'VpcId'
+        )
 
 def test_dict_to_key_value():
     data = {'key1':'value1','key2':'value2'}

@@ -160,3 +160,18 @@ def key_value_to_dict(key_value_list, sep='=', pair_sep=','):
             key, value = spec.strip().split('=')
             d[key] = value
     return d
+
+def snake_to_camel_case(name, answers=None):
+    """
+    Accept a snake_case string and return a CamelCase string.
+
+    For example::
+
+      >>> snake_to_camel_case('cidr_block')
+      'CidrBlock'
+    """
+    if answers is not None:
+        if name in answers:
+            return answers[name]
+    return ''.join(word.capitalize() for word in name.split('_'))
+

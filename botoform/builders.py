@@ -4,6 +4,7 @@ from botoform.util import (
   BotoConnections,
   Log,
   update_tags,
+  make_tag_dict,
 )
 
 import traceback
@@ -22,13 +23,12 @@ class EnvironmentBuilder(object):
         self.config = config if config is not None else {}
         self.log = log if log is not None else Log()
         self.boto = BotoConnections(region_name, profile_name)
+        self.reflect = False
 
-    def build(self):
-        """
-        Build the environment specified in the config.
-        """
+    def apply_all(self):
+        """Build the environment specified in the config."""
         try:
-            self._build(self.config)
+            self._apply(self.config)
         except Exception as e:
             self.log.emit('Botoform failed to build environment!', 'error')
             self.log.emit('Failure reason: {}'.format(e), 'error')
@@ -37,15 +37,16 @@ class EnvironmentBuilder(object):
             #self.evpc.terminate()
             raise
 
-    def _build(self, config):
+    def _apply_all(self, config):
 
         # set a var for no_cfg.
         no_cfg = {}
 
-        self.build_vpc(config['cidrblock'])
-
         # attach EnrichedVPC to self.
         self.evpc = EnrichedVPC(self.vpc_name, self.boto.region_name, self.boto.profile_name)
+
+        # the order of these method calls matters for new VPCs.
+        self.route_tables(config.get('route_tables', no_cfg))
 
         try:
             self.evpc.lock_instances()
@@ -77,5 +78,21 @@ class EnvironmentBuilder(object):
             InternetGatewayId=gw.id,
             VpcId=vpc.id,
         )
+
+    def route_tables(route_cfg):
+        """Build route_tables defined in config"""
+        for name, data in route_config.items():
+            longname = '{}-{}'.format(self.evpc.name, name)
+            route_table = self.evpc.get_route_table(longname)
+            if route_table is None:
+                self.log.emit('creating route_table ({})'.format(longname))
+                if data.get('main', False) == True:
+                    route_table = self.evpc.get_main_route_table()
+                else:
+                    route_table = self.evpc.create_route_table()
+                self.log.emit('tagging route_table (Name:{})'.format(longname), 'debug')
+                update_tags(route_table, Name = longname)
+
+
 
 

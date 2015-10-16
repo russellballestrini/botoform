@@ -12,6 +12,8 @@ class Create(object):
     @staticmethod
     def setup_parser(parser):
         parser.add_argument('--skip-evpc', default=True, help=SUPPRESS)
+        parser.add_argument('cidrblock',
+          help='The CIDR block to use when creating VPC.')
         parser.add_argument('config',
           help='The botoform YAML config template.')
         parser.add_argument('-v', '--vars',
@@ -32,6 +34,7 @@ class Create(object):
         config = loader.load(template_file = args.config)
         ebuilder = EnvironmentBuilder(
                        args.vpc_name, config, args.region, args.profile)
-        ebuilder.build()
+        ebuilder.build_vpc(args.cidrblock)
+        ebuilder.apply_all()
 
 

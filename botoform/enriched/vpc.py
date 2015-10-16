@@ -18,14 +18,18 @@ class EnrichedVPC(object):
         if vpc_name is not None:
             self.connect(vpc_name)
 
+    def get_name_tag_filter(self, names):
+        """Accept a name str or list of names, return Boto3 Name tag filter."""
+        names = [names] if isinstance(names, str) else names
+        return [{'Name':'tag:Name', 'Values':names}]
+
     def _get_vpcs_by_filter(self, vpc_filter):
         # external API call to AWS.
         return list(self.boto.ec2.vpcs.filter(Filters=vpc_filter))
 
     def get_vpc_by_name_tag(self, vpc_name):
         """lookup vpc by vpc_name tag. Raises exceptions on insanity."""
-        vpc_name_tag_filter = [{'Name':'tag:Name', 'Values':[vpc_name]}]
-        vpcs = self._get_vpcs_by_filter(vpc_name_tag_filter)
+        vpcs = self._get_vpcs_by_filter(self.get_name_tag_filter(vpc_name))
         if len(vpcs) > 1:
             raise Exception('Multiple VPCs match tag Name:{}'.format(vpc_name))
         if len(vpcs) == 0:
@@ -177,4 +181,11 @@ class EnrichedVPC(object):
         if len(main_route_table) != 1:
             raise Exception('cannot get main route table! {}'.format(main_route_table))
         return main_route_table[0]
+
+    def get_route_table(self, name):
+        """Accept route table name, return route_table object or None."""
+        names = [name, '{}-{}'.format(self.name, name)]
+        rts = list(self.route_tables.filter(Filters=self.get_name_tag_filter(names)))
+        return rts[0] if len(rts) == 1 else None
+
 

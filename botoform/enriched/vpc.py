@@ -167,4 +167,14 @@ class EnrichedVPC(object):
     @property
     def roles(self): return self.get_roles()
 
+    def get_main_route_table(self):
+        """Return the main (default) route table for VPC."""
+        main_route_table = []
+        for route_table in list(self.route_tables.all()):
+            for association in list(route_table.associations.all()):
+                if association.main == True:
+                    main_route_table.append(route_table)
+        if len(main_route_table) != 1:
+            raise Exception('cannot get main route table! {}'.format(main_route_table))
+        return main_route_table[0]
 

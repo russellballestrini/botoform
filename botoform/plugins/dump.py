@@ -60,7 +60,7 @@ class SecurityGroups(object):
                 if len(perm['UserIdGroupPairs']) >= 1:
                     for pair in perm['UserIdGroupPairs']:
                         rule = []
-                        related_sg = evpc.ec2.SecurityGroup(id=pair['GroupId'])
+                        related_sg = evpc.boto.ec2.SecurityGroup(id=pair['GroupId'])
                         rule.append(related_sg.group_name)
                         rule.append(ip_protocol)
                         rule.append(port_range)

@@ -9,6 +9,8 @@ class BotoConnections(object):
         Optionally pass region_name and profile_name. Setup boto3 session.
         Attach boto3 client and resource connection objects.
         """
+        # defaults.
+        self._region_name = self._profile_name = None
         # trigger region_name.setter
         self.region_name = region_name
         # trigger profile_name.setter
@@ -22,32 +24,44 @@ class BotoConnections(object):
     def profile_name(self, new_name):
         """set profile_name and refresh_boto_connections"""
         self._profile_name = new_name
-        if new_name is not None:
-            boto3.setup_default_session(profile_name = new_name)
-        self.refresh_boto_connections()
+        self.setup_session_and_refresh_connections()
 
     @property
     def region_name(self):
         return self._region_name
+
+    @region_name.setter
+    def region_name(self, new_name):
+        """set region_name and refresh_boto_connections"""
+        self._region_name = new_name
+        self.setup_session_and_refresh_connections()
+
+    def setup_session_and_refresh_connections(self):
+        if self.profile_name and self.region_name:
+            boto3.setup_default_session(
+              profile_name = self.profile_name,
+              region_name  = self.region_name,
+            )
+        elif self.profile_name:
+            boto3.setup_default_session(profile_name = self.profile_name)
+        elif self.region_name:
+            boto3.setup_default_session(region_name = self.region_name)
+        else:
+            return None
+        self.refresh_boto_connections()
+
+    def refresh_boto_connections(self):
+        """Attach related Boto3 clients and resources."""
+        self.ec2 = boto3.resource('ec2')
+        self.ec2_client = boto3.client('ec2')
+        self.rds = boto3.client('rds')
+        self.elasticache = boto3.client('elasticache')
 
     @property
     def azones(self):
         az_filter = [{'Name':'state', 'Values':['available']}]
         azs = self.ec2_client.describe_availability_zones(Filters=az_filter)
         return map(lambda az : az['ZoneName'], azs['AvailabilityZones'])
-
-    @region_name.setter
-    def region_name(self, new_name):
-        """set region_name and refresh_boto_connections"""
-        self._region_name = new_name
-        self.refresh_boto_connections()
-
-    def refresh_boto_connections(self):
-        """Attach related Boto3 clients and resources."""
-        self.ec2 = boto3.resource('ec2', region_name = self.region_name)
-        self.ec2_client = boto3.client('ec2', region_name = self.region_name)
-        self.rds = boto3.client('rds', region_name = self.region_name)
-        self.elasticache = boto3.client('elasticache', region_name = self.region_name)
 
 
 class BotoformDumper(yaml.Dumper):

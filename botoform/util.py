@@ -30,6 +30,12 @@ class BotoConnections(object):
     def region_name(self):
         return self._region_name
 
+    @property
+    def azones(self):
+        az_filter = [{'Name':'state', 'Values':['available']}]
+        azs = self.ec2_client.describe_availability_zones(Filters=az_filter)
+        return map(lambda az : az['ZoneName'], azs['AvailabilityZones'])
+
     @region_name.setter
     def region_name(self, new_name):
         """set region_name and refresh_boto_connections"""
@@ -39,6 +45,7 @@ class BotoConnections(object):
     def refresh_boto_connections(self):
         """Attach related Boto3 clients and resources."""
         self.ec2 = boto3.resource('ec2', region_name = self.region_name)
+        self.ec2_client = boto3.client('ec2', region_name = self.region_name)
         self.rds = boto3.client('rds', region_name = self.region_name)
         self.elasticache = boto3.client('elasticache', region_name = self.region_name)
 

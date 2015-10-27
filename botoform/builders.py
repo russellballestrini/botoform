@@ -7,6 +7,8 @@ from botoform.util import (
   make_tag_dict,
 )
 
+from botoform.subnetallocator import allocate
+
 import traceback
 
 class EnvironmentBuilder(object):
@@ -47,6 +49,9 @@ class EnvironmentBuilder(object):
 
         # the order of these method calls matters for new VPCs.
         self.route_tables(config.get('route_tables', no_cfg))
+        self.subnets(config.get('subnets', no_cfg))
+
+        self.associate_route_tables_with_subnets(config.get('subnets', no_cfg))
 
         try:
             self.evpc.lock_instances()
@@ -93,6 +98,45 @@ class EnvironmentBuilder(object):
                 self.log.emit('tagging route_table (Name:{})'.format(longname), 'debug')
                 update_tags(route_table, Name = longname)
 
+    def subnets(self, subnet_cfg):
+        """Build subnets defined in config"""
+        sizes = sorted([x['size'] for x in subnet_cfg.values()])
+        cidrs = allocate(self.evpc.cidr_block, sizes)
 
+        azones = self.evpc.azones
+
+        subnets = {}
+        for size, cidr in zip(sizes, cidrs):
+            subnets.setdefault(size, []).append(cidr)
+
+        for name, sn in subnet_cfg.items():
+            longname = '{}-{}'.format(self.evpc.name, name)
+            az_letter = sn.get('availability_zone', None)
+            if az_letter is not None:
+                az_name = self.evpc.region_name + az_letter
+            else:
+                az_index = int(name.split('-')[-1]) - 1
+                az_name = azones[az_index]
+
+            cidr = subnets[sn['size']].pop()
+            self.log.emit('creating subnet {} in {}'.format(cidr, az_name))
+            subnet = self.evpc.create_subnet(
+                          CidrBlock = str(cidr),
+                          AvailabilityZone = az_name
+            )
+            self.log.emit('tagging subnet (Name:{})'.format(longname), 'debug')
+            update_tags(
+                subnet,
+                Name = longname,
+                description = sn.get('description', ''),
+            )
+
+    def associate_route_tables_with_subnets(self, subnet_cfg):
+        for sn_name, sn_data in subnet_cfg.items():
+            rt_name = sn_data.get('route_table', None)
+            if rt_name is None:
+                continue
+            self.log.emit('associating rt {} with sn {}'.format(rt_name, sn_name))
+            self.evpc.associate_route_table_with_subnet(rt_name, sn_name)
 
 

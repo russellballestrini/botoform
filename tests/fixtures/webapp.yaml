@@ -1,14 +1,10 @@
-# The "Name" tag of the new VPC. All `bf` commands filter on this tag.
-vpc_name: webapp01
-cidrblock: 192.168.1.0/24
-
 # Avoid repeating yourself, include other YAML files here.
-inlcudes:
+includes:
   # route_tables: /path/to/common_route_tables_layout.yaml
   # subnets: /path/to/webapp_subnets_formation.yaml
 
   # import the amis stanza from amis.yaml.
-  amis: amis.yaml
+  amis: nested/amis.yaml
 
 # This is an example route_tables schema.
 route_tables:

@@ -30,8 +30,8 @@ class Create(object):
         """Output a list of instance names. (example botoform plugin)"""
         context_vars = key_value_to_dict(args.vars)
         aws_tags = key_value_to_dict(args.tags)
-        loader = ConfigLoader(template_dir='tests', context_vars = context_vars)
-        config = loader.load(template_file = args.config)
+        loader = ConfigLoader(context_vars = context_vars)
+        config = loader.load(template_path = args.config)
         ebuilder = EnvironmentBuilder(
                        args.vpc_name, config, args.region, args.profile)
         ebuilder.build_vpc(args.cidrblock)

@@ -30,7 +30,7 @@ class EnvironmentBuilder(object):
     def apply_all(self):
         """Build the environment specified in the config."""
         try:
-            self._apply(self.config)
+            self._apply_all(self.config)
         except Exception as e:
             self.log.emit('Botoform failed to build environment!', 'error')
             self.log.emit('Failure reason: {}'.format(e), 'error')
@@ -84,9 +84,9 @@ class EnvironmentBuilder(object):
             VpcId=vpc.id,
         )
 
-    def route_tables(route_cfg):
+    def route_tables(self, route_cfg):
         """Build route_tables defined in config"""
-        for name, data in route_config.items():
+        for name, data in route_cfg.items():
             longname = '{}-{}'.format(self.evpc.name, name)
             route_table = self.evpc.get_route_table(longname)
             if route_table is None:

@@ -9,7 +9,7 @@ from jinja2 import (
 #from util import get_port_range
 
 class ConfigLoader(object):
-    def __init__(self, context_vars=None, template_dir=None):
+    def __init__(self, template_dir=None, context_vars=None):
         self.jinja2_env = None
         self._template_dir = None
         self.context_vars = context_vars if context_vars is not None else {}

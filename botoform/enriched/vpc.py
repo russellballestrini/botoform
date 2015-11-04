@@ -199,12 +199,12 @@ class EnrichedVPC(object):
         """Accept subnet name, return subnet object or None."""
         # todo: refactor, raise exception if more the one match?
         names = [name, '{}-{}'.format(self.name, name)]
-        sns = list(self.subnets.filter(Filters=self.get_name_tag_filter(names)))
-        return sns[0] if len(sns) == 1 else None
+        subnets = list(self.subnets.filter(Filters=self.get_name_tag_filter(names)))
+        return subnets[0] if len(subnets) == 1 else None
 
     def associate_route_table_with_subnet(self, rt_name, sn_name):
         """Accept a route table name and subnet name, associate them."""
-        self.boto.ec2.associate_route_table(
+        self.boto.ec2_client.associate_route_table(
                         RouteTableId = self.get_route_table(rt_name).id,
                         SubnetId     = self.get_subnet(sn_name).id,
         )

@@ -2,6 +2,8 @@ from botoform.util import (
   BotoConnections,
   reflect_attrs,
   make_tag_dict,
+  make_filter,
+  name_tag_filter,
 )
 
 from instance import EnrichedInstance
@@ -22,18 +24,13 @@ class EnrichedVPC(object):
             self.connect(vpc_name)
         self.vpc_endpoints = EnrichedVpcEndpoint(self)
 
-    def get_name_tag_filter(self, names):
-        """Accept a name str or list of names, return Boto3 Name tag filter."""
-        names = [names] if isinstance(names, str) else names
-        return [{'Name':'tag:Name', 'Values':names}]
-
     def _get_vpcs_by_filter(self, vpc_filter):
         # external API call to AWS.
         return list(self.boto.ec2.vpcs.filter(Filters=vpc_filter))
 
     def get_vpc_by_name_tag(self, vpc_name):
         """lookup vpc by vpc_name tag. Raises exceptions on insanity."""
-        vpcs = self._get_vpcs_by_filter(self.get_name_tag_filter(vpc_name))
+        vpcs = self._get_vpcs_by_filter(name_tag_filter(vpc_name))
         if len(vpcs) > 1:
             raise Exception('Multiple VPCs match tag Name:{}'.format(vpc_name))
         if len(vpcs) == 0:
@@ -196,14 +193,14 @@ class EnrichedVPC(object):
         """Accept route table name, return route_table object or None."""
         # todo: refactor, raise exception if more the one match?
         names = [name, '{}-{}'.format(self.name, name)]
-        rts = list(self.route_tables.filter(Filters=self.get_name_tag_filter(names)))
+        rts = list(self.route_tables.filter(Filters=name_tag_filter(names)))
         return rts[0] if len(rts) == 1 else None
 
     def get_subnet(self, name):
         """Accept subnet name, return subnet object or None."""
         # todo: refactor, raise exception if more the one match?
         names = [name, '{}-{}'.format(self.name, name)]
-        subnets = list(self.subnets.filter(Filters=self.get_name_tag_filter(names)))
+        subnets = list(self.subnets.filter(Filters=name_tag_filter(names)))
         return subnets[0] if len(subnets) == 1 else None
 
     def associate_route_table_with_subnet(self, rt_name, sn_name):

@@ -49,6 +49,7 @@ subnets:
     # availability_zone: b
 
 # This is an example of how to create VPC Endpoints.
+# This allows instances in the private subnets to reach S3 for example.
 endpoints:
   - private
 

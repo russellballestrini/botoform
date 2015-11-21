@@ -1,4 +1,5 @@
 boto3
+nested-lookup
 # config
 pyyaml
 jinja2

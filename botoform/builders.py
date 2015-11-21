@@ -53,6 +53,8 @@ class EnvironmentBuilder(object):
 
         self.associate_route_tables_with_subnets(config.get('subnets', no_cfg))
 
+        self.endpoints(config.get('endpoints', []))
+
         try:
             self.evpc.lock_instances()
         except:
@@ -139,4 +141,12 @@ class EnvironmentBuilder(object):
             self.log.emit('associating rt {} with sn {}'.format(rt_name, sn_name))
             self.evpc.associate_route_table_with_subnet(rt_name, sn_name)
 
+    def endpoints(self, route_tables):
+        """Build VPC endpoints for given route_tables"""
+        if len(route_tables) == 0:
+            return None
+        self.log.emit(
+            'creating vpc endpoints in {}'.format(', '.join(route_tables))
+        )
+        self.evpc.vpc_endpoints.create_all(route_tables)
 

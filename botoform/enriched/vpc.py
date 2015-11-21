@@ -5,6 +5,9 @@ from botoform.util import (
 )
 
 from instance import EnrichedInstance
+from vpc_endpoint import EnrichedVpcEndpoint
+
+from nested_lookup import nested_lookup
 
 class EnrichedVPC(object):
     """
@@ -17,6 +20,7 @@ class EnrichedVPC(object):
         self.boto = BotoConnections(region_name, profile_name)
         if vpc_name is not None:
             self.connect(vpc_name)
+        self.vpc_endpoints = EnrichedVpcEndpoint(self)
 
     def get_name_tag_filter(self, names):
         """Accept a name str or list of names, return Boto3 Name tag filter."""
@@ -208,3 +212,43 @@ class EnrichedVPC(object):
                         RouteTableId = self.get_route_table(rt_name).id,
                         SubnetId     = self.get_subnet(sn_name).id,
         )
+
+    def delete_internet_gateways(self):
+        """Delete related internet gatways."""
+        igws = list(self.internet_gateways.all())
+        if len(igws) == 0:
+            return
+        for igw in igws:
+            igw.detach_from_vpc(VpcId = self.id)
+            igw.delete()
+
+    def delete_security_groups(self):
+        """Delete related security groups."""
+        sgs = list(self.security_groups.all())
+        for sg in sgs:
+            if sg.group_name == 'default':
+                continue
+            sg.delete()
+
+    def delete_subnets(self):
+        sns = list(self.subnets.all())
+        for sn in sns: sn.delete()
+
+    def delete_route_tables(self):
+        main_rt = self.get_main_route_table()
+        rts = list(self.route_tables.all())
+        for rt in rts:
+            if rt.id != main_rt.id:
+                ass = list(rt.associations.all())
+                for a in ass:
+                    a.delete()
+                rt.delete()
+
+    def terminate(self):
+        """Terminate all resources related to this VPC!"""
+        self.vpc_endpoints.delete_related()
+        self.delete_security_groups()
+        self.delete_subnets()
+        self.delete_route_tables()
+        self.delete_internet_gateways()
+        self.vpc.delete()

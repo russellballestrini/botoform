@@ -142,6 +142,10 @@ def reflect_attrs(child, parent):
         if attr not in existing:
             child.__dict__[attr] = getattr(parent, attr)
 
+def get_ids(objects):
+    """return a list of ids from a list of objects."""
+    return [o.id for o in objects if o is not None]
+
 def make_tag_dict(ec2_object):
     """Given an tagable ec2_object, return dictionary of existing tags."""
     tag_dict = {}

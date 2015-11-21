@@ -36,7 +36,7 @@ class EnrichedVpcEndpoint(object):
             )
 
     def delete_related(self):
-        """Delete all VPC endpoinds related to this VPC."""
+        """Delete all VPC endpoints related to this VPC."""
         return self.evpc.boto.ec2_client.delete_vpc_endpoints(
             VpcEndpointIds = self.related_ids()
         )

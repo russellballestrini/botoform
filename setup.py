@@ -30,6 +30,8 @@ setup(
         'create = botoform.plugins.create:Create',
         'dump = botoform.plugins.dump:Dump',
         'repl = botoform.plugins.repl:REPL',
+        'cli = botoform.plugins.repl:REPL',
+        'shell = botoform.plugins.repl:REPL',
       ],
       'console_scripts': [
         'bf = botoform.__main__:main',

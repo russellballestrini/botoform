@@ -50,10 +50,9 @@ class EnvironmentBuilder(object):
         # the order of these method calls matters for new VPCs.
         self.route_tables(config.get('route_tables', no_cfg))
         self.subnets(config.get('subnets', no_cfg))
-
         self.associate_route_tables_with_subnets(config.get('subnets', no_cfg))
-
         self.endpoints(config.get('endpoints', []))
+        self.security_groups(config.get('security_groups', no_cfg))
 
         try:
             self.evpc.lock_instances()
@@ -101,7 +100,7 @@ class EnvironmentBuilder(object):
                 update_tags(route_table, Name = longname)
 
     def subnets(self, subnet_cfg):
-        """Build subnets defined in config"""
+        """Build subnets defined in config."""
         sizes = sorted([x['size'] for x in subnet_cfg.values()])
         cidrs = allocate(self.evpc.cidr_block, sizes)
 
@@ -149,4 +148,22 @@ class EnvironmentBuilder(object):
             'creating vpc endpoints in {}'.format(', '.join(route_tables))
         )
         self.evpc.vpc_endpoints.create_all(route_tables)
+
+    def security_groups(self, security_group_cfg):
+        """Build Security Groups defined in config."""
+
+        for name, data in security_group_cfg.items():
+            sg = self.evpc.get_security_group(name)
+            if sg is not None:
+                continue
+            longname = '{}-{}'.format(self.evpc.name, name)
+            self.log.emit('creating security_group {}'.format(longname))
+            security_group = self.evpc.create_security_group(
+                GroupName   = longname,
+                Description = longname,
+            )
+            self.log.emit(
+                'tagging security_group (Name:{})'.format(longname), 'debug'
+            )
+            update_tags(security_group, Name = longname)
 

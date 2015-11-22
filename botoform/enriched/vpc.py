@@ -189,19 +189,22 @@ class EnrichedVPC(object):
             raise Exception('cannot get main route table! {}'.format(main_route_table))
         return main_route_table[0]
 
+    def _filter_collection_by_name(self, name, collection):
+        names = [name, '{}-{}'.format(self.name, name)]
+        objs = list(collection.filter(Filters=name_tag_filter(names)))
+        return objs[0] if len(objs) == 1 else None
+
     def get_route_table(self, name):
         """Accept route table name, return route_table object or None."""
-        # todo: refactor, raise exception if more the one match?
-        names = [name, '{}-{}'.format(self.name, name)]
-        rts = list(self.route_tables.filter(Filters=name_tag_filter(names)))
-        return rts[0] if len(rts) == 1 else None
+        return self._filter_collection_by_name(name, self.route_tables)
 
     def get_subnet(self, name):
         """Accept subnet name, return subnet object or None."""
-        # todo: refactor, raise exception if more the one match?
-        names = [name, '{}-{}'.format(self.name, name)]
-        subnets = list(self.subnets.filter(Filters=name_tag_filter(names)))
-        return subnets[0] if len(subnets) == 1 else None
+        return self._filter_collection_by_name(name, self.subnets)
+
+    def get_security_group(self, name):
+        """Accept security group name, return security group object or None."""
+        return self._filter_collection_by_name(name, self.security_groups)
 
     def associate_route_table_with_subnet(self, rt_name, sn_name):
         """Accept a route table name and subnet name, associate them."""

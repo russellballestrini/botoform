@@ -67,7 +67,7 @@ class EnrichedVPC(object):
 
     def _ec2_instances(self):
         # external API call to AWS.
-        return list(self.vpc.instances.all())
+        return self.vpc.instances.all()
 
     def get_instances(self):
         """Return a list of each EnrichedInstance object related to this VPC."""
@@ -181,8 +181,8 @@ class EnrichedVPC(object):
     def get_main_route_table(self):
         """Return the main (default) route table for VPC."""
         main_route_table = []
-        for route_table in list(self.route_tables.all()):
-            for association in list(route_table.associations.all()):
+        for route_table in self.route_tables.all():
+            for association in route_table.associations.all():
                 if association.main == True:
                     main_route_table.append(route_table)
         if len(main_route_table) != 1:
@@ -215,32 +215,28 @@ class EnrichedVPC(object):
 
     def delete_internet_gateways(self):
         """Delete related internet gatways."""
-        igws = list(self.internet_gateways.all())
-        if len(igws) == 0:
-            return
-        for igw in igws:
+        for igw in self.internet_gateways.all():
             igw.detach_from_vpc(VpcId = self.id)
             igw.delete()
 
     def delete_security_groups(self):
         """Delete related security groups."""
-        sgs = list(self.security_groups.all())
-        for sg in sgs:
+        for sg in self.security_groups.all():
             if sg.group_name == 'default':
                 continue
             sg.delete()
 
     def delete_subnets(self):
-        sns = list(self.subnets.all())
-        for sn in sns: sn.delete()
+        """Delete related subnets."""
+        for sn in self.subnets.all():
+            sn.delete()
 
     def delete_route_tables(self):
+        """Delete related route tables."""
         main_rt = self.get_main_route_table()
-        rts = list(self.route_tables.all())
-        for rt in rts:
+        for rt in self.route_tables.all():
             if rt.id != main_rt.id:
-                ass = list(rt.associations.all())
-                for a in ass:
+                for a in rt.associations.all():
                     a.delete()
                 rt.delete()
 
@@ -252,3 +248,4 @@ class EnrichedVPC(object):
         self.delete_route_tables()
         self.delete_internet_gateways()
         self.vpc.delete()
+

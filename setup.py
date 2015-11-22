@@ -28,8 +28,7 @@ setup(
     entry_points = {
       'botoform.plugins' : [
         'create = botoform.plugins.create:Create',
-        'dump-instances = botoform.plugins.dump:Instances',
-        'dump-security-groups = botoform.plugins.dump:SecurityGroups',
+        'dump = botoform.plugins.dump:Dump',
         'repl = botoform.plugins.repl:REPL',
       ],
       'console_scripts': [

@@ -20,6 +20,8 @@ def load_parsers_from_plugins(subparser, plugins):
                                     description = plugin_class.__doc__,
                                   )
 
+        plugin_parser.add_argument('vpc_name', help='The VPC\'s Name tag.')
+
         try:
             # Assume class plugin with 'setup_parser' and 'main' staticmethods.
             plugin_class.setup_parser(plugin_parser)
@@ -39,7 +41,6 @@ def build_parser(description):
     #  help='search regions for VPC with given vpc_name')
     parser.add_argument('--quiet', action='store_true', default=False,
       help='prevent status messages to STDOUT')
-    parser.add_argument('vpc_name')
 
     # create a subparser for our plugins to attach to.
     subparser = parser.add_subparsers(

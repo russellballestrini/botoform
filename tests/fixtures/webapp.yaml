@@ -78,7 +78,7 @@ instance_roles:
   # define how the web node role should look.
   web:
     description: web nodes run Nginx/uWSGI/Pyramid on port 80
-    instance_types: t2.small
+    instance_type: t2.small
     ami: ubuntu-14.04-lts-hvm
     count: 2
     security_groups: ["web"]

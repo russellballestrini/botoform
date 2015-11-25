@@ -147,7 +147,7 @@ class EnvironmentBuilder(object):
         self.log.emit(
             'creating vpc endpoints in {}'.format(', '.join(route_tables))
         )
-        self.evpc.vpc_endpoints.create_all(route_tables)
+        self.evpc.vpc_endpoint.create_all(route_tables)
 
     def security_groups(self, security_group_cfg):
         """Build Security Groups defined in config."""

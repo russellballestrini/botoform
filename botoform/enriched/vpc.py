@@ -22,7 +22,7 @@ class EnrichedVPC(object):
         self.boto = BotoConnections(region_name, profile_name)
         if vpc_name is not None:
             self.connect(vpc_name)
-        self.vpc_endpoints = EnrichedVpcEndpoint(self)
+        self.vpc_endpoint = EnrichedVpcEndpoint(self)
 
     def _get_vpcs_by_filter(self, vpc_filter):
         # external API call to AWS.
@@ -242,7 +242,7 @@ class EnrichedVPC(object):
 
     def terminate(self):
         """Terminate all resources related to this VPC!"""
-        self.vpc_endpoints.delete_related()
+        self.vpc_endpoint.delete_related()
         self.delete_security_groups()
         self.delete_subnets()
         self.delete_route_tables()

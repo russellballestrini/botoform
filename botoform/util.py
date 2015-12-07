@@ -148,7 +148,7 @@ def get_ids(objects):
 
 def make_filter(key, values):
     """Given a key and values, return filter schema expected by boto3."""
-    values = [values] if isinstance(values, str) else values
+    values = values if isinstance(values, list) else [values]
     return [ { 'Name' : key, 'Values' : values } ]
 
 def name_tag_filter(names):

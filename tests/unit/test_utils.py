@@ -5,6 +5,7 @@ from botoform.util import (
   dict_to_key_value,
   key_value_to_dict,
   snake_to_camel_case,
+  make_tag_dict,
 )
 
 class TestLog(TestCase):
@@ -52,6 +53,19 @@ class TestSnakeToCamelCase(TestCase):
           snake_to_camel_case('vpc_id'),
           'VpcId'
         )
+
+def test_make_tag_dict():
+    class TestSubject(object):
+        tags = [
+          {'Key':'Name', 'Value':'myapp01-web01'},
+          {'Key':'role', 'Value':'web'},
+        ]
+    obj = TestSubject
+    tags = make_tag_dict(obj)
+    assert('Name' in tags)
+    assert('role' in tags)
+    assert(tags['Name'] == 'myapp01-web01')
+    assert(tags['role'] == 'web')
 
 def test_dict_to_key_value():
     data = {'key1':'value1','key2':'value2'}

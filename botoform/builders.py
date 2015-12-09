@@ -5,6 +5,7 @@ from botoform.util import (
   Log,
   update_tags,
   make_tag_dict,
+  get_port_range,
 )
 
 from botoform.subnetallocator import allocate
@@ -53,6 +54,7 @@ class EnvironmentBuilder(object):
         self.associate_route_tables_with_subnets(config.get('subnets', no_cfg))
         self.endpoints(config.get('endpoints', []))
         self.security_groups(config.get('security_groups', no_cfg))
+        self.security_group_rules(config.get('security_groups', no_cfg))
 
         try:
             self.evpc.lock_instances()
@@ -152,11 +154,11 @@ class EnvironmentBuilder(object):
     def security_groups(self, security_group_cfg):
         """Build Security Groups defined in config."""
 
-        for name, data in security_group_cfg.items():
-            sg = self.evpc.get_security_group(name)
+        for sg_name, rules in security_group_cfg.items():
+            sg = self.evpc.get_security_group(sg_name)
             if sg is not None:
                 continue
-            longname = '{}-{}'.format(self.evpc.name, name)
+            longname = '{}-{}'.format(self.evpc.name, sg_name)
             self.log.emit('creating security_group {}'.format(longname))
             security_group = self.evpc.create_security_group(
                 GroupName   = longname,
@@ -166,4 +168,36 @@ class EnvironmentBuilder(object):
                 'tagging security_group (Name:{})'.format(longname), 'debug'
             )
             update_tags(security_group, Name = longname)
+
+    def security_group_rules(self, security_group_cfg):
+        """Build Security Group Rules defined in config."""
+        msg = "'{}' into '{}' over ports {} ({})"
+        for sg_name, rules in security_group_cfg.items():
+            sg = self.evpc.get_security_group(sg_name)
+            permissions = []
+            for rule in rules:
+                protocol = rule[1]
+                from_port, to_port = get_port_range(rule[2], protocol)
+                src_sg = self.evpc.get_security_group(rule[0])
+
+                permission = {
+                    'IpProtocol' : protocol,
+                    'FromPort'   : from_port,
+                    'ToPort'     : to_port,
+                }
+
+                if src_sg is None:
+                    permission['IpRanges'] = [{'CidrIp' : rule[0]}]
+                else:
+                    permission['UserIdGroupPairs'] = [{'GroupId':src_sg.id}]
+
+                permissions.append(permission)
+
+                fmsg = msg.format(rule[0],sg_name,rule[2],rule[1].upper())
+                self.log.emit(fmsg)
+
+            sg.authorize_ingress(
+                IpPermissions = permissions
+            )
+
 

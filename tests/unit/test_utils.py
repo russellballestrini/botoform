@@ -6,6 +6,7 @@ from botoform.util import (
   key_value_to_dict,
   snake_to_camel_case,
   make_tag_dict,
+  get_port_range,
 )
 
 class TestLog(TestCase):
@@ -53,6 +54,44 @@ class TestSnakeToCamelCase(TestCase):
           snake_to_camel_case('vpc_id'),
           'VpcId'
         )
+
+
+class TestGetPortRange(TestCase):
+
+    def test_all_port(self):
+        self.assertTupleEqual(get_port_range('all'), (1, 65535))
+
+    def test_all_caps_port(self):
+        self.assertTupleEqual(get_port_range('ALL'), (1, 65535))
+
+    def test_icmp_is_negative_one_tuple(self):
+        self.assertTupleEqual(get_port_range('anything', 'icmp'), (-1, -1))
+
+    def test_all_mixed_port_raises_value_error(self):
+        with self.assertRaises(ValueError):
+            get_port_range('aLL')
+
+    def test_taco_port_raises_value_error(self):
+        with self.assertRaises(ValueError):
+            get_port_range('taco')
+
+    def test_no_port_raises_exception(self):
+        with self.assertRaises(TypeError):
+            get_port_range()
+
+    def test_empty_port_raises_exception(self):
+        with self.assertRaises(Exception):
+            get_port_range('')
+
+    def test_443_port(self):
+        self.assertTupleEqual(get_port_range('443'), (443, 443))
+
+    def test_5000_5009_port(self):
+        self.assertTupleEqual(get_port_range('5000-5009'), (5000, 5009))
+
+    def test_5000_5009_port_with_whitespace(self):
+        self.assertTupleEqual(get_port_range(' 5000-  5009'), (5000, 5009))
+
 
 def test_make_tag_dict():
     class TestSubject(object):

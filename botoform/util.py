@@ -195,6 +195,30 @@ def key_value_to_dict(key_value_list, sep='=', pair_sep=','):
             d[key] = value
     return d
 
+def get_port_range(raw_range, ip_protocol='tcp'):
+    """
+    Accept raw_range and return (from_port, to_port) tuple.
+
+    raw_range is a string or integer in the following forms:
+
+        443, 'all', '5000-5009', ' 8080'
+    """
+    if not raw_range:
+        raise Exception('Missing or empty port range')
+
+    if ip_protocol == 'icmp':
+        return (-1, -1)
+
+    raw_range = str(raw_range).replace(' ','')
+
+    if raw_range == 'all' or raw_range == 'ALL':
+        port_range = [1, 65535]
+    elif '-' in raw_range:
+        port_range = raw_range.split('-')
+    else:
+        port_range = [raw_range, raw_range]
+    return tuple(map(int, port_range))
+
 def snake_to_camel_case(name, answers=None):
     """
     Accept a snake_case string and return a CamelCase string.

@@ -222,6 +222,10 @@ class EnrichedVPC(object):
     def delete_security_groups(self):
         """Delete related security groups."""
         for sg in self.security_groups.all():
+            if len(sg.ip_permissions) >= 1:
+                sg.revoke_ingress(IpPermissions = sg.ip_permissions)
+
+        for sg in self.security_groups.all():
             if sg.group_name == 'default':
                 continue
             sg.delete()

@@ -58,7 +58,7 @@ Create VPC
 
 .. code-block:: bash
 
- bf --profile=development --region=ap-southeast-1 create dogtest01 192.168.1.1 tests/fixtures/webapp.yaml
+ bf --profile=development --region=ap-southeast-1 create dogtest01 192.168.1.0/24 tests/fixtures/webapp.yaml
     
 
 Destroy VPC

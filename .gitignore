@@ -16,5 +16,6 @@ nosetests.xml
 
 # Common virtualenv names
 venv
+env
 env2
 env3

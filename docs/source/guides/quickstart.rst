@@ -1,57 +1,58 @@
 Quickstart
-##########
+###########
 
 Installation
 ============
 
 Install from source.
 
-#. clone botoform repo:
+Clone botoform repo:
 
-  ..code-block:: bash
-  
-    git clone https://github.com/russellballestrini/botoform.git
-    cd botoform
+.. code-block:: bash
 
-#. create and activate a Python virtualenv named env:
+ git clone https://github.com/russellballestrini/botoform.git
+ cd botoform
 
-  ..code-block:: bash
+Create and activate a Python virtualenv named env:
 
-   virtualenv env
-   . env/bin/activate
+.. code-block:: bash
 
-#. install dependencies into virtualenv:
+ virtualenv env
+ . env/bin/activate
 
-  ..code-block:: bash
+Install dependencies into virtualenv:
 
-    python setup.py develop
+.. code-block:: bash
 
-#. verify installation by running:
+  python setup.py develop
 
-  ..code-block:: bash
+Verify installation by running:
 
-    bf --help
+.. code-block:: bash
+
+ bf --help
  
 
 Configuration
 =============
 
-Setup your [AWS CLI config](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files) file, for example::
+Setup your `AWS CLI config <http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files>`_ file, for example:
 
-  ..code-block:: bash
+.. code-block:: bash
 
-    [development]
-    aws_access_key_id=AKIAIOSFODNN7EXAMPLE
-    aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
-    region=us-west-2
+ [development]
+ aws_access_key_id = AKIAIOSFODNN7EXAMPLE
+ aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+ region = us-west-2
 
 Using Botoform
 ==============
 
-.. Note:: This section will create real resources on AWS.
 
 Create VPC
 -------------
+
+.. Note:: This section will create real resources on AWS.
 
 .. code-block:: bash
 

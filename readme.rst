@@ -12,19 +12,24 @@ Botoform_ allows reproduction of any environment, no matter how complex.
 
 Botoform_ abstracts and enriches the Boto3_ and Botocore_ projects.
 
-YAML Schema
+Quickstart
 =============
 
-I didn't write the docs for the YAML schema yet, but here is an example:
-
-https://github.com/russellballestrini/botoform/blob/master/tests/fixtures/webapp.yaml
+Quickstart_ 
 
 Documentation
 =============
 
 We use Sphinx_ and https://botoform.readthedocs.org/
 
+YAML Schema
+=============
+
+I didn't write the docs for the YAML schema yet, but here is an example:
+
+https://github.com/russellballestrini/botoform/blob/master/tests/fixtures/webapp.yaml
 .. _Botoform: http://botoform.com
 .. _Botocore: http://botocore.com
 .. _Boto3: http://boto3.com
 .. _Sphinx: https://github.com/russellballestrini/botoform/tree/master/docs
+.. _Quickstart: https://botoform.readthedocs.org/en/latest/guides/quickstart.html

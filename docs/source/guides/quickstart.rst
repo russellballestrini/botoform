@@ -1,6 +1,8 @@
 Quickstart
 ###########
 
+.. contents::
+
 Installation
 ============
 

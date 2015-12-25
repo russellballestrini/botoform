@@ -28,6 +28,7 @@ YAML Schema
 I didn't write the docs for the YAML schema yet, but here is an example:
 
 https://github.com/russellballestrini/botoform/blob/master/tests/fixtures/webapp.yaml
+
 .. _Botoform: http://botoform.com
 .. _Botocore: http://botocore.com
 .. _Boto3: http://boto3.com

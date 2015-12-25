@@ -12,6 +12,13 @@ Botoform_ allows reproduction of any environment, no matter how complex.
 
 Botoform_ abstracts and enriches the Boto3_ and Botocore_ projects.
 
+YAML Schema
+=============
+
+I didn't write the docs for the YAML schema yet, but here is an example:
+
+https://github.com/russellballestrini/botoform/blob/master/tests/fixtures/webapp.yaml
+
 Documentation
 =============
 

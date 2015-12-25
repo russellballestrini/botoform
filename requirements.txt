@@ -1,5 +1,9 @@
 boto3
 nested-lookup
+
+# botoform/subnetallocator.py
+netaddr
+
 # config
 pyyaml
 jinja2

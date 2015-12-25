@@ -26,25 +26,24 @@ Function plugin
 
     entry_points = {
       'botoform.plugins' : [
-        'dump-instances = mybotoform.plugins.dump:dump_instances',
+        'destroy = mybotoform.plugins.destroy:destroy',
       ]
     }
 
 
-In this case the `entry point`_ / subcommand name will be ``dump-instances``.
+In this case the `entry point`_ / subcommand name will be ``destroy``.
 
-``dump-instances`` points to the location of the function *dump_instances*.
+``destroy`` points to the location of the function *destroy*.
 
 The function needs to accept *args* and the *evpc* object.
 
-*mybotoform.plugins.dump.py*:
+*mybotoform.plugins.destroy.py*:
 
 .. code-block:: python
 
- def dump_instances(args, evpc):
-     """Dump instances (This docstring is used in the subcommand help)"""
-     for instance in evpc.instances:
-         print(instance)
+ def destroy(args, evpc):
+     """Destroy a VPC and related resources and services."""
+     evpc.terminate()
 
 .. _class plugin:
 

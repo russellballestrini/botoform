@@ -28,6 +28,7 @@ setup(
     entry_points = {
       'botoform.plugins' : [
         'create = botoform.plugins.create:Create',
+        'destroy = botoform.plugins.destroy:destroy',
         'dump = botoform.plugins.dump:Dump',
         'repl = botoform.plugins.repl:REPL',
         'cli = botoform.plugins.repl:REPL',

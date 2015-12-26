@@ -34,7 +34,7 @@ Misc
 
 What about CloudFormation?
  I couldn't figure out how to use CloudFormation and I think that is a problem... 
- Botoform will not support all the things that CloudFormation does, and at times it will be opionionated to keep things simple, usable, and understandable. 
+ Botoform will not support all the things that CloudFormation does, and at times it will be opinionated to keep things simple, usable, and understandable. 
 
 .. _Botoform: http://botoform.com
 .. _Botocore: http://botocore.com

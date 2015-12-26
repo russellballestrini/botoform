@@ -29,6 +29,13 @@ I didn't write the docs for the YAML schema yet, but here is an example:
 
 https://github.com/russellballestrini/botoform/blob/master/tests/fixtures/webapp.yaml
 
+Misc
+====
+
+What about CloudFormation?
+ I couldn't figure out how to use CloudFormation and I think that is a problem... 
+ Botoform will not support all the things that CloudFormation does, and at times it will be opionionated to keep things simple, usable, and understandable. 
+
 .. _Botoform: http://botoform.com
 .. _Botocore: http://botocore.com
 .. _Boto3: http://boto3.com

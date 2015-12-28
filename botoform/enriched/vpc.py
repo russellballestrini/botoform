@@ -73,6 +73,10 @@ class EnrichedVPC(object):
         """Return a list of each EnrichedInstance object related to this VPC."""
         return self.ec2_to_enriched_instances(self._ec2_instances())
 
+    def get_running_instances(self):
+        """Return list running EnrichedInstance object related to this VPC."""
+        return [i for i in self.get_instances() if i.state['Code'] == 16]
+
     def get_roles(self):
         """
         Return a dict of lists where role is the key and

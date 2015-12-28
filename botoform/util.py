@@ -76,16 +76,16 @@ class Log(object):
         """
         Setup Log object with desired parameters
 
-        desired_level:
+        :param desired_level:
           The lowest severity level to log (default debug).
 
-        stdout:
+        :param stdout:
           Boolean to determine if messages should emit to STDOUT (default True).
 
-        stdout:
+        :param stdout:
           Boolean to determine if messages should emit to syslog (default True).
 
-        program:
+        :param program:
           The program field used by syslog (default botoform).
         """
         # order matters.
@@ -136,27 +136,73 @@ def output_formatter(data, output_format='newline'):
     return output
 
 def reflect_attrs(child, parent):
-    """Composition Magic: reflect all missing parents attributes into child."""
+    """
+    Composition Magic: reflect all missing parents attributes into child.
+
+    :param child: Object to receive attributes.
+    :param parent: Object to source attributes from.
+
+    :returns: None
+    """
     existing = dir(child)
     for attr in dir(parent):
         if attr not in existing:
             child.__dict__[attr] = getattr(parent, attr)
 
+def merge_pages(key, pages):
+    """
+    Merge boto3 paginated results into single list.
+
+    :param key: The document key to merge from all pages.
+    :param pages: An iterator of page documents.
+
+    :returns: A single flat list containing results of all pages.
+    """
+    results = []
+    for page in pages:
+        results += page[key]
+    return results
+
 def get_ids(objects):
-    """return a list of ids from a list of objects."""
+    """
+    Return a list of ids from a list of objects.
+
+    :param objects: A list of objects all of whom have an id attribute.
+
+    :returns: A list of ids
+    """
     return [o.id for o in objects if o is not None]
 
 def make_filter(key, values):
-    """Given a key and values, return filter schema expected by boto3."""
+    """
+    Return a filter document expected by Boto3.
+
+    :param key: The key name for this new filter document.
+    :param values: A value or a list of values to filter/match on.
+
+    :returns: A filter document (list/dict) in the form that Boto3 expects.
+    """
     values = values if isinstance(values, list) else [values]
     return [ { 'Name' : key, 'Values' : values } ]
 
 def name_tag_filter(names):
-    """Given a list of names, return filter schema expected by boto3."""
+    """
+    Return a name tag filter document expected by boto3.
+
+    :param names: A name tag or a list of names tags.
+
+    :returns: A filter document (list/dict) in the form that Boto3 expects.
+    """
     return make_filter('tag:Name', names)
 
 def make_tag_dict(ec2_object):
-    """Given an tagable ec2_object, return dictionary of existing tags."""
+    """
+    Return a dictionary of existing tags.
+
+    :param ec2_object: A tagable Boto3 object with a tags attribute.
+
+    :returns: A dictionary where tag names are keys and tag values are values.
+    """
     tag_dict = {}
     if ec2_object.tags is None: return tag_dict
     for tag in ec2_object.tags:
@@ -164,7 +210,14 @@ def make_tag_dict(ec2_object):
     return tag_dict
 
 def update_tags(ec2_object, **kwargs):
-    """Given a tagable ec2_object, add or update tags to reflect keyword args"""
+    """
+    Add or update tags to reflect given keyword args
+
+    :param ec2_object: A tagable Boto3 object with a tags attribute.
+    :param **kwargs: key=value where key is tag name, value is tag value.
+
+    :returns: None
+    """
     tags_to_update = []
     tag_dict = make_tag_dict(ec2_object)
     for key, value in kwargs.iteritems():
@@ -173,18 +226,45 @@ def update_tags(ec2_object, **kwargs):
     ec2_object.create_tags(Tags = tags_to_update)
 
 def dict_to_key_value(data, sep='=', pair_sep=','):
-    """turns {'key1':'value1','key2':'value2'} into key1=value1,key2=value2"""
+    """
+    Return a string representation of a dictionary.
+
+    by default this function will turn::
+
+      {'key1':'value1','key2':'value2'}
+
+    into::
+
+      key1=value1,key2=value2
+
+    :param data: The dictionary to convert into a string.
+    :param sep: Optional, string to separate keys and values (Default '=')
+    :param pair_sep: Optional, string to separate key/value pairs (Default ',')
+
+    :returns: a string representation of the given dictionary.
+    """
     return pair_sep.join([sep.join(key_value) for key_value in data.items()])
 
 def key_value_to_dict(key_value_list, sep='=', pair_sep=','):
     """
-    Accept a key_value_list, like::
+    Return a dictionary from a list of key/value strings.
+
+    turns key_value_list, like::
 
       key_value_list = ['a=1,b=2', 'c=3, d=4', 'e=5']
 
-    Return a dict, like::
+    into a dict, like::
 
       {'a':'1', 'b':'2', 'c':'3', 'd':'4', 'e':'5'}
+
+    :param key_value_list:
+      The list of key/value strings to convert into a dict.
+    :param sep:
+      Optional, string which separates keys and values (Default '=')
+    :param pair_sep:
+      Optional, string which separates key/value pairs (Default ',')
+
+    :returns: A string representation of the given dictionary.
     """
     d = {}
     # allow user to pass a string or a list of strings.
@@ -197,11 +277,32 @@ def key_value_to_dict(key_value_list, sep='=', pair_sep=','):
 
 def get_port_range(raw_range, ip_protocol='tcp'):
     """
-    Accept raw_range and return (from_port, to_port) tuple.
+    Returns a (from_port, to_port) tuple.
 
-    raw_range is a string or integer in the following forms:
+    Examples:
 
-        443, 'all', '5000-5009', ' 8080'
+    .. code-block:: python
+
+      >>> get_port_range(443)
+      (443, 443)
+
+      >>> get_port_range('all')
+      (1, 65535)
+
+      >>> get_port_range('5000-5009')
+      (5000, 5009)
+
+      >>> get_port_range(' 8080')
+      (8080, 8080)
+
+      >>> get_port_range('tacobell', ip_protocol='icmp')
+      (-1, -1)
+
+    :param raw_range: A string or integer.
+
+    :param ip_protocol: Optional, 'tcp', 'udp', 'icpm' (Default 'tcp')
+
+    :returns: (from_port, to_port)
     """
     if not raw_range:
         raise Exception('Missing or empty port range')

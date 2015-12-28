@@ -16,7 +16,10 @@ class TestEnrichedInstance(BotoformTestCase):
     def test_shortname(self):
         self.assertEqual('web01', self.instance1.shortname)
 
-    def test_role(self):
+    def test_role_from_role_tag(self):
+        self.assertEqual('vpn', self.instance4.role)
+
+    def test_role_from_name_tag(self):
         self.assertEqual('web', self.instance1.role)
 
     def test_id(self):

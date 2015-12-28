@@ -41,6 +41,10 @@ class EnrichedInstance(object):
         return self.tag_dict.get('Name', None)
 
     @property
+    def name(self):
+        return self.hostname
+
+    @property
     def identity(self): return self.hostname or self.id
 
     def _regex_hostname(self, regex):
@@ -48,9 +52,7 @@ class EnrichedInstance(object):
             return None
         match = re.match(regex, self.hostname)
         if match is None:
-            raise Exception(
-              "Invalid Name=%s tag, custid-<role>NN" % (self.hostname)
-            )
+            return None
         return match.group(1)
 
     @property
@@ -60,10 +62,13 @@ class EnrichedInstance(object):
 
     @property
     def role(self):
-        """get role from instance Name tag, ex: api, vpn, ..."""
-        #if self.is_autoscale:
-        #    return self.autoscale_groupname.split('-')[-1]
-        return self._regex_hostname(r".*?-(.*?)\d+$")
+        """get role from instance 'role' or 'Name' tag, ex: api, vpn, ..."""
+        role = self.tag_dict.get('role', None)
+        if role is None:
+             role = self._regex_hostname(r".*?-(.*?)-.+$")
+        if role is None:
+             role = self._regex_hostname(r".*?-(.*?)-?\d+$")
+        return role
 
     @property
     def identifiers(self):

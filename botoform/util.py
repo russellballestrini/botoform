@@ -10,15 +10,9 @@ class BotoConnections(object):
         Attach boto3 client and resource connection objects.
         """
         # defaults.
-        self.ec2 = self.ec2_client = None
-        self.elb = self.rds = None
-        self.elasticache = None
-
         self._region_name = self._profile_name = None
-
         # trigger region_name.setter
         self.region_name = region_name
-
         # trigger profile_name.setter
         self.profile_name = profile_name
 

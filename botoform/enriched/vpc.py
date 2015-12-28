@@ -24,9 +24,6 @@ class EnrichedVPC(object):
         self.boto = BotoConnections(region_name, profile_name)
         if vpc_name is not None:
             self.connect(vpc_name)
-        self.vpc_endpoint = EnrichedVpcEndpoint(self)
-        self.elasticache = EnrichedElastiCache(self)
-        self.elb = EnrichedElb(self)
 
     def _get_vpcs_by_filter(self, vpc_filter):
         # external API call to AWS.
@@ -47,18 +44,23 @@ class EnrichedVPC(object):
         # reflect all attributes of boto3's vpc resource object into self.
         reflect_attrs(self, self.vpc)
 
-    @property
-    def tag_dict(self):
-        return make_tag_dict(self)
-
-    @property
-    def name(self): return self.tag_dict.get('Name', None)
+        # attach Enriched Connections to self.
+        self.vpc_endpoint = EnrichedVpcEndpoint(self)
+        self.elasticache = EnrichedElastiCache(self)
+        self.elb = EnrichedElb(self)
 
     @property
     def region_name(self): return self.boto.region_name
 
     @property
     def azones(self): return self.boto.azones
+
+    @property
+    def tag_dict(self):
+        return make_tag_dict(self)
+
+    @property
+    def name(self): return self.tag_dict.get('Name', None)
 
     @property
     def identity(self): return self.name or self.id

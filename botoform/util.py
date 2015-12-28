@@ -10,9 +10,14 @@ class BotoConnections(object):
         Attach boto3 client and resource connection objects.
         """
         # defaults.
+        self.ec2 = self.ec2_client = None
+        self.rds = self.elasticache = None
+
         self._region_name = self._profile_name = None
+
         # trigger region_name.setter
         self.region_name = region_name
+
         # trigger profile_name.setter
         self.profile_name = profile_name
 
@@ -59,7 +64,8 @@ class BotoConnections(object):
 
     @property
     def azones(self):
-        az_filter = [{'Name':'state', 'Values':['available']}]
+        """Return a list of available AZ names for active AWS profile/region."""
+        az_filter = make_filter('state', 'available')
         azs = self.ec2_client.describe_availability_zones(Filters=az_filter)
         return map(lambda az : az['ZoneName'], azs['AvailabilityZones'])
 

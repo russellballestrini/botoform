@@ -1,4 +1,4 @@
-boto3
+boto3>=1.2.3
 nested-lookup
 
 # botoform/subnetallocator.py

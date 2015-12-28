@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from husky.subnetallocator import allocate
+from botoform.subnetallocator import allocate
 
 class TestSubnetAllocator(TestCase):
 

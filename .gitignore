@@ -11,6 +11,7 @@ tests/.coverage
 # Test state / virtualenvs
 .tox
 .coverage
+.cache
 coverage.xml
 nosetests.xml
 

@@ -9,6 +9,7 @@ from botoform.util import (
 from instance import EnrichedInstance
 from vpc_endpoint import EnrichedVpcEndpoint
 from elasticache import EnrichedElastiCache
+from elb import EnrichedElb
 
 from nested_lookup import nested_lookup
 
@@ -25,6 +26,7 @@ class EnrichedVPC(object):
             self.connect(vpc_name)
         self.vpc_endpoint = EnrichedVpcEndpoint(self)
         self.elasticache = EnrichedElastiCache(self)
+        self.elb = EnrichedElb(self)
 
     def _get_vpcs_by_filter(self, vpc_filter):
         # external API call to AWS.

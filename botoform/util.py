@@ -11,7 +11,8 @@ class BotoConnections(object):
         """
         # defaults.
         self.ec2 = self.ec2_client = None
-        self.rds = self.elasticache = None
+        self.elb = self.rds = None
+        self.elasticache = None
 
         self._region_name = self._profile_name = None
 
@@ -61,6 +62,7 @@ class BotoConnections(object):
         self.ec2_client = boto3.client('ec2')
         self.rds = boto3.client('rds')
         self.elasticache = boto3.client('elasticache')
+        self.elb = boto3.client('elb')
 
     @property
     def azones(self):

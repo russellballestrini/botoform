@@ -8,7 +8,7 @@ from ..util import (
 class EnrichedElastiCache(object):
 
     def __init__(self, evpc):
-        # save the HuskyVpc object.
+        # save the EnrichedVpc object.
         self.evpc = evpc
         # reflect all attributes of Client into EnrichedElastiCache.
         reflect_attrs(self, evpc.boto.elasticache)

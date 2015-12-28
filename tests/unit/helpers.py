@@ -21,7 +21,7 @@ class MockInstanceSpec1(object):
 class MockInstanceSpec2(object):
     """Mock Boto3's ec2.Instance class."""
     id   = 'i-mock2222'
-    tags = [{u'Value': 'vpc-mock2222', u'Key': 'vpc-id'},
+    tags = [{u'Value': 'vpc-mock1111', u'Key': 'vpc-id'},
     #        {u'Value': 'webapp01-web02', u'Key': 'Name'}]
             {u'Value': 'webapp01-web-02', u'Key': 'Name'}]
     public_ip_address = None
@@ -31,7 +31,7 @@ class MockInstanceSpec2(object):
 class MockInstanceSpec3(object):
     """Mock Boto3's ec2.Instance class."""
     id   = 'i-mock3333'
-    tags = [{u'Value': 'vpc-mock3333', u'Key': 'vpc-id'},
+    tags = [{u'Value': 'vpc-mock1111', u'Key': 'vpc-id'},
             {u'Value': 'webapp01-proxy01', u'Key': 'Name'}]
     public_ip_address = '54.1.1.3'
     private_ip_address = '192.168.1.33'
@@ -40,7 +40,7 @@ class MockInstanceSpec4(object):
     """Mock Boto3's ec2.Instance class."""
     id   = 'i-mock4444'
     tags = [
-             {u'Value': 'vpc-mock4444', u'Key': 'vpc-id'},
+             {u'Value': 'vpc-mock1111', u'Key': 'vpc-id'},
              {u'Value': 'webapp01-test', u'Key': 'Name'},
              {u'Value': 'vpn', u'Key': 'role'},
            ]

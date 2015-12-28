@@ -1,14 +1,16 @@
 bf plugins
 ###########
 
+.. note:: For working examples see the `plugins <https://github.com/russellballestrini/botoform/tree/master/botoform/plugins>`_ directory.
+
 You may extend the ``bf`` tool by writing a plugin.
 
-A ``bf`` plugin has two forms:
+A ``bf`` plugin must take one of two forms:
 
 #. `function plugin`_
 #. `class plugin`_
 
-All ``bf`` subcommands have been implemented in one of these ways.
+All ``bf`` subcommands have been implemented in this way.
 
 In your plugin project's *setup.py* create an `entry point`_ in the
 ``botoform.plugins`` group.
@@ -20,6 +22,10 @@ The name of the `entry point`_ will be the subcommand on the CLI.
 Function plugin
 ===============
 
+This example shows how to write a function plugin.
+
+In this case we will define a ``destroy`` `entry point`_ and subcommand.
+
 *setup.py*:
 
 .. code-block:: python
@@ -30,14 +36,11 @@ Function plugin
       ]
     }
 
-
-In this case the `entry point`_ / subcommand name will be ``destroy``.
-
-``destroy`` points to the location of the function *destroy*.
+The `entry point`_ ``destroy`` points to the location of the function *destroy*.
 
 The function needs to accept *args* and the *evpc* object.
 
-*mybotoform.plugins.destroy.py*:
+*mybotoform/plugins/destroy.py*:
 
 .. code-block:: python
 
@@ -62,7 +65,7 @@ If additional args and flags need to be defined, the plugin must take this form:
       ]
     }
 
-*mybotoform.plugins.dump.py*:
+*mybotoform/plugins/dump.py*:
 
 .. code-block:: python
 

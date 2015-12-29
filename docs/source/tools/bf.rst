@@ -32,7 +32,7 @@ For example:
 refresh
 -------
 
-.. info:: not implemented yet.
+.. note:: not implemented yet.
 
 Refresh VPC by adding resources defined but missing in given YAML template.
 
@@ -47,7 +47,7 @@ Refresh VPC by adding resources defined but missing in given YAML template.
 reflect
 -------
 
-.. info:: not implemented yet.
+.. note:: not implemented yet.
 
 .. warning:: this is destructive!
 
@@ -63,7 +63,7 @@ Make VPC reflect given YAML template by adding and removing resources.
 stop
 -------
 
-.. info:: not implemented yet.
+.. note:: not implemented yet.
 
 Stop all instances in VPC including autoscaled instances.
 
@@ -72,35 +72,35 @@ TODO: Skip "ephemeral" instances!
 start
 -------
 
-.. info:: not implemented yet.
+.. note:: not implemented yet.
 
 Start all instances in VPC including autoscaled instances.
 
 lock
 -------
 
-.. info:: not implemented yet.
+.. note:: not implemented yet.
 
 Enable API Termination Protection on all instances in VPC.
 
 unlock
 -------
 
-.. info:: not implemented yet.
+.. note:: not implemented yet.
 
 Disable API Termination Protection on all instances in VPC.
 
 tag
 -------
 
-.. info:: not implemented yet.
+.. note:: not implemented yet.
 
 Tag all ec2objects with given tags.
 
 untag
 -------
 
-.. info:: not implemented yet.
+.. note:: not implemented yet.
 
 Untag all ec2objects with given tags.
 
@@ -116,7 +116,7 @@ Once you have a repl, try running *evpc.roles* or *evpc.instances*.
 
 .. code-block:: bash
 
- usage: bf vpc_name repl [-h]
+ usage: bf repl vpc_name  [-h]
 
 Note:
  Install *bpython* into your environment for more fun.

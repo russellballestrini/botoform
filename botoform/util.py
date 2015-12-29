@@ -187,15 +187,17 @@ def make_filter(key, values):
     values = values if isinstance(values, list) else [values]
     return [ { 'Name' : key, 'Values' : values } ]
 
-def name_tag_filter(names):
-    """
-    Return a name tag filter document expected by boto3.
 
-    :param names: A name tag or a list of names tags.
+def tag_filter(tag_key, tag_values):
+    """
+    Return a tag filter document expected by boto3.
+
+    :param tag_key: A tag key or name.
+    :param tag_values: The tag value or a list of values to filter on.
 
     :returns: A filter document (list/dict) in the form that Boto3 expects.
     """
-    return make_filter('tag:Name', names)
+    return make_filter('tag:{}'.format(tag_key), tag_values)
 
 def make_tag_dict(ec2_object):
     """

@@ -3,7 +3,7 @@ from botoform.util import (
   reflect_attrs,
   make_tag_dict,
   make_filter,
-  name_tag_filter,
+  tag_filter,
 )
 
 from instance import EnrichedInstance
@@ -31,7 +31,7 @@ class EnrichedVPC(object):
 
     def get_vpc_by_name_tag(self, vpc_name):
         """lookup vpc by vpc_name tag. Raises exceptions on insanity."""
-        vpcs = self._get_vpcs_by_filter(name_tag_filter(vpc_name))
+        vpcs = self._get_vpcs_by_filter(tag_filter('Name', vpc_name))
         if len(vpcs) > 1:
             raise Exception('Multiple VPCs match tag Name:{}'.format(vpc_name))
         if len(vpcs) == 0:
@@ -67,42 +67,69 @@ class EnrichedVPC(object):
 
     def __str__(self): return self.identity
 
-    def ec2_to_enriched_instances(self, ec2_instances):
-        """Convert list of boto.ec2.instance.Instance to EnrichedInstance"""
-        return [EnrichedInstance(e, self) for e in ec2_instances]
-
     def _ec2_instances(self):
         # external API call to AWS.
         return self.vpc.instances.all()
 
-    def get_instances(self):
-        """Return a list of each EnrichedInstance object related to this VPC."""
-        return self.ec2_to_enriched_instances(self._ec2_instances())
+    def _ec2_to_enriched_instances(self, ec2_instances):
+        """Convert list of boto.ec2.instance.Instance to EnrichedInstance"""
+        return [EnrichedInstance(e, self) for e in ec2_instances]
 
-    def get_running_instances(self):
+    def get_instances(self, instances=None):
+        """
+        Returns a possibly empty list of EnrichedInstance objects.
+
+        :param instances:
+          Optional, list or collection to convert to EnrichedInstance objects.
+
+        :returns: list of EnrichedInstance objects
+        """
+        instances = self._ec2_instances() if instances is None else instances
+        return self._ec2_to_enriched_instances(instances)
+
+    def get_running_instances(self, instances=None):
         """Return list running EnrichedInstance object related to this VPC."""
-        return [i for i in self.get_instances() if i.state['Code'] == 16]
+        return [i for i in self.get_instances(instances) if i.state['Code'] == 16]
 
-    def get_roles(self):
+    def get_roles(self, instances=None):
         """
         Return a dict of lists where role is the key and
         a list of EnrichedInstance objects is the value.
         """
         roles = {}
-        for instance in self.get_instances():
+        for instance in self.get_instances(instances):
             if instance.role not in roles:
                 roles[instance.role] = []
             roles[instance.role].append(instance)
         return roles
 
-    def get_role(self, role_name):
-        """Return a list of EnrichedInstance objects with the given role_name"""
-        return self.get_roles()[role_name]
+    def get_role(self, role_name, instances=None):
+        """
+        Return a possibly empty list of EnrichedInstance objects.
+
+        :param role_name:
+          The name of the role whose instances to return.
+        :param instances:
+          Optional, list or collection to search role from.
+
+        :returns: A list of EnrichedInstance objects.
+        """
+        return self.get_roles(instances).get(role_name, [])
 
     def find_instance(self, identifier):
         """
-        Given an identifier, return an instance or None.
+        Return an instance or None which matches identifier.
+
         Raises exception if multiple instances match identifier.
+
+        :param identifier:
+          A list of identifiers to qualify instances by, for example:
+            * custid-ui01
+            * ui01
+            * 192.168.1.9
+            * i-01234567
+
+        :returns: EnrichedInstance or None
         """
         instances = []
         for instance in self.get_instances():
@@ -132,26 +159,28 @@ class EnrichedVPC(object):
         Accept a list of identifiers and/or roles.
         Return a list of instances which match either qualifier list.
 
-        identifiers:
-          A list of identifiers to qualify instances by, for example:
+        :param identifiers:
+          Optional, a list of identifiers to qualify instances by, for example:
             * custid-ui01
             * ui01
             * 192.168.1.9
             * i-01234567
 
-        roles:
-          A list of roles to qualify instances by, for example:
+        :param roles:
+          Optional, a list of roles to qualify instances by, for example:
             * ui
             * api
             * proxy
 
-        exclude:
+        :param exclude:
           If True, qualifiers exclude instead of include!
           Defaults to False.
 
         Danger:
           This method will return *no* instances if all qualifiers are None.
           However, if *exclude* is True we could return *all* instances!
+
+        :returns: A list of EnrichedInstance objets or an empty list.
         """
         instances = []
         for i in self.get_instances():
@@ -201,7 +230,7 @@ class EnrichedVPC(object):
 
     def _filter_collection_by_name(self, name, collection):
         names = [name, '{}-{}'.format(self.name, name)]
-        objs = list(collection.filter(Filters=name_tag_filter(names)))
+        objs = list(collection.filter(Filters=tag_filter('Name', names)))
         return objs[0] if len(objs) == 1 else None
 
     def get_route_table(self, name):

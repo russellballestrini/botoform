@@ -40,9 +40,9 @@ class TestEnrichedVPC(BotoformTestCase):
         self.assertIn('web', role_web[1].hostname)
         self.assertEqual(role_proxy[0].hostname, 'webapp01-proxy01')
 
-    def test_get_role_missing_is_key_error(self):
-        with self.assertRaises(KeyError):
-            self.evpc1.get_role('taco')
+    def test_get_role_missing_is_empty_list(self):
+        taco_role = self.evpc1.get_role('taco')
+        self.assertEqual(len(taco_role), 0)
 
     def test_include_instances_identifiers(self):
         web01 = self.evpc1.include_instances(identifiers=['web01'])

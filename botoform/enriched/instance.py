@@ -77,4 +77,15 @@ class EnrichedInstance(object):
                        self.private_ip_address, self.public_ip_address)
         return tuple([x for x in _identifiers if x is not None])
 
+    def disable_api_termination(self, boolean):
+        self.modify_attribute(DisableApiTermination={'Value':boolean})
+
+    def lock(self):
+        """Lock this instance to prevent termination."""
+        self.disable_api_termination(True)
+
+    def unlock(self):
+        """Unlock this instance to allow termination."""
+        self.disable_api_termination(False)
+
 

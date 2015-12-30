@@ -258,9 +258,22 @@ class EnrichedVPC(object):
                         SubnetId     = self.get_subnet(sn_name).id,
         )
 
-    def delete_instances(self):
-        for instance in self.instances:
+    def lock_instances(self, instances=None):
+        for instance in self.get_instances(instances):
+            instance.lock()
+
+    def unlock_instances(self, instances=None):
+        for instance in self.get_instances(instances):
+            instance.unlock()
+
+    def delete_instances(self, instances=None):
+        instances = self.get_instances(instances)
+        for instance in instances:
             instance.terminate()
+        for instance in instances:
+            # TODO: don't use print statements! use log facility...
+            #print('waiting for {} to terminate...'.format(instance.identity))
+            instance.wait_until_terminated()
 
     def delete_key(self):
         self.key_pair.delete()

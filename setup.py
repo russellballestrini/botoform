@@ -30,6 +30,8 @@ setup(
         'create = botoform.plugins.create:Create',
         'destroy = botoform.plugins.destroy:destroy',
         'dump = botoform.plugins.dump:Dump',
+        'lock = botoform.plugins.lock:lock',
+        'unlock = botoform.plugins.unlock:unlock',
         'repl = botoform.plugins.repl:REPL',
         'cli = botoform.plugins.repl:REPL',
         'shell = botoform.plugins.repl:REPL',

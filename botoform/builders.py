@@ -62,10 +62,15 @@ class EnvironmentBuilder(object):
         self.instance_roles(config.get('instance_roles', no_cfg))
         self.security_group_rules(config.get('security_groups', no_cfg))
 
+        for instance in self.evpc.instances:
+            self.log.emit('waiting for {} to start'.format(instance.identity))
+            instance.wait_until_running()
+
         try:
+            self.log.emit('locking instances to prevent termination')
             self.evpc.lock_instances()
         except:
-            self.log.emit('Could not lock instances, continuing...', 'warning')
+            self.log.emit('could not lock instances, continuing...', 'warning')
 
     def build_vpc(self, cidrblock):
         """Build VPC"""
@@ -254,14 +259,19 @@ class EnvironmentBuilder(object):
         needed_per_subnet = needed_count / len(subnets)
         needed_remainder  = needed_count % len(subnets)
 
+        tag_msg = 'tagging instance {} (Name:{}, role:{})'
         for subnet in subnets:
             count = needed_per_subnet - collection_len(subnet.instances)
             if needed_remainder != 0:
                 needed_remainder -= 1
                 count += 1
 
+            subnet_name = make_tag_dict(subnet)['Name']
+            msg = '{} instances of role {} launching into {}'
+            self.log.emit(msg.format(count, role_name, subnet_name))
+
             # create a batch of instances in subnet!
-            subnet.create_instances(
+            instances = subnet.create_instances(
                        ImageId           = ami,
                        InstanceType      = role_data.get('instance_type'),
                        MinCount          = count,
@@ -269,5 +279,11 @@ class EnvironmentBuilder(object):
                        KeyName           = self.evpc.key_name,
                        SecurityGroupIds = get_ids(security_groups)
             )
+
+            for instance in instances:
+                instance_id = instance.id.lstrip('i-')
+                hostname = self.evpc.name + '-' + role_name + '-' + instance_id
+                self.log.emit(tag_msg.format(instance.id, hostname, role_name))
+                update_tags(instance, Name = hostname, role = role_name)
 
 

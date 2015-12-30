@@ -220,6 +220,9 @@ class EnrichedVPC(object):
     @property
     def key_name(self): return self.tag_dict.get('key_pair', 'taco')
 
+    @property
+    def key_pair(self): return self.boto.ec2.KeyPair(self.key_name)
+
     def get_main_route_table(self):
         """Return the main (default) route table for VPC."""
         main_route_table = []
@@ -255,6 +258,13 @@ class EnrichedVPC(object):
                         SubnetId     = self.get_subnet(sn_name).id,
         )
 
+    def delete_instances(self):
+        for instance in self.instances:
+            instance.terminate()
+
+    def delete_key(self):
+        self.key_pair.delete()
+
     def delete_internet_gateways(self):
         """Delete related internet gatways."""
         for igw in self.internet_gateways.all():
@@ -288,6 +298,8 @@ class EnrichedVPC(object):
 
     def terminate(self):
         """Terminate all resources related to this VPC!"""
+        self.delete_instances()
+        self.delete_key()
         self.vpc_endpoint.delete_related()
         self.delete_security_groups()
         self.delete_subnets()

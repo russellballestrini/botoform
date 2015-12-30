@@ -1,7 +1,9 @@
 Botoform
 ########
 
-**Manage infrastructure running on AWS using YAML templates.**
+**Manage infrastructure on AWS using YAML.**
+
+.. contents:: 
 
 Botoform_ provides tools to manage the lifecycle of related AWS resources.
 We use a simple YAML schema to document resources as infrastructure.
@@ -12,22 +14,26 @@ Botoform_ allows reproduction of any environment, no matter how complex.
 
 Botoform_ abstracts and enriches the Boto3_ and Botocore_ projects.
 
-Quickstart
-=============
-
-Quickstart_ 
-
 Documentation
 =============
 
-We use Sphinx_ and https://botoform.readthedocs.org/
+We use Sphinx_ and host the full documentation at botoform.readthedocs.org_. 
 
-YAML Schema
-=============
+Quickstart
+------------------
 
-I didn't write the docs for the YAML schema yet, but here is an example:
+The Quickstart_ guide will teach you how to setup your aws credential config file
+and create and destroy a real test VPC using botoform.
+
+Schema Reference
+------------------
+
+The full YAML Schema_ Reference documentation is in progress.
+
+For now please look here for examples:
 
 https://github.com/russellballestrini/botoform/blob/master/tests/fixtures/webapp.yaml
+
 
 Misc
 ====
@@ -41,3 +47,5 @@ What about CloudFormation?
 .. _Boto3: http://boto3.com
 .. _Sphinx: https://github.com/russellballestrini/botoform/tree/master/docs
 .. _Quickstart: https://botoform.readthedocs.org/en/latest/guides/quickstart.html
+.. _Schema: https://botoform.readthedocs.org/en/latest/schema/index.html
+.. _botoform.readthedocs.org: https://botoform.readthedocs.org/

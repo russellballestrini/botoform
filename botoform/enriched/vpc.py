@@ -217,6 +217,9 @@ class EnrichedVPC(object):
     @property
     def roles(self): return self.get_roles()
 
+    @property
+    def key_name(self): return self.tag_dict.get('key_pair', 'taco')
+
     def get_main_route_table(self):
         """Return the main (default) route table for VPC."""
         main_route_table = []

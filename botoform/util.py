@@ -175,6 +175,9 @@ def get_ids(objects):
     """
     return [o.id for o in objects if o is not None]
 
+def collection_len(collection):
+    return len(list(collection.all()))
+
 def make_filter(key, values):
     """
     Return a filter document expected by Boto3.

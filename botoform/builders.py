@@ -6,6 +6,8 @@ from botoform.util import (
   update_tags,
   make_tag_dict,
   get_port_range,
+  get_ids,
+  collection_len,
 )
 
 from botoform.subnetallocator import allocate
@@ -42,6 +44,9 @@ class EnvironmentBuilder(object):
 
     def _apply_all(self, config):
 
+        # Make sure amis is setup early. (TODO: raise exception if missing)
+        self.amis = config['amis']
+
         # set a var for no_cfg.
         no_cfg = {}
 
@@ -54,6 +59,7 @@ class EnvironmentBuilder(object):
         self.associate_route_tables_with_subnets(config.get('subnets', no_cfg))
         self.endpoints(config.get('endpoints', []))
         self.security_groups(config.get('security_groups', no_cfg))
+        self.instance_roles(config.get('instance_roles', no_cfg))
         self.security_group_rules(config.get('security_groups', no_cfg))
 
         try:
@@ -198,6 +204,70 @@ class EnvironmentBuilder(object):
 
             sg.authorize_ingress(
                 IpPermissions = permissions
+            )
+
+    def instance_roles(self, instance_role_cfg):
+        for role_name, role_data in instance_role_cfg.items():
+            desired_count = role_data.get('count', 0)
+            self.instance_role(role_name, role_data, desired_count)
+
+    def instance_role(self, role_name, role_data, desired_count):
+        ami = self.amis[role_data['ami']][self.evpc.region_name]
+
+        security_groups = map(
+            self.evpc.get_security_group,
+            role_data.get('security_groups', [])
+        )
+
+        subnets = map(
+            self.evpc.get_subnet,
+            role_data.get('subnets', [])
+        )
+
+        if len(subnets) == 0:
+            self.log.emit(
+                'no subnets found for role: {}'.format(role_name), 'warning'
+            )
+            # exit early.
+            return None
+
+        # sort by subnets by amount of instances, smallest first.
+        subnets = sorted(
+                      subnets,
+                      key = lambda sn : collection_len(sn.instances),
+                  )
+
+        # determine the count of this role's existing instances.
+        existing_count = sum(
+                             map(
+                                 lambda sn : collection_len(sn.instances),
+                                 subnets,
+                             )
+                         )
+
+        if existing_count >= desired_count:
+            # for now we exit early, maybe terminate extras...
+            return None
+
+        # determine count of additional instances needed to reach desired_count.
+        needed_count      = desired_count - existing_count
+        needed_per_subnet = needed_count / len(subnets)
+        needed_remainder  = needed_count % len(subnets)
+
+        for subnet in subnets:
+            count = needed_per_subnet - collection_len(subnet.instances)
+            if needed_remainder != 0:
+                needed_remainder -= 1
+                count += 1
+
+            # create a batch of instances in subnet!
+            subnet.create_instances(
+                       ImageId           = ami,
+                       InstanceType      = role_data.get('instance_type'),
+                       MinCount          = count,
+                       MaxCount          = count,
+                       KeyName           = self.evpc.key_name,
+                       SecurityGroupIds = get_ids(security_groups)
             )
 
 

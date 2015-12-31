@@ -327,6 +327,18 @@ def get_port_range(raw_range, ip_protocol='tcp'):
         port_range = [raw_range, raw_range]
     return tuple(map(int, port_range))
 
+def write_private_key(key_pair):
+    """
+    Write private key to filesystem.
+
+    :param key_pair: The Boto3 KeyPair object to write to filesystem.
+
+    :returns None:
+    """
+    print key_pair
+    with open(key_pair['KeyName'] + '.pem', 'w') as f:
+        f.write(key_pair['KeyMaterial'])
+
 def snake_to_camel_case(name, answers=None):
     """
     Accept a snake_case string and return a CamelCase string.

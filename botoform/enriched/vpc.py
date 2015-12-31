@@ -7,6 +7,7 @@ from botoform.util import (
   make_filter,
   tag_filter,
   update_tags,
+  write_private_key,
 )
 
 from instance import EnrichedInstance
@@ -258,6 +259,9 @@ class EnrichedVPC(object):
                         )
 
         key_pair = self.boto.ec2_client.create_key_pair(KeyName=key_pair_name)
+        write_private_key(key_pair)
+
+        # update VPC aws key_pairs tag with new key_pair name.
         key_pairs = self.key_pairs
         key_pairs[key_pair_name] = key_pair
         update_tags(self, key_pairs=','.join(key_pairs.keys()))

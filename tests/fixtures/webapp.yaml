@@ -53,12 +53,19 @@ subnets:
 endpoints:
   - private
 
+# This is an example of how to create additional VPC ssh key pairs.
+# This is optional, we always create a default key pair.
+key_pairs:
+  - db
+
 # security groups and rules.
 security_groups:
   web-elb:
-    - ["0.0.0.0/0", "tcp", 80]
+    - ["0.0.0.0/0", "tcp",   80]
   web:
-    - ["web-elb",   "tcp", 80]
+    - ["web-elb",   "tcp",   80]
+  db:
+    - ["web",       "tcp", 5432]
 
 # define a public ELB for webapp nodes.
 load_balancers:
@@ -75,11 +82,11 @@ load_balancers:
 # define instance roles to create.
 instance_roles:
 
-  # define how the web node role should look.
+  # define how an instance in the web role should look.
   web:
     description: web nodes run Nginx/uWSGI/Pyramid on port 80
     instance_type: t2.small
-    ami: ubuntu-14.04-lts-hvm
+    ami: 'ubuntu-14.04-lts-hvm'
     count: 2
     security_groups: ["web"]
     subnets: ["private-1", "private-2"]
@@ -90,3 +97,17 @@ instance_roles:
       count: 2
       size: 60
       start_device: /dev/sdf
+
+  # define how an instance in the db role should look.
+  db:
+    description: db nodes run PostgreSQL on port 5432
+    instance_type: t2.small
+    ami: 'ubuntu-14.04-lts-hvm'
+    count: 1
+    security_groups: ["db"]
+    subnets: ["private-1", "private-2"]
+    key_pair: db
+    root_volume:
+      size: 30
+      ssd: true
+

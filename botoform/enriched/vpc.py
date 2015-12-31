@@ -1,9 +1,12 @@
+from time import strftime
+
 from botoform.util import (
   BotoConnections,
   reflect_attrs,
   make_tag_dict,
   make_filter,
   tag_filter,
+  update_tags,
 )
 
 from instance import EnrichedInstance
@@ -57,7 +60,7 @@ class EnrichedVPC(object):
 
     @property
     def tag_dict(self):
-        return make_tag_dict(self)
+        return make_tag_dict(self.vpc)
 
     @property
     def name(self): return self.tag_dict.get('Name', None)
@@ -218,10 +221,53 @@ class EnrichedVPC(object):
     def roles(self): return self.get_roles()
 
     @property
-    def key_name(self): return self.tag_dict.get('key_pair', 'taco')
+    def key_names(self):
+        """Return a list of ssh key pair names from AWS VPC tag."""
+        key_name_csv = self.tag_dict.get('key_pairs', None)
+        key_names = []
+        if key_name_csv is not None:
+            key_names = key_name_csv.split(',')
+        return key_names
 
     @property
-    def key_pair(self): return self.boto.ec2.KeyPair(self.key_name)
+    def key_pairs(self):
+        """Return a dictionary of ssh KeyPair objects."""
+        key_pairs = {}
+        for key_name in self.key_names:
+            key_pairs[key_name] = self.boto.ec2.KeyPair(key_name)
+        return key_pairs
+
+    def get_key_pair(self, short_key_pair_name):
+        """Return a KeyPair object by key_name."""
+        name = '{}-{}'.format(self.name, short_key_pair_name)
+        for key_pair_name, key_pair in self.key_pairs.items():
+            if key_pair.name.startswith(name):
+                return key_pair
+
+    def create_key_pair(self, short_key_pair_name):
+        key_pair = self.get_key_pair(short_key_pair_name)
+        if key_pair is not None:
+            # exit early, key_pair already exists.
+            return None
+
+        date_time = strftime("%Y%m%d-%H%M")
+        key_pair_name = '{}-{}-{}'.format(
+                            self.name,
+                            short_key_pair_name,
+                            date_time,
+                        )
+
+        key_pair = self.boto.ec2_client.create_key_pair(KeyName=key_pair_name)
+        key_pairs = self.key_pairs
+        key_pairs[key_pair_name] = key_pair
+        update_tags(self, key_pairs=','.join(key_pairs.keys()))
+
+    #def delete_key_pair(self, short_key_pair_name):
+    #    key_pair = self.get_key_pair(short_key_pair_name)
+    #    if key_pair is None:
+    #        # exit early, key_pair does not exists.
+    #        return None
+
 
     def get_main_route_table(self):
         """Return the main (default) route table for VPC."""
@@ -259,14 +305,17 @@ class EnrichedVPC(object):
         )
 
     def lock_instances(self, instances=None):
+        """Lock all or a list of instances."""
         for instance in self.get_instances(instances):
             instance.lock()
 
     def unlock_instances(self, instances=None):
+        """Unlock all or a list of instances."""
         for instance in self.get_instances(instances):
             instance.unlock()
 
     def delete_instances(self, instances=None):
+        """Terminate all or a list of instances. Wait until terminated."""
         instances = self.get_instances(instances)
         for instance in instances:
             instance.terminate()
@@ -275,8 +324,10 @@ class EnrichedVPC(object):
             #print('waiting for {} to terminate...'.format(instance.identity))
             instance.wait_until_terminated()
 
-    def delete_key(self):
-        self.key_pair.delete()
+    def delete_key_pairs(self):
+        """Delete ssh key pairs for VPC."""
+        for key_pair in self.key_pairs.values():
+            key_pair.delete()
 
     def delete_internet_gateways(self):
         """Delete related internet gatways."""
@@ -312,7 +363,7 @@ class EnrichedVPC(object):
     def terminate(self):
         """Terminate all resources related to this VPC!"""
         self.delete_instances()
-        self.delete_key()
+        self.delete_key_pairs()
         self.vpc_endpoint.delete_related()
         self.delete_security_groups()
         self.delete_subnets()

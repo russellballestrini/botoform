@@ -27,20 +27,20 @@ class TestConfigLoader(TestCase):
     def test_load_template_file_without_context(self):
         loader = ConfigLoader()
         config = loader.load(template_path = self.template_path)
-        self.assertEqual(len(config), 8)
-        self.assertEqual(len(config['instance_roles']), 1)
+        self.assertEqual(len(config), 9)
+        self.assertEqual(len(config['instance_roles']), 2)
         self.assertEqual(len(config['amis']), 4)
-        self.assertEqual(len(config['security_groups']), 2)
+        self.assertEqual(len(config['security_groups']), 3)
         self.assertEqual(len(config['security_groups']['web']), 1)
 
     def test_load_template_string_without_context(self):
         loader = ConfigLoader()
         loader.template_dir = 'tests/fixtures'
         config = loader.load(template_string = self.template_string)
-        self.assertEqual(len(config), 8)
-        self.assertEqual(len(config['instance_roles']), 1)
+        self.assertEqual(len(config), 9)
+        self.assertEqual(len(config['instance_roles']), 2)
         self.assertEqual(len(config['amis']), 4)
-        self.assertEqual(len(config['security_groups']), 2)
+        self.assertEqual(len(config['security_groups']), 3)
         self.assertEqual(len(config['security_groups']['web']), 1)
 
 

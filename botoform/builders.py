@@ -1,3 +1,5 @@
+import traceback
+
 from botoform.enriched import EnrichedVPC
 
 from botoform.util import (
@@ -11,8 +13,6 @@ from botoform.util import (
 )
 
 from botoform.subnetallocator import allocate
-
-import traceback
 
 class EnvironmentBuilder(object):
 
@@ -58,6 +58,7 @@ class EnvironmentBuilder(object):
         self.subnets(config.get('subnets', no_cfg))
         self.associate_route_tables_with_subnets(config.get('subnets', no_cfg))
         self.endpoints(config.get('endpoints', []))
+        self.key_pairs(config.get('key_pairs', []))
         self.security_groups(config.get('security_groups', no_cfg))
         self.instance_roles(config.get('instance_roles', no_cfg))
         self.security_group_rules(config.get('security_groups', no_cfg))
@@ -211,13 +212,23 @@ class EnvironmentBuilder(object):
                 IpPermissions = permissions
             )
 
+    def key_pairs(self, key_pair_cfg):
+        key_pair_cfg.append('default')
+        for short_key_name in key_pair_cfg:
+            if self.evpc.get_key_pair(short_key_name) is None:
+                self.log.emit('creating key pair {}'.format(short_key_name))
+                self.evpc.create_key_pair(short_key_name)
+
     def instance_roles(self, instance_role_cfg):
         for role_name, role_data in instance_role_cfg.items():
             desired_count = role_data.get('count', 0)
             self.instance_role(role_name, role_data, desired_count)
 
     def instance_role(self, role_name, role_data, desired_count):
+        self.log.emit('creating role: {}'.format(role_name))
         ami = self.amis[role_data['ami']][self.evpc.region_name]
+
+        key_pair = self.evpc.get_key_pair(role_data.get('key_pair', 'default'))
 
         security_groups = map(
             self.evpc.get_security_group,
@@ -243,15 +254,12 @@ class EnvironmentBuilder(object):
                   )
 
         # determine the count of this role's existing instances.
-        existing_count = sum(
-                             map(
-                                 lambda sn : collection_len(sn.instances),
-                                 subnets,
-                             )
-                         )
+        # Note: we look for role in all subnets, not just the listed subnets.
+        existing_count = len(self.evpc.get_role(role_name))
 
         if existing_count >= desired_count:
             # for now we exit early, maybe terminate extras...
+            self.log.emit(existing_count + ' ' + desired_count, 'debug')
             return None
 
         # determine count of additional instances needed to reach desired_count.
@@ -261,10 +269,17 @@ class EnvironmentBuilder(object):
 
         tag_msg = 'tagging instance {} (Name:{}, role:{})'
         for subnet in subnets:
-            count = needed_per_subnet - collection_len(subnet.instances)
+
+            # figure out how many instances this subnet needs to create ...
+            existing_in_subnet = len(self.evpc.get_role(role_name, subnet.instances.all()))
+            count = needed_per_subnet - existing_in_subnet
             if needed_remainder != 0:
                 needed_remainder -= 1
                 count += 1
+
+            if count == 0:
+                # skip this subnet, it doesn't need to launch any instances.
+                continue
 
             subnet_name = make_tag_dict(subnet)['Name']
             msg = '{} instances of role {} launching into {}'
@@ -276,7 +291,7 @@ class EnvironmentBuilder(object):
                        InstanceType      = role_data.get('instance_type'),
                        MinCount          = count,
                        MaxCount          = count,
-                       KeyName           = self.evpc.key_name,
+                       KeyName           = key_pair.name,
                        SecurityGroupIds = get_ids(security_groups)
             )
 

@@ -31,7 +31,7 @@ class TestConfigLoader(TestCase):
         self.assertEqual(len(config['instance_roles']), 3)
         self.assertEqual(len(config['amis']), 4)
         self.assertEqual(len(config['security_groups']), 4)
-        self.assertEqual(len(config['security_groups']['web']), 1)
+        self.assertEqual(len(config['security_groups']['web']), 2)
 
     def test_load_template_string_without_context(self):
         loader = ConfigLoader()
@@ -41,6 +41,6 @@ class TestConfigLoader(TestCase):
         self.assertEqual(len(config['instance_roles']), 3)
         self.assertEqual(len(config['amis']), 4)
         self.assertEqual(len(config['security_groups']), 4)
-        self.assertEqual(len(config['security_groups']['web']), 1)
+        self.assertEqual(len(config['security_groups']['web']), 2)
 
 

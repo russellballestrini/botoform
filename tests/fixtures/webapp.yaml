@@ -18,7 +18,7 @@ route_tables:
   # public network with a default route to the Internet.
   public:
     routes:
-      - ["0.0.0.0/0", "internet_gateway"]
+      - ['0.0.0.0/0', 'internet_gateway']
 
 # This is an example of a 4 subnet schema.
 # Each subnet has a size of 27 which is a /27 CIDR (32 addresses).
@@ -61,13 +61,15 @@ key_pairs:
 # security groups and rules.
 security_groups:
   web-elb:
-    - ["0.0.0.0/0", "tcp",   80]
+    - ['0.0.0.0/0', 'tcp',   80]
   web:
-    - ["web-elb",   "tcp",   80]
+    - ['web-elb',   'tcp',   80]
+    - ['door',      'tcp',   22]
   db:
-    - ["web",       "tcp", 5432]
+    - ['web',       'tcp', 5432]
+    - ['door',      'tcp',   22]
   door:
-    - ["0.0.0.0/0", "tcp",   22]
+    - ['0.0.0.0/0', 'tcp',   22]
 
 # define a public ELB for webapp nodes.
 load_balancers:
@@ -76,10 +78,10 @@ load_balancers:
   web-elb:
     register_instances: web
     internal: false
-    security_groups: ["web-elb"]
-    subnets: ["public-1", "public-2"]
+    security_groups: ['web-elb']
+    subnets: ['public-1', 'public-2']
     listeners:
-      - [80, 80, "tcp"]
+      - [80, 80, 'tcp']
 
 # define instance roles to create.
 instance_roles:
@@ -90,8 +92,8 @@ instance_roles:
     instance_type: t2.small
     ami: 'ubuntu-14.04-lts-hvm'
     count: 2
-    security_groups: ["web"]
-    subnets: ["private-1", "private-2"]
+    security_groups: ['web']
+    subnets: ['private-1', 'private-2']
     root_volume:
       size: 30
       ssd: true
@@ -106,8 +108,8 @@ instance_roles:
     instance_type: t2.small
     ami: 'ubuntu-14.04-lts-hvm'
     count: 1
-    security_groups: ["db"]
-    subnets: ["private-1", "private-2"]
+    security_groups: ['db']
+    subnets: ['private-1', 'private-2']
     root_volume:
       size: 30
       ssd: true
@@ -118,8 +120,8 @@ instance_roles:
     instance_type: t2.small
     ami: 'ubuntu-14.04-lts-hvm'
     count: 1
-    security_groups: ["door"]
-    subnets: ["public-1", "public-2"]
+    security_groups: ['door']
+    subnets: ['public-1', 'public-2']
     key_pair: door
     eip: True
     root_volume:

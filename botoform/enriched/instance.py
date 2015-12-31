@@ -104,4 +104,23 @@ class EnrichedInstance(object):
             )
         return addresses
 
+    def allocate_eip(self):
+        """
+        Allocate a new EIP and associate with this instance.
+
+        :returns: New VpcAddress EIP object
+        """
+        self.wait_until_running()
+        allocation = self.evpc.boto.ec2_client.allocate_address()
+        eip = self.evpc.boto.ec2.VpcAddress(
+                                     allocation_id = allocation['AllocationId']
+                                 )
+        eip.associate(InstanceId = self.id)
+        return eip
+
+    def disassociate_eips(self, release=True):
+        for eip in self.eips:
+            eip.association.delete()
+            if release is True:
+                eip.release()
 

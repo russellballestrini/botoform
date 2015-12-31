@@ -322,6 +322,7 @@ class EnrichedVPC(object):
         """Terminate all or a list of instances. Wait until terminated."""
         instances = self.get_instances(instances)
         for instance in instances:
+            instance.disassociate_eips()
             instance.terminate()
         for instance in instances:
             # TODO: don't use print statements! use log facility...

@@ -12,8 +12,6 @@ route_tables:
   # private network without a default route to the Internet.
   private:
     main: true
-    routes:
-      - []
 
   # public network with a default route to the Internet.
   public:
@@ -24,29 +22,32 @@ route_tables:
 # Each subnet has a size of 27 which is a /27 CIDR (32 addresses).
 # Two are attached to the private route_table, and two to the public.
 # We round robin AZ letters if availability_zone is not defined.
+# Instances will launch into subnet with public IPs, if public is True.
 subnets:
 
   private-1: 
     size: 27
     route_table: private
     description: private subnet 1
+    # availability_zone: a
 
   private-2: 
     size: 27
     route_table: private
     description: private subnet 2
+    # availability_zone: b
 
   public-1: 
     size: 27
     route_table: public
     description: public subnet 1
-    # availability_zone: a
+    #public: True
 
   public-2: 
     size: 27
     route_table: public
     description: public subnet 2
-    # availability_zone: b
+    #public: True
 
 # This is an example of how to create VPC Endpoints.
 # This allows instances in the private subnets to reach S3 for example.

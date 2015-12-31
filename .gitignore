@@ -1,22 +1,25 @@
-.DS_Store
-*.pyc
-__pycache__
+# Build artifacts.
 dist
 build
 docs/build
-tests/cover
-tests/.coverage
 *.egg-info
 
-# Test state / virtualenvs
+# Test state files.
+*.pyc
 .tox
 .coverage
 .cache
 coverage.xml
 nosetests.xml
+cover
+.coverage
+__pycache__
 
-# Common virtualenv names
+# Common virtualenv names.
 venv
 env
 env2
 env3
+
+# Files running bf command could create.
+*.pem

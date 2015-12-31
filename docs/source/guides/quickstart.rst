@@ -61,6 +61,18 @@ Create VPC
  bf --profile=development --region=ap-southeast-1 create dogtest01 192.168.1.0/24 tests/fixtures/webapp.yaml
     
 
+Unlock VPC
+-------------
+
+.. Note:: This command will unlock instances to allow them to be terminated.
+
+Disable API Termination Protection on all instances in VPC.
+
+.. code-block:: bash
+
+ bf --profile=development --region=ap-southeast-1 unlock dogtest01
+
+
 Destroy VPC
 -------------
 

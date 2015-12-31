@@ -335,9 +335,11 @@ def write_private_key(key_pair):
 
     :returns None:
     """
-    print key_pair
-    with open(key_pair['KeyName'] + '.pem', 'w') as f:
+    from os import chmod
+    private_key_path = key_pair['KeyName'] + '.pem'
+    with open(private_key_path, 'w') as f:
         f.write(key_pair['KeyMaterial'])
+        chmod(private_key_path, 0400)
 
 def snake_to_camel_case(name, answers=None):
     """

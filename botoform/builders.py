@@ -101,8 +101,8 @@ class EnvironmentBuilder(object):
 
     def route_tables(self, route_cfg):
         """Build route_tables defined in config"""
-        for name, data in route_cfg.items():
-            longname = '{}-{}'.format(self.evpc.name, name)
+        for rt_name, data in route_cfg.items():
+            longname = '{}-{}'.format(self.evpc.name, rt_name)
             route_table = self.evpc.get_route_table(longname)
             if route_table is None:
                 self.log.emit('creating route_table ({})'.format(longname))
@@ -112,6 +112,19 @@ class EnvironmentBuilder(object):
                     route_table = self.evpc.create_route_table()
                 self.log.emit('tagging route_table (Name:{})'.format(longname), 'debug')
                 update_tags(route_table, Name = longname)
+
+            # TODO: move to separate method ...
+            # gatewayId, natGatewayId, networkInterfaceId, vpcPeeringConnectionId or instanceId
+            # add routes to route_table defined in configuration.
+            for route in data.get('routes', []):
+                destination, target = route
+                self.log.emit('adding route {} to route_table ({})'.format(route, longname))
+                if target.lower() == 'internet_gateway':
+                    # this is ugly but we assume only one internet gateway.
+                    route_table.create_route(
+                        DestinationCidrBlock = destination,
+                        GatewayId = list(self.evpc.internet_gateways.all())[0].id,
+                    )
 
     def subnets(self, subnet_cfg):
         """Build subnets defined in config."""
@@ -145,6 +158,9 @@ class EnvironmentBuilder(object):
                 Name = longname,
                 description = sn.get('description', ''),
             )
+            # Modifying the subnet's public IP addressing behavior.
+            if sn.get('public', False) == True:
+                subnet.map_public_ip_on_launch = True
 
     def associate_route_tables_with_subnets(self, subnet_cfg):
         for sn_name, sn_data in subnet_cfg.items():
@@ -228,6 +244,8 @@ class EnvironmentBuilder(object):
         self.log.emit('creating role: {}'.format(role_name))
         ami = self.amis[role_data['ami']][self.evpc.region_name]
 
+        create_eip = role_data.get('eip', False)
+
         key_pair = self.evpc.get_key_pair(role_data.get('key_pair', 'default'))
 
         security_groups = map(
@@ -295,10 +313,12 @@ class EnvironmentBuilder(object):
                        SecurityGroupIds = get_ids(security_groups)
             )
 
-            for instance in instances:
+            for instance in self.evpc.get_instances(instances):
                 instance_id = instance.id.lstrip('i-')
                 hostname = self.evpc.name + '-' + role_name + '-' + instance_id
                 self.log.emit(tag_msg.format(instance.id, hostname, role_name))
                 update_tags(instance, Name = hostname, role = role_name)
+                if create_eip is True:
+                    instance.allocate_eip()
 
 

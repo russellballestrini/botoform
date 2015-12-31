@@ -30,7 +30,7 @@ class TestEnrichedInstance(BotoformTestCase):
         self.assertEqual('webapp01-web01', self.instance1.identity)
         self.assertEqual('webapp01-web01', self.instance1.__str__())
         # remove Name tag to cause hostname to be None.
-        self.instance1.tags = []
+        self.instance1.instance.tags = []
         self.assertEqual('i-mock1111', self.instance1.identity)
         self.assertEqual('i-mock1111', self.instance1.__str__())
 

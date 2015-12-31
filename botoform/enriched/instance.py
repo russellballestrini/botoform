@@ -10,10 +10,10 @@ class EnrichedInstance(object):
     This class uses composition to enrich Boto3's ec2.Instance resource class.
     """
 
-    def __init__(self, instance, vpc=None):
+    def __init__(self, instance, evpc=None):
         """Composted ec2.Instance(boto3.resources.base.ServiceResource) class"""
-        if vpc is not None:
-            self.vpc = vpc
+        if evpc is not None:
+            self.evpc = evpc
         self.instance = instance
         # reflect all attributes of ec2.Instance into self.
         reflect_attrs(self, self.instance)
@@ -34,7 +34,7 @@ class EnrichedInstance(object):
 
     @property
     def tag_dict(self):
-        return make_tag_dict(self)
+        return make_tag_dict(self.instance)
 
     @property
     def hostname(self):
@@ -87,5 +87,21 @@ class EnrichedInstance(object):
     def unlock(self):
         """Unlock this instance to allow termination."""
         self.disable_api_termination(False)
+
+    @property
+    def eips(self):
+        """Return a list of VpcAddress objects associated to this instance."""
+        instance_id_filter = [{'Name':'instance-id', 'Values':[self.id]}]
+        address_descriptions = self.evpc.boto.ec2_client.describe_addresses(
+                                   Filters = instance_id_filter
+                               )['Addresses']
+        addresses = []
+        for address_description in address_descriptions:
+            addresses.append(
+                self.evpc.boto.ec2.VpcAddress(
+                    address_description['AllocationId']
+                )
+            )
+        return addresses
 
 

@@ -56,7 +56,7 @@ endpoints:
 # This is an example of how to create additional VPC ssh key pairs.
 # This is optional, we always create a default key pair.
 key_pairs:
-  - db
+  - door
 
 # security groups and rules.
 security_groups:
@@ -66,6 +66,8 @@ security_groups:
     - ["web-elb",   "tcp",   80]
   db:
     - ["web",       "tcp", 5432]
+  door:
+    - ["0.0.0.0/0", "tcp",   22]
 
 # define a public ELB for webapp nodes.
 load_balancers:
@@ -106,7 +108,20 @@ instance_roles:
     count: 1
     security_groups: ["db"]
     subnets: ["private-1", "private-2"]
-    key_pair: db
+    root_volume:
+      size: 30
+      ssd: true
+
+  # define how an instance in the door role should look.
+  door:
+    description: door nodes run ssh on port 22
+    instance_type: t2.small
+    ami: 'ubuntu-14.04-lts-hvm'
+    count: 1
+    security_groups: ["door"]
+    subnets: ["public-1", "public-2"]
+    key_pair: door
+    eip: True
     root_volume:
       size: 30
       ssd: true

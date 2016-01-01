@@ -87,7 +87,7 @@ Example Output
 
 .. code-block:: bash
 
- bf --profile=development --region=ap-southeast-1 create dogtest01 192.168.1.1/24 tests/fixtures/webapp.yaml
+ bf --profile=development --region=ap-southeast-1 create dogtest01 192.168.1.0/24 tests/fixtures/webapp.yaml
  creating vpc (dogtest01, 192.168.1.1/24)
  tagging vpc (Name:dogtest01)
  modifying vpc for dns support

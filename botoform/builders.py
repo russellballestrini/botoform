@@ -233,10 +233,10 @@ class EnvironmentBuilder(object):
 
     def key_pairs(self, key_pair_cfg):
         key_pair_cfg.append('default')
-        for short_key_name in key_pair_cfg:
-            if self.evpc.get_key_pair(short_key_name) is None:
-                self.log.emit('creating key pair {}'.format(short_key_name))
-                self.evpc.create_key_pair(short_key_name)
+        for short_key_pair_name in key_pair_cfg:
+            if self.evpc.key_pair.get_key_pair(short_key_pair_name) is None:
+                self.log.emit('creating key pair {}'.format(short_key_pair_name))
+                self.evpc.key_pair.create_key_pair(short_key_pair_name)
 
     def instance_roles(self, instance_role_cfg):
         roles = {}
@@ -271,7 +271,9 @@ class EnvironmentBuilder(object):
         self.log.emit('creating role: {}'.format(role_name))
         ami = self.amis[role_data['ami']][self.evpc.region_name]
 
-        key_pair = self.evpc.get_key_pair(role_data.get('key_pair', 'default'))
+        key_pair = self.evpc.key_pair.get_key_pair(
+                       role_data.get('key_pair', 'default')
+                   )
 
         security_groups = map(
             self.evpc.get_security_group,

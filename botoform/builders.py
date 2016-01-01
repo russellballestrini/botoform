@@ -59,21 +59,18 @@ class EnvironmentBuilder(object):
         self.route_tables(config.get('route_tables', no_cfg))
         self.subnets(config.get('subnets', no_cfg))
         self.associate_route_tables_with_subnets(config.get('subnets', no_cfg))
-        self.endpoints(config.get('endpoints', []))
-        self.key_pairs(config.get('key_pairs', []))
         self.security_groups(config.get('security_groups', no_cfg))
-        self.instance_roles(config.get('instance_roles', no_cfg))
+        self.key_pairs(config.get('key_pairs', []))
+        new_instances = self.instance_roles(
+            config.get('instance_roles', no_cfg)
+        )
+        # lets do more work while new_instances move from pending to running.
+        self.endpoints(config.get('endpoints', []))
         self.security_group_rules(config.get('security_groups', no_cfg))
-
-        for instance in self.evpc.instances:
-            self.log.emit('waiting for {} to start'.format(instance.identity))
-            instance.wait_until_running()
-
-        try:
-            self.log.emit('locking instances to prevent termination')
-            self.evpc.lock_instances()
-        except:
-            self.log.emit('could not lock instances, continuing...', 'warning')
+        # lets finish building the new instances.
+        self.finish_instance_roles(
+            config.get('instance_roles', no_cfg), new_instances,
+        )
         self.log.emit('done! don\'t you look awesome. : )')
 
     def build_vpc(self, cidrblock):
@@ -239,33 +236,17 @@ class EnvironmentBuilder(object):
                 self.evpc.key_pair.create_key_pair(short_key_pair_name)
 
     def instance_roles(self, instance_role_cfg):
-        roles = {}
-        roles_with_eips = []
+        """Returns a list of new created EnrichedInstance objects."""
+        new_instances = []
         for role_name, role_data in instance_role_cfg.items():
             desired_count = role_data.get('count', 0)
-            if role_data.get('eip', False) == True:
-                roles_with_eips.append(role_name)
             role_instances = self.instance_role(
                                  role_name,
                                  role_data,
                                  desired_count,
                              )
-            roles[role_name] = role_instances
-
-        # tag instances and volumes.
-        for role_name, role_instances in roles.items():
-            self.tag_instances(role_name, role_instances)
-
-        # TODO: move to own method / function.
-        # deal with EIP roles.
-        for role_name in roles_with_eips:
-            role_instances = roles[role_name]
-            eip1_msg = 'allocating eip and associating with {}'
-            eip2_msg = 'allocated eip {} and associated with {}'
-            for instance in role_instances:
-                self.log.emit(eip1_msg.format(instance.identity))
-                eip = instance.allocate_eip()
-                self.log.emit(eip2_msg.format(eip.public_ip, instance.identity))
+            new_instances += role_instances
+        return new_instances
 
     def instance_role(self, role_name, role_data, desired_count):
         self.log.emit('creating role: {}'.format(role_name))
@@ -347,24 +328,48 @@ class EnvironmentBuilder(object):
             role_instances += instances
 
         # cast role Instance objets to EnrichedInstance objects.
-        return self.evpc.get_instances(role_instances)
+        role_instances = self.evpc.get_instances(role_instances)
+
+        self.tag_instances(role_name, role_instances)
+
+        return role_instances
 
     def tag_instances(self, role_name, instances):
-        """
-        Accept a list of EnrichedInstances, create name and role tags.
-
-        Also tag volumes.
-        """
-        msg1 = 'tagging instance {} (Name:{}, role:{})'
-        msg2 = 'tagging volumes for instance {} (Name:{})'
+        """Accept a list of EnrichedInstance, objects create tags."""
+        msg = 'tagging instance {} (Name:{}, role:{})'
         for instance in instances:
             instance_id = instance.id.lstrip('i-')
             hostname = self.evpc.name + '-' + role_name + '-' + instance_id
-            self.log.emit(msg1.format(instance.identity, hostname, role_name))
+            self.log.emit(msg.format(instance.identity, hostname, role_name))
             update_tags(instance, Name = hostname, role = role_name)
 
-            for volume in instance.volumes.all():
-                self.log.emit(msg2.format(instance.identity, hostname))
-                update_tags(volume, Name = hostname)
+    def tag_instance_volumes(self, instance):
+        """Accept an EnrichedInstance, tag all attached volumes."""
+        msg = 'tagging volumes for instance {} (Name:{})'
+        for volume in instance.volumes.all():
+            self.log.emit(msg.format(instance.identity, instance.identity))
+            update_tags(volume, Name = instance.identity)
 
+    def add_eip_to_instance(self, instance):
+        eip1_msg = 'allocating eip and associating with {}'
+        eip2_msg = 'allocated eip {} and associated with {}'
+        self.log.emit(eip1_msg.format(instance.identity))
+        eip = instance.allocate_eip()
+        self.log.emit(eip2_msg.format(eip.public_ip, instance.identity))
+
+    def finish_instance_roles(self, instance_role_cfg, instances):
+        for instance in instances:
+            self.log.emit('waiting for {} to start'.format(instance.identity))
+            instance.wait_until_running()
+            self.tag_instance_volumes(instance)
+
+            # allocate eips and associate for the needful instances.
+            if instance_role_cfg[instance.role].get('eip', False) == True:
+                self.add_eip_to_instance(instance)
+
+        try:
+            self.log.emit('locking new instances to prevent termination')
+            self.evpc.lock_instances(instances)
+        except:
+            self.log.emit('could not lock instances, continuing...', 'warning')
 

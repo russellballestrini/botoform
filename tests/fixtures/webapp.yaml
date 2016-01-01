@@ -50,7 +50,7 @@ subnets:
     #public: True
 
 # This is an example of how to create VPC Endpoints.
-# This allows instances in the private subnets to reach S3 for example.
+# This is optional, this allows private subnets to reach S3.
 endpoints:
   - private
 
@@ -59,7 +59,9 @@ endpoints:
 key_pairs:
   - door
 
-# security groups and rules.
+# security groups and rules. 
+# we reference these security_groups by name in:
+# role_instances, load_balancers, cache_clusters, db_instances, and more.
 security_groups:
   web-elb:
     - ['0.0.0.0/0', 'tcp',   80]

@@ -14,6 +14,8 @@ from botoform.util import (
 
 from botoform.subnetallocator import allocate
 
+from uuid import uuid4
+
 class EnvironmentBuilder(object):
 
     def __init__(self, vpc_name, config=None, region_name=None, profile_name=None, log=None):
@@ -72,6 +74,7 @@ class EnvironmentBuilder(object):
             self.evpc.lock_instances()
         except:
             self.log.emit('could not lock instances, continuing...', 'warning')
+        self.log.emit('done! don\'t you look awesome. : )')
 
     def build_vpc(self, cidrblock):
         """Build VPC"""
@@ -236,15 +239,37 @@ class EnvironmentBuilder(object):
                 self.evpc.create_key_pair(short_key_name)
 
     def instance_roles(self, instance_role_cfg):
+        roles = {}
+        roles_with_eips = []
         for role_name, role_data in instance_role_cfg.items():
             desired_count = role_data.get('count', 0)
-            self.instance_role(role_name, role_data, desired_count)
+            if role_data.get('eip', False) == True:
+                roles_with_eips.append(role_name)
+            role_instances = self.instance_role(
+                                 role_name,
+                                 role_data,
+                                 desired_count,
+                             )
+            roles[role_name] = role_instances
+
+        # tag instances and volumes.
+        for role_name, role_instances in roles.items():
+            self.tag_instances(role_name, role_instances)
+
+        # TODO: move to own method / function.
+        # deal with EIP roles.
+        for role_name in roles_with_eips:
+            role_instances = roles[role_name]
+            eip1_msg = 'allocating eip and associating with {}'
+            eip2_msg = 'allocated eip {} and associated with {}'
+            for instance in role_instances:
+                self.log.emit(eip1_msg.format(instance.identity))
+                eip = instance.allocate_eip()
+                self.log.emit(eip2_msg.format(eip.public_ip, instance.identity))
 
     def instance_role(self, role_name, role_data, desired_count):
         self.log.emit('creating role: {}'.format(role_name))
         ami = self.amis[role_data['ami']][self.evpc.region_name]
-
-        create_eip = role_data.get('eip', False)
 
         key_pair = self.evpc.get_key_pair(role_data.get('key_pair', 'default'))
 
@@ -285,8 +310,11 @@ class EnvironmentBuilder(object):
         needed_per_subnet = needed_count / len(subnets)
         needed_remainder  = needed_count % len(subnets)
 
-        tag_msg = 'tagging instance {} (Name:{}, role:{})'
+        role_instances = []
+
         for subnet in subnets:
+            # ensure Run_Instance_Idempotency.html#client-tokens
+            client_token = str(uuid4())
 
             # figure out how many instances this subnet needs to create ...
             existing_in_subnet = len(self.evpc.get_role(role_name, subnet.instances.all()))
@@ -310,15 +338,31 @@ class EnvironmentBuilder(object):
                        MinCount          = count,
                        MaxCount          = count,
                        KeyName           = key_pair.name,
-                       SecurityGroupIds = get_ids(security_groups)
+                       SecurityGroupIds  = get_ids(security_groups),
+                       ClientToken       = client_token,
             )
+            # accumulate all new instances into a single list.
+            role_instances += instances
 
-            for instance in self.evpc.get_instances(instances):
-                instance_id = instance.id.lstrip('i-')
-                hostname = self.evpc.name + '-' + role_name + '-' + instance_id
-                self.log.emit(tag_msg.format(instance.id, hostname, role_name))
-                update_tags(instance, Name = hostname, role = role_name)
-                if create_eip is True:
-                    instance.allocate_eip()
+        # cast role Instance objets to EnrichedInstance objects.
+        return self.evpc.get_instances(role_instances)
+
+    def tag_instances(self, role_name, instances):
+        """
+        Accept a list of EnrichedInstances, create name and role tags.
+
+        Also tag volumes.
+        """
+        msg1 = 'tagging instance {} (Name:{}, role:{})'
+        msg2 = 'tagging volumes for instance {} (Name:{})'
+        for instance in instances:
+            instance_id = instance.id.lstrip('i-')
+            hostname = self.evpc.name + '-' + role_name + '-' + instance_id
+            self.log.emit(msg1.format(instance.identity, hostname, role_name))
+            update_tags(instance, Name = hostname, role = role_name)
+
+            for volume in instance.volumes.all():
+                self.log.emit(msg2.format(instance.identity, hostname))
+                update_tags(volume, Name = hostname)
 
 

@@ -27,8 +27,15 @@ class EnrichedVPC(object):
 
     def __init__(self, vpc_name=None, region_name=None, profile_name=None):
         self.boto = BotoConnections(region_name, profile_name)
+
+        # capture a list of this classes attributes before reflecting.
+        self.self_attrs = dir(self)
+
         if vpc_name is not None:
             self.connect(vpc_name)
+
+    def __str__(self):
+        return self.identity
 
     def _get_vpcs_by_filter(self, vpc_filter):
         # external API call to AWS.
@@ -43,11 +50,20 @@ class EnrichedVPC(object):
             raise Exception('VPC not found with tag Name:{}'.format(vpc_name))
         return vpcs[0]
 
+    def reflect_attrs(self):
+        """reflect all attributes of boto3's vpc resource object into self."""
+        reflect_attrs(self, self.vpc, skip_attrs=self.self_attrs)
+
+    def reload(self):
+        """run the reload method on the attached instance and reflect_attrs."""
+        self.vpc.reload()
+        self.reflect_attrs()
+
     def connect(self, vpc_name):
         """connect to VPC and reflect all attributes into self."""
         self.vpc = self.get_vpc_by_name_tag(vpc_name)
-        # reflect all attributes of boto3's vpc resource object into self.
-        reflect_attrs(self, self.vpc)
+
+        self.reflect_attrs()
 
         # attach Enriched Connections to self.
         self.vpc_endpoint = EnrichedVpcEndpoint(self)
@@ -70,8 +86,6 @@ class EnrichedVPC(object):
 
     @property
     def identity(self): return self.name or self.id
-
-    def __str__(self): return self.identity
 
     def _ec2_instances(self):
         # external API call to AWS.

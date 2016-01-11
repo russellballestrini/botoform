@@ -14,9 +14,14 @@ class EnrichedInstance(object):
         """Composted ec2.Instance(boto3.resources.base.ServiceResource) class"""
         if evpc is not None:
             self.evpc = evpc
+
         self.instance = instance
+
+        # capture a list of this classes attributes before reflecting.
+        self.self_attrs = dir(self)
+
         # reflect all attributes of ec2.Instance into self.
-        reflect_attrs(self, self.instance)
+        self.reflect_attrs()
 
     def __eq__(self, other):
         """Determine if equal by instance id"""
@@ -31,6 +36,15 @@ class EnrichedInstance(object):
 
     def __str__(self):
         return self.identity
+
+    def reflect_attrs(self):
+        """reflect all attributes of ec2.Instance into self."""
+        reflect_attrs(self, self.instance, skip_attrs=self.self_attrs)
+
+    def reload(self):
+        """run the reload method on the attached instance and reflect_attrs."""
+        self.instance.reload()
+        self.reflect_attrs()
 
     @property
     def tag_dict(self):
@@ -116,6 +130,7 @@ class EnrichedInstance(object):
                                      allocation_id = allocation['AllocationId']
                                  )
         eip.associate(InstanceId = self.id)
+        self.reload()
         return eip
 
     def disassociate_eips(self, release=True):
@@ -123,4 +138,5 @@ class EnrichedInstance(object):
             eip.association.delete()
             if release is True:
                 eip.release()
+        self.reload()
 

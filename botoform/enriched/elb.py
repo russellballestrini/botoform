@@ -10,8 +10,12 @@ class EnrichedElb(object):
     def __init__(self, evpc):
         # save the EnrichedVpc object.
         self.evpc = evpc
+
+        # capture a list of this classes attributes before reflecting.
+        self.self_attrs = dir(self)
+
         # reflect all connection attributes into EnrichedElb.
-        reflect_attrs(self, self.evpc.boto.elb)
+        reflect_attrs(self, self.evpc.boto.elb, self.self_attrs)
 
     def get_all_elb_descriptions(self):
         """Return a list of all ELB (Load Balancer) descriptions."""

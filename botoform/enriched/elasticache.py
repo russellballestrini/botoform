@@ -10,8 +10,12 @@ class EnrichedElastiCache(object):
     def __init__(self, evpc):
         # save the EnrichedVpc object.
         self.evpc = evpc
+
+        # capture a list of this classes attributes before reflecting.
+        self.self_attrs = dir(self)
+
         # reflect all attributes of Client into EnrichedElastiCache.
-        reflect_attrs(self, self.evpc.boto.elasticache)
+        reflect_attrs(self, self.evpc.boto.elasticache, self.self_attrs)
 
     def get_all_subnet_group_descriptions(self):
         pages = self.get_paginator('describe_cache_subnet_groups').paginate()

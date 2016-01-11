@@ -137,18 +137,19 @@ def output_formatter(data, output_format='newline'):
         output = json.dumps(data, indent=2)
     return output
 
-def reflect_attrs(child, parent):
+def reflect_attrs(child, parent, skip_attrs=None):
     """
     Composition Magic: reflect all missing parents attributes into child.
 
     :param child: Object to receive attributes.
     :param parent: Object to source attributes from.
+    :param skip_attrs: Optional list of attrs strings to not reflect.
 
     :returns: None
     """
-    existing = dir(child)
+    skip_attrs = skip_attrs if skip_attrs is not None else []
     for attr in dir(parent):
-        if attr not in existing:
+        if attr not in skip_attrs:
             child.__dict__[attr] = getattr(parent, attr)
 
 def merge_pages(key, pages):

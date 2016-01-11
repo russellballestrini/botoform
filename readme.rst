@@ -41,7 +41,12 @@ Misc
 What about CloudFormation?
  I couldn't figure out how to use CloudFormation and I think that is a problem... 
  Botoform will not support all the things that CloudFormation does, and at times it will be opinionated to keep things simple, usable, and understandable. 
-
+ 
+What about Terraform?
+ Terraform focuses on many different cloud providers, and uses hashicorp configuration language.
+ Botoform will focus only on AWS, and uses YAML + Jinja2 configuration.
+ Ideally Botoform will be easier to use and more feature/service complete then Terraform for AWS.
+ 
 .. _Botoform: http://botoform.com
 .. _Botocore: http://botocore.com
 .. _Boto3: http://boto3.com

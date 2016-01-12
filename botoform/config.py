@@ -6,8 +6,6 @@ from jinja2 import (
   Template,
 )
 
-#from util import get_port_range
-
 class ConfigLoader(object):
     def __init__(self, template_dir=None, context_vars=None):
         self.jinja2_env = None
@@ -56,15 +54,6 @@ class ConfigLoader(object):
             config[key] = self._load(template_path=path)[key]
         return config
 
-    def _mutate_port_ranges(self, config):
-        """mutate security group port ranges into desired schema"""
-        # rule[0] = source, rule[1] = protocol, rule[2] = raw range
-        for sg_name, rules in config.get('security_groups', {}).items():
-            for rule in rules:
-                # mutate rule port range into (from_port, to_port) tuple.
-                rule[2] = get_port_range(rule[2], rule[1])
-        return config
-
     def load(self, template_path=None, template_string=None):
         """
         Use Jinja2 to render template with context_vars,
@@ -72,5 +61,5 @@ class ConfigLoader(object):
         """
         config = self._load(template_path, template_string)
         config = self._load_includes(config)
-        #config = self._mutate_port_ranges(config)
         return config
+

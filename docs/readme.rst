@@ -1,12 +1,21 @@
-How to setup Sphinx
-#####################
+Sphinx
+######
 
-This document explains how to both setup a Sphinx environment as well as
+Sphinx is a tool to easily create intelligent and beautiful documentation.
+
+For more details: http://www.sphinx-doc.org/en/stable/
+
+.. content::
+
+How to setup Sphinx
+===================
+
+This section explains how to both setup a Sphinx environment as well as
 a Sphinx project. If you are cloning this repo, the Sphinx project itself
 was already created.
 
 Setup Sphinx Environment
-========================
+------------------------
 
 Create a Python virtualenv to install Sphinx related packages.
 Check if virtualenv is installed using::
@@ -37,7 +46,7 @@ If you are cloning this repo you are done.
 
 
 Create a Sphinx Project
-=======================
+-----------------------
 
 If you are cloning this repo, stop.
 You do not need to perform the steps in this section.
@@ -56,14 +65,14 @@ Sphinx Anatomy
 ================
 
 source:
- This directory contains ReStructuredText (rst) sourcecode files that may compile or build to different documentation formats.
+ This directory contains ReStructuredText_ (rst) sourcecode files that may compile or build to different documentation formats.
 
 build:
  Contains the output from building the rst sourcecode into different documentation formats.
 
 
 Build HTML and setup test webserver
-=====================================
+===================================
 
 Get a list of possible output formats::
 
@@ -78,3 +87,4 @@ Setup a test webserver::
  # cd build/html/ && python -m SimpleHTTPServer
  make serve
 
+.. _ReStructuredText: http://docutils.sourceforge.net/rst.html

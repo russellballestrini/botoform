@@ -50,7 +50,7 @@ What about Terraform?
 .. _Botoform: http://botoform.com
 .. _Botocore: http://botocore.com
 .. _Boto3: http://boto3.com
-.. _Sphinx: https://github.com/russellballestrini/botoform/tree/master/docs
+.. _Sphinx: https://github.com/russellballestrini/botoform/tree/master/docs#sphinx
 .. _Quickstart: https://botoform.readthedocs.org/en/latest/guides/quickstart.html
 .. _Schema: https://botoform.readthedocs.org/en/latest/schema/index.html
 .. _botoform.readthedocs.org: https://botoform.readthedocs.org/

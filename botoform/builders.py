@@ -338,8 +338,8 @@ class EnvironmentBuilder(object):
         """Accept a list of EnrichedInstance, objects create tags."""
         msg = 'tagging instance {} (Name:{}, role:{})'
         for instance in instances:
-            instance_id = instance.id.lstrip('i-')
-            hostname = self.evpc.name + '-' + role_name + '-' + instance_id
+            h = '{}-{}-{}'
+            hostname = h.format(self.evpc.name, role_name, instance.id_human)
             self.log.emit(msg.format(instance.identity, hostname, role_name))
             update_tags(instance, Name = hostname, role = role_name)
 

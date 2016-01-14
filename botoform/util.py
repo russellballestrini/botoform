@@ -2,6 +2,9 @@ import yaml
 import json
 import boto3
 
+import hashlib
+import humanhash
+
 class BotoConnections(object):
     """Central Management of boto3 client and resource connection objects."""
     def __init__(self, region_name=None, profile_name=None):
@@ -341,6 +344,26 @@ def write_private_key(key_pair):
     with open(private_key_path, 'w') as f:
         f.write(key_pair['KeyMaterial'])
         chmod(private_key_path, 0400)
+
+def id_to_human(id_string, words=2, separator='-'):
+    """
+    Turn an id into a human readable hash digest.
+
+    :param id_string:
+        The subject string to generate a human hash of.
+    :param words:
+        The desired number of words in the resulting human hash. defaults to 4.
+    :param separator:
+        The desired word separator string, defaults to '-'.
+
+    >>> id_to_human('i-ceebb70b')
+    'earth-pluto'
+
+    >>> id_to_human('i-ceebb70b', 4)
+    'delaware-apart-artist-robin'
+    """
+    id_sha512 = hashlib.sha512(id_string).hexdigest()
+    return humanhash.humanize(id_sha512, words, separator)
 
 def snake_to_camel_case(name, answers=None):
     """

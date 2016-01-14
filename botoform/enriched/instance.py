@@ -3,6 +3,7 @@ import re
 from botoform.util import (
   reflect_attrs,
   make_tag_dict,
+  id_to_human,
 )
 
 class EnrichedInstance(object):
@@ -61,6 +62,9 @@ class EnrichedInstance(object):
     @property
     def identity(self): return self.hostname or self.id
 
+    @property
+    def id_human(self): return id_to_human(self.id)
+
     def _regex_hostname(self, regex):
         if self.hostname is None:
             return None
@@ -87,7 +91,8 @@ class EnrichedInstance(object):
     @property
     def identifiers(self):
         """Return a tuple of "unique" identifier strings for instance."""
-        _identifiers = (self.hostname, self.shortname, self.id,
+        _identifiers = (self.hostname, self.shortname,
+                       self.id, self.id_human,
                        self.private_ip_address, self.public_ip_address)
         return tuple([x for x in _identifiers if x is not None])
 

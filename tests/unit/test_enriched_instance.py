@@ -35,9 +35,9 @@ class TestEnrichedInstance(BotoformTestCase):
         self.assertEqual('i-mock1111', self.instance1.__str__())
 
     def test_identifiers(self):
-        self.assertEqual(len(self.instance1.identifiers), 4)
-        self.assertEqual(len(self.instance2.identifiers), 4)
+        self.assertEqual(len(self.instance1.identifiers), 5)
+        self.assertEqual(len(self.instance2.identifiers), 5)
         # instance3 has a public_ip_address identifier.
-        self.assertEqual(len(self.instance3.identifiers), 5)
+        self.assertEqual(len(self.instance3.identifiers), 6)
 
 

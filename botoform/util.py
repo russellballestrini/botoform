@@ -345,25 +345,18 @@ def write_private_key(key_pair):
         f.write(key_pair['KeyMaterial'])
         chmod(private_key_path, 0400)
 
-def id_to_human(id_string, words=2, separator='-'):
+def id_to_human(id_string):
     """
     Turn an id into a human readable hash digest.
 
     :param id_string:
         The subject string to generate a human hash of.
-    :param words:
-        The desired number of words in the resulting human hash. defaults to 4.
-    :param separator:
-        The desired word separator string, defaults to '-'.
 
-    >>> id_to_human('i-ceebb70b')
-    'earth-pluto'
-
-    >>> id_to_human('i-ceebb70b', 4)
-    'delaware-apart-artist-robin'
+    >>> id_to_human('i-ceebb70c')
+    'friendisland'
     """
     id_sha512 = hashlib.sha512(id_string).hexdigest()
-    return humanhash.humanize(id_sha512, words, separator)
+    return humanhash.humanize(id_sha512, 2, '')
 
 def snake_to_camel_case(name, answers=None):
     """

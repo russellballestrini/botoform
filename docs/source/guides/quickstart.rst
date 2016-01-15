@@ -88,7 +88,8 @@ Example Output
 .. code-block:: bash
 
  bf --profile=development --region=ap-southeast-1 create dogtest01 192.168.1.0/24 tests/fixtures/webapp.yaml
- creating vpc (dogtest01, 192.168.1.1/24)
+
+ creating vpc (dogtest01, 192.168.1.0/24)
  tagging vpc (Name:dogtest01)
  modifying vpc for dns support
  modifying vpc for dns hostnames
@@ -124,15 +125,15 @@ Example Output
  creating key pair default
  creating role: db
  1 instances of role db launching into dogtest01-private-1
- tagging instance i-1427479a (Name:dogtest01-db-1427479a, role:db)
+ tagging instance i-3abed0b4 (Name:dogtest01-db-colaceiling, role:db)
  creating role: web
  1 instances of role web launching into dogtest01-private-2
  1 instances of role web launching into dogtest01-private-1
- tagging instance i-a1b7f505 (Name:dogtest01-web-a1b7f505, role:web)
- tagging instance i-7a2848f4 (Name:dogtest01-web-7a2848f4, role:web)
+ tagging instance i-108dc6b4 (Name:dogtest01-web-californiacold, role:web)
+ tagging instance i-a6bfd128 (Name:dogtest01-web-solarmaine, role:web)
  creating role: door
  1 instances of role door launching into dogtest01-public-1
- tagging instance i-16284898 (Name:dogtest01-door-16284898, role:door)
+ tagging instance i-c9bfd147 (Name:dogtest01-door-beerindia, role:door)
  creating vpc endpoints in private
  'web' into 'db' over ports 5432 (TCP)
  'door' into 'db' over ports 22 (TCP)
@@ -140,15 +141,15 @@ Example Output
  'door' into 'web' over ports 22 (TCP)
  '0.0.0.0/0' into 'door' over ports 22 (TCP)
  '0.0.0.0/0' into 'web-elb' over ports 80 (TCP)
- waiting for dogtest01-db-1427479a to start
- tagging volumes for instance dogtest01-db-1427479a (Name:dogtest01-db-1427479a)
- waiting for dogtest01-web-a1b7f505 to start
- tagging volumes for instance dogtest01-web-a1b7f505 (Name:dogtest01-web-a1b7f505)
- waiting for dogtest01-web-7a2848f4 to start
- tagging volumes for instance dogtest01-web-7a2848f4 (Name:dogtest01-web-7a2848f4)
- waiting for dogtest01-door-16284898 to start
- tagging volumes for instance dogtest01-door-16284898 (Name:dogtest01-door-16284898)
- allocating eip and associating with dogtest01-door-16284898
- allocated eip 52.76.204.99 and associated with dogtest01-door-16284898
+ waiting for dogtest01-db-colaceiling to start
+ tagging volumes for instance dogtest01-db-colaceiling (Name:dogtest01-db-colaceiling)
+ waiting for dogtest01-web-californiacold to start
+ tagging volumes for instance dogtest01-web-californiacold (Name:dogtest01-web-californiacold)
+ waiting for dogtest01-web-solarmaine to start
+ tagging volumes for instance dogtest01-web-solarmaine (Name:dogtest01-web-solarmaine)
+ waiting for dogtest01-door-beerindia to start
+ tagging volumes for instance dogtest01-door-beerindia (Name:dogtest01-door-beerindia)
+ allocating eip and associating with dogtest01-door-beerindia
+ allocated eip 52.76.243.49 and associated with dogtest01-door-beerindia
  locking new instances to prevent termination
  done! don't you look awesome. : )

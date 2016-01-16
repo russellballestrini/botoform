@@ -20,6 +20,7 @@ import shlex
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('../../'))
 
 # -- General configuration ------------------------------------------------
 
@@ -279,8 +280,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   (master_doc, 'botoform', u'botoform Documentation',
-   author, 'botoform', 'One line description of project.',
-   'Miscellaneous'),
+   author, 'botoform', 'Manage infrastructure on AWS using YAML.',
+   'DevOps'),
 ]
 
 # Documents to append as an appendix to all manuals.

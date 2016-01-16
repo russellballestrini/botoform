@@ -1,16 +1,19 @@
-bf plugins
-###########
+
+.. plugins:
+
+plugins
+#######
 
 .. note:: For working examples see the `plugins <https://github.com/russellballestrini/botoform/tree/master/botoform/plugins>`_ directory.
 
-You may extend the ``bf`` tool by writing a plugin.
+You may extend the :ref:`bf` tool by writing a plugin.
 
-A ``bf`` plugin must take one of two forms:
+A :ref:`bf` plugin must take one of two forms:
 
 #. `function plugin`_
 #. `class plugin`_
 
-All ``bf`` subcommands have been implemented in this way.
+All :ref:`bf` subcommands have been implemented in this way.
 
 In your plugin project's *setup.py* create an `entry point`_ in the
 ``botoform.plugins`` group.
@@ -106,4 +109,33 @@ entry point:
   During the search, often the entry point group filters relevant objects.
 
   Botoform uses this method to allow plugins to load at run time.
+
+Core Plugins
+============
+
+All :ref:`bf` subcommands are plugins.
+
+.. automodule:: botoform.plugins.create
+    :members:
+    :undoc-members:
+
+.. automodule:: botoform.plugins.destroy
+    :members:
+    :undoc-members:
+
+.. automodule:: botoform.plugins.lock
+    :members:
+    :undoc-members:
+
+.. automodule:: botoform.plugins.unlock
+    :members:
+    :undoc-members:
+
+.. automodule:: botoform.plugins.dump
+    :members:
+    :undoc-members:
+
+.. automodule:: botoform.plugins.repl
+    :members:
+    :undoc-members:
 

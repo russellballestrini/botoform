@@ -40,11 +40,25 @@ Tools
 Schema Reference
 ================
 
+End user YAML Schema Reference for describing VPCs and related AWS resources.
+
 .. toctree::
    :maxdepth: 2
    :glob:
 
    schema/index.rst
+
+Developer Reference
+===================
+
+Developer Python Library Reference for modifying or extending Botoform.
+
+.. toctree::
+   :maxdepth: 2
+   :glob:
+
+   reference/index.rst
+
 
 .. these currently don't work / exists
    :ref:`genindex`

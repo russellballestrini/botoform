@@ -63,8 +63,11 @@ class EnrichedElastiCache(object):
     def delete_related_cache_clusters(self, cluster_ids=None):
         """
         delete all cache clusters and subnet groups related to this VPC.
-        cluster_ids:
+
+        :param cluster_ids:
             optional list of cache_cluster_ids (names) to delete instead.
+
+        :returns: None
         """
         cluster_descs = self.get_related_cluster_descriptions()
         related_cluster_ids = nested_lookup('CacheClusterId', cluster_descs)

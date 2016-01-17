@@ -225,7 +225,7 @@ def update_tags(ec2_object, **kwargs):
     Add or update tags to reflect given keyword args
 
     :param ec2_object: A tagable Boto3 object with a tags attribute.
-    :param **kwargs: key=value where key is tag name, value is tag value.
+    :param \*\*kwargs: key=value where key is tag name, value is tag value.
 
     :returns: None
     """

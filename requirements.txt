@@ -7,3 +7,7 @@ netaddr
 # config
 pyyaml
 jinja2
+
+# dynamic nonsequential hostnames.
+humanhash
+

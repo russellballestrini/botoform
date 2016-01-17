@@ -111,9 +111,9 @@ def test_dict_to_key_value():
     pretty_str = dict_to_key_value(data)
     assert('key1=value1' in pretty_str)
     assert('key2=value2' in pretty_str)
-    assert(pretty_str.count(','), 1)
+    assert(pretty_str.count(',') == 1)
     not_as_pretty = dict_to_key_value(data,'x','x')
-    assert(not_as_pretty.count('x'), 3)
+    assert(not_as_pretty.count('x') == 3)
 
 def test_key_value_to_dict():
     key_value_list = ['a=1,b=2', 'c=3, d=4', 'e=5']

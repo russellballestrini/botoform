@@ -1,3 +1,4 @@
+.. _schema reference:
 
 Schema Reference
 ################

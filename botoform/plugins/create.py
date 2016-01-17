@@ -4,13 +4,27 @@ from botoform.config import ConfigLoader
 
 from botoform.util import key_value_to_dict
 
+from botoform.plugins import ClassPlugin
+
 from argparse import SUPPRESS
 
-class Create(object):
-    """Create a new VPC and related services, modeled from YAML template."""
+class Create(ClassPlugin):
+    """
+    Create a new VPC and related services, modeled from YAML template.
+    
+    This is a :ref:`class plugin` for the :ref:`bf` tool.
+    """
 
     @staticmethod
     def setup_parser(parser):
+        """ 
+        Accepts a subparser and attaches additional arguments and flags.
+
+        :param parser: An ArgumentParser sub parser.
+            Reference: https://docs.python.org/3/library/argparse.html
+
+        :returns: None
+        """
         parser.add_argument('--skip-evpc', default=True, help=SUPPRESS)
         parser.add_argument('cidrblock',
           help='The CIDR block to use when creating VPC.')
@@ -26,8 +40,15 @@ class Create(object):
         )
 
     @staticmethod
-    def main(args, evpc):
-        """Output a list of instance names. (example botoform plugin)"""
+    def main(args, evpc=None):
+        """
+        Creates a new VPC and related services, modeled from a YAML template.
+       
+        :param args: The parsed arguments and flags from the CLI.
+        :param evpc: :meth:`botoform.enriched.vpc.EnrichedVPC` or None.
+
+        :returns: None
+        """
         context_vars = key_value_to_dict(args.vars)
         aws_tags = key_value_to_dict(args.tags)
         loader = ConfigLoader(context_vars = context_vars)

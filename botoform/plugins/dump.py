@@ -1,7 +1,14 @@
 from botoform.util import output_formatter
 
 def instances(args, evpc):
-    """Output a list of instance names."""
+    """
+    Output instance roles to standard out in :ref:`Botoform Schema <schema reference>`.
+
+    :param args: The parsed arguments and flags from the CLI.
+    :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
+
+    :returns: instance_roles to standard out in :ref:`Botoform Schema <schema reference>`.
+    """
     if args.identifiers or args.roles or args.exclude:
         instances = evpc.find_instances(args.identifiers, args.roles, args.exclude)
     else:
@@ -9,7 +16,14 @@ def instances(args, evpc):
     print(output_formatter(map(str, instances), args.output_format))
 
 def security_groups(args, evpc):
-    """Output Security Groups in a Botoform compatible format."""
+    """
+    Output Security Groups to standard out in :ref:`Botoform Schema <schema reference>`.
+
+    :param args: The parsed arguments and flags from the CLI.
+    :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
+
+    :returns: security_groups to standard out in :ref:`Botoform Schema <schema reference>`.
+    """ 
     sgs = {}
     for sg in evpc.security_groups.all():
         sgs[sg.group_name] = []
@@ -44,6 +58,11 @@ dump_subcommands = {
 }
 
 class Dump(object):
+    """
+    Dump AWS resourses as :ref:`Botoform Schema <schema reference>`.
+    
+    This is a :ref:`class plugin` for the :ref:`bf` tool.
+    """
 
     @staticmethod
     def setup_parser(parser):

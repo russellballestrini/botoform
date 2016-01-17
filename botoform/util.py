@@ -2,6 +2,7 @@ import yaml
 import json
 import boto3
 
+# dynamic nonsequential hostnames.
 import hashlib
 import humanhash
 

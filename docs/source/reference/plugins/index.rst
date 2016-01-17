@@ -4,30 +4,30 @@
 plugins
 #######
 
-.. note:: For working examples see the `plugins <https://github.com/russellballestrini/botoform/tree/master/botoform/plugins>`_ directory.
-
 You may extend the :ref:`bf` tool by writing a plugin.
+
+.. note:: For working examples see the `plugins <https://github.com/russellballestrini/botoform/tree/master/botoform/plugins>`_ directory.
 
 A :ref:`bf` plugin must take one of two forms:
 
 #. `function plugin`_
 #. `class plugin`_
 
+Regardless of the form of plugin you choose, your plugin project's
+*setup.py* must define an `entry point`_ in the ``botoform.plugins`` group.
+The name of the `entry point`_ will be the subcommand on the CLI.
+
 All :ref:`bf` subcommands have been implemented in this way.
 
-In your plugin project's *setup.py* create an `entry point`_ in the
-``botoform.plugins`` group.
-
-The name of the `entry point`_ will be the subcommand on the CLI.
 
 .. _function plugin:
 
-Function plugin
+function plugin
 ===============
 
-This example shows how to write a function plugin.
+This example shows how to write a `function plugin`_.
 
-In this case we will define a ``destroy`` `entry point`_ and subcommand.
+In this case we will define an `entry point`_ and subcommand named ``destroy``.
 
 *setup.py*:
 
@@ -39,9 +39,9 @@ In this case we will define a ``destroy`` `entry point`_ and subcommand.
       ]
     }
 
-The `entry point`_ ``destroy`` points to the location of the function *destroy*.
+The `entry point`_ named ``destroy`` declares the path to the ``destroy`` function.
 
-The function needs to accept *args* and the *evpc* object.
+The function must accept an *args* object and an *evpc* object, for example:
 
 *mybotoform/plugins/destroy.py*:
 
@@ -51,12 +51,15 @@ The function needs to accept *args* and the *evpc* object.
      """Destroy a VPC and related resources and services."""
      evpc.terminate()
 
+
 .. _class plugin:
 
-Class Plugin
+class plugin
 ============
 
-If additional args and flags need to be defined, the plugin must take this form:
+This example shows how to write a `class plugin`_.
+
+Only choose this form if your subcommand needs additional args or flags.
 
 *setup.py*:
 
@@ -97,7 +100,63 @@ setup_parser:
 main:
  main logic for this plugin.
 
-Terms
+
+.. _core plugins:
+
+core plugins
+============
+
+The Botoform :ref:`bf` tool ships with many core plugins and subcommands.
+
+
+botoform.plugins.create
+-------------------------
+
+.. automodule:: botoform.plugins.create
+    :members:
+    :undoc-members:
+
+botoform.plugins.destroy
+-------------------------
+
+.. automodule:: botoform.plugins.destroy
+    :members:
+    :undoc-members:
+
+
+botoform.plugins.lock
+-------------------------
+
+.. automodule:: botoform.plugins.lock
+    :members:
+    :undoc-members:
+
+
+botoform.plugins.unlock
+-------------------------
+
+.. automodule:: botoform.plugins.unlock
+    :members:
+    :undoc-members:
+
+
+botoform.plugins.dump
+-------------------------
+
+.. automodule:: botoform.plugins.dump
+    :members:
+    :undoc-members:
+
+
+botoform.plugins.repl
+-------------------------
+
+.. automodule:: botoform.plugins.repl
+    :members:
+    :undoc-members:
+
+
+terms
 =====
 
 .. _entry point:
@@ -109,33 +168,3 @@ entry point:
   During the search, often the entry point group filters relevant objects.
 
   Botoform uses this method to allow plugins to load at run time.
-
-Core Plugins
-============
-
-All :ref:`bf` subcommands are plugins.
-
-.. automodule:: botoform.plugins.create
-    :members:
-    :undoc-members:
-
-.. automodule:: botoform.plugins.destroy
-    :members:
-    :undoc-members:
-
-.. automodule:: botoform.plugins.lock
-    :members:
-    :undoc-members:
-
-.. automodule:: botoform.plugins.unlock
-    :members:
-    :undoc-members:
-
-.. automodule:: botoform.plugins.dump
-    :members:
-    :undoc-members:
-
-.. automodule:: botoform.plugins.repl
-    :members:
-    :undoc-members:
-

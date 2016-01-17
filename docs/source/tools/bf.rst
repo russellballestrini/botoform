@@ -3,9 +3,9 @@
 bf
 ##
 
-All of botoform tools are namespaced under the `bf` command.
+Botoform tools are namespaced under the ``bf`` command.
 
-For a list built-in subcommands and interactive help, run `bf --help`.
+For a list built-in subcommands and interactive help, run ``bf --help``.
 
 create
 ------

@@ -7,6 +7,9 @@ from jinja2 import (
 )
 
 class ConfigLoader(object):
+    """
+    Loads :ref:`Botoform Schema <schema reference>` and returns a dictionary.
+    """
     def __init__(self, template_dir=None, context_vars=None):
         self.jinja2_env = None
         self._template_dir = None
@@ -56,8 +59,13 @@ class ConfigLoader(object):
 
     def load(self, template_path=None, template_string=None):
         """
-        Use Jinja2 to render template with context_vars,
-        return Python representation of YAML config.
+        Load a :ref:`Botoform Schema <schema reference>` config and render with Jinja2.
+
+        :param template_path: Path to the config to load and render.
+        :param template_string: String to load and render. Optional.
+
+        :returns: 
+          Python dictionary representation of :ref:`config <schema reference>`.
         """
         config = self._load(template_path, template_string)
         config = self._load_includes(config)

@@ -1,6 +1,7 @@
+.. _config.py:
 
 config.py
-=========
+#########
 
 The config.py turns YAML into Python dictionaries, supports Jinja2.
 

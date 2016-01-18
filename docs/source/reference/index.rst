@@ -1,15 +1,17 @@
+.. _developer reference:
 
 Developer Reference
 ###################
 
-Developer Python Library Reference for modifying or extending Botoform.
+Developer Reference for modifying or extending Botoform.
 
-The documents here describe various Python functions, classes of Botoform.
+This document provides details for Botoform's Python codebase.
 
 .. toctree::
    :maxdepth: 2
    :glob:
 
    * 
-   */* 
+   enriched/index.rst
+   plugins/index.rst 
 

@@ -8,11 +8,23 @@ from botoform.util import (
 
 class EnrichedInstance(object):
     """
-    This class uses composition to enrich Boto3's ec2.Instance resource class.
+    This class uses composition to enrich Boto3's Instance resource class.
+
+    ec2.Instance(boto3.resources.base.ServiceResource)
+
+    Reference:
+
+    https://boto3.readthedocs.org/en/latest/reference/services/ec2.html#instance
     """
 
     def __init__(self, instance, evpc=None):
-        """Composted ec2.Instance(boto3.resources.base.ServiceResource) class"""
+        """
+        EnrichedInstance Resource.
+        
+        :param instance: ec2.Instance(boto3.resources.base.ServiceResource)
+        :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`
+        
+        """
         if evpc is not None:
             self.evpc = evpc
 
@@ -49,21 +61,28 @@ class EnrichedInstance(object):
 
     @property
     def tag_dict(self):
+        """Return dictionary of tags."""
         return make_tag_dict(self.instance)
 
     @property
     def hostname(self):
+        """Return hostname (AWS Name tag)."""
         return self.tag_dict.get('Name', None)
 
     @property
     def name(self):
+        """Return hostname (AWS Name tag)."""
         return self.hostname
 
     @property
-    def identity(self): return self.hostname or self.id
+    def identity(self):
+        """Return hostname (AWS Name tag) or id."""
+        return self.hostname or self.id
 
     @property
-    def id_human(self): return id_to_human(self.id)
+    def id_human(self):
+        """Return humanhash of id."""
+        return id_to_human(self.id)
 
     def _regex_hostname(self, regex):
         if self.hostname is None:
@@ -75,12 +94,12 @@ class EnrichedInstance(object):
 
     @property
     def shortname(self):
-        """get shortname from instance Name tag, ex: proxy02, web01, ..."""
+        """Return shortname from hostname: web-solarmaine, db-beerindia, ..."""
         return self._regex_hostname(r".*?-(.*)$")
 
     @property
     def role(self):
-        """get role from instance 'role' or 'Name' tag, ex: api, vpn, ..."""
+        """Return role from from 'role' or 'Name' tag: web, db, ..."""
         role = self.tag_dict.get('role', None)
         if role is None:
              role = self._regex_hostname(r".*?-(.*?)-.+$")
@@ -90,7 +109,10 @@ class EnrichedInstance(object):
 
     @property
     def identifiers(self):
-        """Return a tuple of "unique" identifier strings for instance."""
+        """
+        Return a tuple of "unique" identifier strings for instance.
+        :rtype: tuple 
+        """
         _identifiers = (self.hostname, self.shortname,
                        self.id, self.id_human,
                        self.private_ip_address, self.public_ip_address)
@@ -109,7 +131,10 @@ class EnrichedInstance(object):
 
     @property
     def eips(self):
-        """Return a list of VpcAddress objects associated to this instance."""
+        """
+        Return a list of VpcAddress objects associated to this instance.
+        :rtype: list
+        """
         instance_id_filter = [{'Name':'instance-id', 'Values':[self.id]}]
         address_descriptions = self.evpc.boto.ec2_client.describe_addresses(
                                    Filters = instance_id_filter
@@ -139,6 +164,13 @@ class EnrichedInstance(object):
         return eip
 
     def disassociate_eips(self, release=True):
+        """
+        Disassociate all EIPs associated with this instance.
+
+        :param release: Also release allocations for EIPs. Default True.
+
+        :rtype: None
+        """
         for eip in self.eips:
             eip.association.delete()
             if release is True:

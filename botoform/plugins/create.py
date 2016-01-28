@@ -49,9 +49,9 @@ class Create(ClassPlugin):
 
         :returns: None
         """
-        context_vars = key_value_to_dict(args.vars)
+        extra_vars = key_value_to_dict(args.extra_vars)
         aws_tags = key_value_to_dict(args.tags)
-        loader = ConfigLoader(context_vars = context_vars)
+        loader = ConfigLoader(context_vars = extra_vars)
         config = loader.load(template_path = args.config)
         ebuilder = EnvironmentBuilder(
                        args.vpc_name, config, args.region, args.profile)

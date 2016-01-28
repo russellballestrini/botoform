@@ -30,9 +30,9 @@ class Create(ClassPlugin):
           help='The CIDR block to use when creating VPC.')
         parser.add_argument('config',
           help='The botoform YAML config template.')
-        parser.add_argument('-v', '--vars',
+        parser.add_argument('-e', '--extra-vars',
           default=list(), action='append', metavar='key=val',
-          help='Jinja2 context: --vars key=val,key2=val2,key3=val3'
+          help='Extra Jinja2 context: --extra-vars key=val,key2=val2,key3=val3'
         )
         parser.add_argument('-t', '--tags',
           default=list(), action='append', metavar='key=val',

@@ -22,7 +22,7 @@ We use Sphinx_ and host the full documentation at botoform.readthedocs.org_.
 Quickstart
 ------------------
 
-The Quickstart_ guide will teach you how to setup your aws credential config file
+The `Quickstart Guide`_ will teach you how to setup your aws credential config file
 and create and destroy a real test VPC using botoform.
 
 Schema Reference
@@ -51,6 +51,6 @@ What about Terraform?
 .. _Botocore: http://botocore.com
 .. _Boto3: http://boto3.com
 .. _Sphinx: https://github.com/russellballestrini/botoform/tree/master/docs#sphinx
-.. _Quickstart: https://botoform.readthedocs.org/en/latest/guides/quickstart.html
+.. _Quickstart Guide: https://botoform.readthedocs.org/en/latest/guides/quickstart.html
 .. _Schema: https://botoform.readthedocs.org/en/latest/schema/index.html
 .. _botoform.readthedocs.org: https://botoform.readthedocs.org/

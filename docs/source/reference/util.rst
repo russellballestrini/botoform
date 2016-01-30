@@ -6,7 +6,7 @@ util.py
 
 The util.py file is sort of a junk drawer right now... but..
 
-.. contents::
+.. autosummary::
 
 .. automodule:: botoform.util
     :members:

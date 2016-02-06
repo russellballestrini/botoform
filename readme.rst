@@ -6,7 +6,7 @@ Botoform
 .. contents:: 
 
 Botoform_ provides tools to manage the lifecycle of related AWS resources.
-We use a simple YAML schema to document resources as infrastructure.
+We use a simple YAML schema to document resources and infrastructure.
 The YAML schema has self documenting qualities and works with version control.
 
 The tools use the YAML architecture to create and manage environments.

@@ -1,7 +1,7 @@
 Botoform
 ########
 
-**Manage infrastructure on AWS using YAML.**
+**Architect infrastructure on AWS using YAML.**
 
 .. contents:: 
 

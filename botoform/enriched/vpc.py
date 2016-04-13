@@ -370,11 +370,10 @@ class EnrichedVPC(object):
         return dhcp_options_id
         
     def stop_instances(self, instances=None):
-        """Terminate all or a list of instances. Wait until terminated."""
+        """Stop all or a list of instances."""
         instances = self.get_instances(instances)
         for instance in instances:
             self.log.emit('stopping instance - {}...'.format(instance.identity))
-            instance.disassociate_eips()
             instance.stop()
         
     def delete_instances(self, instances=None):
@@ -384,7 +383,6 @@ class EnrichedVPC(object):
             instance.disassociate_eips()
             instance.terminate()
         for instance in instances:
-            # TODO: don't use print statements! use log facility...
             self.log.emit('waiting for {} to terminate...'.format(instance.identity))
             instance.wait_until_terminated()
 

@@ -7,4 +7,4 @@ def stop(args, evpc):
 
     :returns: None
     """ 
-    evpc.stop()
+    evpc.stop_instances()

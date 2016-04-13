@@ -6,9 +6,9 @@ includes:
   # import the amis stanza from amis.yaml.
   amis: nested/amis.yaml
 
-# CIDR block to create the VPC
-vpc_cidr:
-  192.168.1.0/24
+# CIDR block to create the VPC.
+# for example, when creating new vpc, use -e 'vpc_cidr=192.168.21.0/24'
+vpc_cidr: {{ vpc_cidr }}
 
 # DHCP Options Set
 dhcp_options:
@@ -16,6 +16,7 @@ dhcp_options:
     # only 1 domain name can be given
     domain-name:
       - eu-central-1.compute.internal
+
     # max. of 4 domain name servers can be given
     domain-name-servers:
       - 10.10.10.1
@@ -104,9 +105,7 @@ security_groups:
     inbound:
       - ['0.0.0.0/0', 'tcp',   22]
     outbound:
-      - ['web',       '-1', 'all']
-      - ['db',        'tcp', 1433]
-      - ['db',        'tcp', 3306]
+      - ['0.0.0.0/0',  '-1', 'all']
 
 # define a public ELB for webapp nodes.
 load_balancers:
@@ -120,48 +119,48 @@ load_balancers:
     listeners:
       - [80, 80, 'tcp']
 
-## define instance roles to create.
-#instance_roles:
-#
-#  # define how an instance in the web role should look.
-#  web:
-#    description: web nodes run Nginx/uWSGI/Pyramid on port 80
-#    instance_type: t2.micro
-#    ami: 'ubuntu-14.04-lts-hvm'
-#    count: 2
-#    security_groups: ['web']
-#    subnets: ['private-1', 'private-2']
-#    root_volume:
-#      size: 30
-#      ssd: true
-#    block_devices:
-#      count: 2
-#      size: 60
-#      start_device: /dev/sdf
-#
-#  # define how an instance in the db role should look.
-#  db:
-#    description: db nodes run PostgreSQL on port 5432
-#    instance_type: t2.micro
-#    ami: 'ubuntu-14.04-lts-hvm'
-#    count: 1
-#    security_groups: ['db']
-#    subnets: ['private-1', 'private-2']
-#    root_volume:
-#      size: 30
-#      ssd: true
-#
-#  # define how an instance in the door role should look.
-#  door:
-#    description: door nodes run ssh on port 22
-#    instance_type: t2.micro
-#    ami: 'ubuntu-14.04-lts-hvm'
-#    count: 1
-#    security_groups: ['door']
-#    subnets: ['public-1', 'public-2']
-#    key_pair: door
-#    eip: True
-#    root_volume:
-#      size: 30
-#      ssd: true
-#
+# define instance roles to create.
+instance_roles:
+
+  # define how an instance in the web role should look.
+  web:
+    description: web nodes run Nginx/uWSGI/Pyramid on port 80
+    instance_type: t2.micro
+    ami: 'ubuntu-14.04-lts-hvm'
+    count: 2
+    security_groups: ['web']
+    subnets: ['private-1', 'private-2']
+    root_volume:
+      size: 30
+      ssd: true
+    block_devices:
+      count: 2
+      size: 60
+      start_device: /dev/sdf
+
+  # define how an instance in the db role should look.
+  db:
+    description: db nodes run PostgreSQL on port 5432
+    instance_type: t2.micro
+    ami: 'ubuntu-14.04-lts-hvm'
+    count: 1
+    security_groups: ['db']
+    subnets: ['private-1', 'private-2']
+    root_volume:
+      size: 30
+      ssd: true
+
+  # define how an instance in the door role should look.
+  door:
+    description: door nodes run ssh on port 22
+    instance_type: t2.micro
+    ami: 'ubuntu-14.04-lts-hvm'
+    count: 1
+    security_groups: ['door']
+    subnets: ['public-1', 'public-2']
+    key_pair: door
+    eip: True
+    root_volume:
+      size: 30
+      ssd: true
+

@@ -52,8 +52,8 @@ class EnvironmentBuilder(object):
         # set a var for no_cfg.
         no_cfg = {}
 
-        # builds the vpc
-        self.build_vpc(config.get('vpc_cidr', no_cfg))
+        # builds the vpc.
+        self.build_vpc(config.get('vpc_cidr', None))
 
         # attach EnrichedVPC to self.
         self.evpc = EnrichedVPC(self.vpc_name, self.boto.region_name, self.boto.profile_name, self.log)

@@ -55,7 +55,6 @@ class Create(ClassPlugin):
         config = loader.load(template_path = args.config)
         ebuilder = EnvironmentBuilder(
                        args.vpc_name, config, args.region, args.profile)
-        #ebuilder.build_vpc(args.cidrblock)
         ebuilder.apply_all()
 
 

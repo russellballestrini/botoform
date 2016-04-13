@@ -26,8 +26,6 @@ class Create(ClassPlugin):
         :returns: None
         """
         parser.add_argument('--skip-evpc', default=True, help=SUPPRESS)
-#         parser.add_argument('cidrblock',
-#           help='The CIDR block to use when creating VPC.')
         parser.add_argument('config',
           help='The botoform YAML config template.')
         parser.add_argument('-e', '--extra-vars',

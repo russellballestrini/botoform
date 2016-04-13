@@ -38,7 +38,7 @@ amis:
 
   ubuntu-14.04-lts-hvm:
 
-    us-east-1: ami-9a562df2
+    us-east-1: ami-fce3c696
     us-west-1: ami-5c120b19
     us-west-2: ami-29ebb519
     eu-west-1: ami-234ecc54

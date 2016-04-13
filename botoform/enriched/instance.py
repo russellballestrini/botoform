@@ -102,9 +102,9 @@ class EnrichedInstance(object):
         """Return role from from 'role' or 'Name' tag: web, db, ..."""
         role = self.tag_dict.get('role', None)
         if role is None:
-             role = self._regex_hostname(r".*?-(.*?)-.+$")
+            role = self._regex_hostname(r".*?-(.*?)-.+$")
         if role is None:
-             role = self._regex_hostname(r".*?-(.*?)-?\d+$")
+            role = self._regex_hostname(r".*?-(.*?)-?\d+$")
         return role
 
     @property

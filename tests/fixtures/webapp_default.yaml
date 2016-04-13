@@ -6,37 +6,12 @@ includes:
   # import the amis stanza from amis.yaml.
   amis: nested/amis.yaml
 
-# CIDR block to create the VPC
-vpc_cidr:
-  192.168.1.0/24
-
-# DHCP Options Set
-dhcp_options:
-  dns:
-    # only 1 domain name can be given
-    domain-name:
-      - eu-central-1.compute.internal
-    # max. of 4 domain name servers can be given
-    domain-name-servers:
-      - 10.10.10.1
-      - 8.8.8.8
-      - 4.2.2.2
-      - AmazonProvidedDNS
-
-# VPN Gateway ID to attach to VPC,
-# by default associated routes will be propagated
-vpn_gateway:
-  #id: 'vgw-xxxxxxxx'
-  id: 'vgw-xxxxxxxx'
-  
 # This is an example route_tables schema.
 route_tables:
   
   # private network without a default route to the Internet.
   private:
     main: true
-    routes:
-      - ['10.0.0.0/8', 'vpn_gateway']
 
   # public network with a default route to the Internet.
   public:
@@ -89,24 +64,16 @@ key_pairs:
 # role_instances, load_balancers, cache_clusters, db_instances, and more.
 security_groups:
   web-elb:
-    inbound:
-      - ['0.0.0.0/0', 'tcp',   80]
+    - ['0.0.0.0/0', 'tcp',   80]
   web:
-    inbound:
-      - ['web-elb',   'tcp',   80]
-      - ['door',      'tcp',   22]
-      - ['web',       '-1', 'all']
+    - ['web-elb',   'tcp',   80]
+    - ['door',      'tcp',   22]
+    - ['web',      '-1',   all]
   db:
-    inbound:
-      - ['web',       'tcp', 5432]
-      - ['door',      'tcp',   22]
+    - ['web',       'tcp', 5432]
+    - ['door',      'tcp',   22]
   door:
-    inbound:
-      - ['0.0.0.0/0', 'tcp',   22]
-    outbound:
-      - ['web',       '-1', 'all']
-      - ['db',        'tcp', 1433]
-      - ['db',        'tcp', 3306]
+    - ['0.0.0.0/0', 'tcp',   22]
 
 # define a public ELB for webapp nodes.
 load_balancers:
@@ -120,9 +87,9 @@ load_balancers:
     listeners:
       - [80, 80, 'tcp']
 
-## define instance roles to create.
-#instance_roles:
-#
+# define instance roles to create.
+instance_roles:
+
 #  # define how an instance in the web role should look.
 #  web:
 #    description: web nodes run Nginx/uWSGI/Pyramid on port 80
@@ -150,18 +117,18 @@ load_balancers:
 #    root_volume:
 #      size: 30
 #      ssd: true
-#
-#  # define how an instance in the door role should look.
-#  door:
-#    description: door nodes run ssh on port 22
-#    instance_type: t2.micro
-#    ami: 'ubuntu-14.04-lts-hvm'
-#    count: 1
-#    security_groups: ['door']
-#    subnets: ['public-1', 'public-2']
-#    key_pair: door
-#    eip: True
-#    root_volume:
-#      size: 30
-#      ssd: true
-#
+
+  # define how an instance in the door role should look.
+  door:
+    description: door nodes run ssh on port 22
+    instance_type: t2.micro
+    ami: 'ubuntu-14.04-lts-hvm'
+    count: 1
+    security_groups: ['door']
+    subnets: ['public-1', 'public-2']
+    key_pair: door
+    eip: True
+    root_volume:
+      size: 30
+      ssd: true
+

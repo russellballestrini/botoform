@@ -33,14 +33,15 @@ def load_parsers_from_plugins(subparser, plugins):
 def build_parser(description):
     """build argparser and attach each plugin's parser to subparser."""
     parser = argparse.ArgumentParser(description = description)
-    parser.add_argument('-p', '--profile', default=None,
+    #requiredNamed = parser.add_argument_group('required named arguments')
+    parser.add_argument('-p', '--profile', default='default',
       help='botocore profile name for AWS creds and other vars.')
     parser.add_argument('-r', '--region', default=None,
       help='AWS region to use')
     #parser.add_argument('--search-regions', action='store_true', default=False,
     #  help='search regions for VPC with given vpc_name')
-    parser.add_argument('--quiet', action='store_true', default=False,
-      help='prevent status messages to STDOUT')
+    #parser.add_argument('--quiet', action='store_true', default=False,
+    #  help='prevent status messages to STDOUT')
 
     # create a subparser for our plugins to attach to.
     subparser = parser.add_subparsers(
@@ -67,7 +68,7 @@ def main():
                  profile_name=args.profile,
                )
 
-    # call the plugin main ethod.
+    # call the plugin main method.
     args.func(args, evpc)
 
 if __name__ == '__main__':

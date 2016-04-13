@@ -28,7 +28,8 @@ setup(
     entry_points = {
       'botoform.plugins' : [
         'create = botoform.plugins.create:Create',
-        'stop = botoform.plugins.stop:stop', 
+        'stop = botoform.plugins.stop:stop',
+        'start = botoform.plugins.start:start',
         'destroy = botoform.plugins.destroy:destroy',
         'dump = botoform.plugins.dump:Dump',
         'lock = botoform.plugins.lock:lock',

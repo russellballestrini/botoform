@@ -369,22 +369,45 @@ class EnrichedVPC(object):
         self.dhcp_options = self.boto.ec2.DhcpOptions(dhcp_options_id)
         return dhcp_options_id
         
-    def stop_instances(self, instances=None):
+    def wait_until_instances(self, instances=None, state=None):
+        instances = self.get_instances(instances)
+        msg = 'waiting for {} to transition to {}'
+        for instance in instances:
+            self.log.emit(msg.format(instance.identity, state))
+            if state == 'running':
+                instance.wait_until_running()
+            if state == 'stopped':
+                instance.wait_until_stopped()
+            if state == 'terminated':
+                instance.wait_until_terminated()
+
+    def stop_instances(self, instances=None, wait=True):
         """Stop all or a list of instances."""
         instances = self.get_instances(instances)
         for instance in instances:
-            self.log.emit('stopping instance - {}...'.format(instance.identity))
+            self.log.emit('stopping {} instance ...'.format(instance.identity))
             instance.stop()
-        
-    def delete_instances(self, instances=None):
-        """Terminate all or a list of instances. Wait until terminated."""
+        if wait == True:
+            self.wait_until_instances(instances, 'stopped')
+
+    def start_instances(self, instances=None, wait=True):
+        """Start all or a list of instances."""
         instances = self.get_instances(instances)
         for instance in instances:
+            self.log.emit('starting {} instance ...'.format(instance.identity))
+            instance.start()
+        if wait == True:
+            self.wait_until_instances(instances, 'running')
+        
+    def delete_instances(self, instances=None, wait=True):
+        """Terminate all or a list of instances."""
+        instances = self.get_instances(instances)
+        for instance in instances:
+            self.log.emit('terminating {} instance ...'.format(instance.identity))
             instance.disassociate_eips()
             instance.terminate()
-        for instance in instances:
-            self.log.emit('waiting for {} to terminate...'.format(instance.identity))
-            instance.wait_until_terminated()
+        if wait == True:
+            self.wait_until_instances(instances, 'terminated')
 
     def delete_internet_gateways(self):
         """Delete related internet gatways."""

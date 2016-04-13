@@ -16,7 +16,7 @@ For example:
 
 .. code-block:: bash
 
- bf create dogtest01 192.168.1.0/24 tests/fixtures/webapp.yaml
+ bf create dogtest01 -e 'vpc_cidr=192.168.1.0/24' tests/fixtures/webapp.yaml
 
 destroy
 -------
@@ -65,30 +65,22 @@ Make VPC reflect given YAML template by adding and removing resources.
 stop
 -------
 
-.. note:: not implemented yet.
-
 Stop all instances in VPC including autoscaled instances.
 
-TODO: Skip "ephemeral" instances!
+.. warning:: Currently does _NOT_ skip "ephemeral" instances!
 
 start
 -------
-
-.. note:: not implemented yet.
 
 Start all instances in VPC including autoscaled instances.
 
 lock
 -------
 
-.. note:: not implemented yet.
-
 Enable API Termination Protection on all instances in VPC.
 
 unlock
 -------
-
-.. note:: not implemented yet.
 
 Disable API Termination Protection on all instances in VPC.
 

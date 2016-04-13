@@ -58,7 +58,7 @@ Create VPC
 
 .. code-block:: bash
 
- bf --profile=development --region=ap-southeast-1 create dogtest01 192.168.1.0/24 tests/fixtures/webapp.yaml
+ bf --profile=development --region=ap-southeast-1 create dogtest01 -e 'vpc_cidr=192.168.1.0/24' tests/fixtures/webapp.yaml
     
 
 Unlock VPC

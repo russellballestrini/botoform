@@ -99,11 +99,11 @@ security_groups:
     inbound:
       - ['web',       'tcp', 5432]
       - ['door',      'tcp',   22]
+    outbound:
+      - ['door',      'tcp',   22]
   door:
     inbound:
       - ['0.0.0.0/0', 'tcp',   22]
-    outbound:
-      - ['0.0.0.0/0',  '-1', 'all']
 
 # define a public ELB for webapp nodes.
 load_balancers:

@@ -11,7 +11,7 @@ class TestConfigLoader(TestCase):
             self.template_string = f.read()
         self.context_vars = {
                  'vpc_name'  : 'webapp01',
-                 'cidrblock' : '192.168.1.1/24',
+                 'vpc_cidr' : '192.168.1.1/24',
              }
 
     def test_constructor_default_context_vars_is_empty_dict(self):
@@ -22,7 +22,7 @@ class TestConfigLoader(TestCase):
     def test_constructor_context_vars_is_set(self):
         loader = ConfigLoader(context_vars = self.context_vars)
         self.assertTrue(len(loader.context_vars.keys()) == 2)
-        self.assertTrue('cidrblock' in loader.context_vars.keys())
+        self.assertTrue('vpc_cidr' in loader.context_vars.keys())
 
     def test_load_template_file_without_context(self):
         loader = ConfigLoader()

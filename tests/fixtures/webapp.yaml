@@ -26,9 +26,8 @@ dhcp_options:
 
 # VPN Gateway ID to attach to VPC,
 # by default associated routes will be propagated
-vpn_gateway:
-  #id: 'vgw-xxxxxxxx'
-  id: 'vgw-xxxxxxxx'
+#vpn_gateway:
+#  id: 'vgw-xxxxxxxx'
   
 # This is an example route_tables schema.
 route_tables:
@@ -36,8 +35,8 @@ route_tables:
   # private network without a default route to the Internet.
   private:
     main: true
-    routes:
-      - ['10.0.0.0/8', 'vpn_gateway']
+    routes: []
+      #- ['10.0.0.0/8', 'vpn_gateway']
 
   # public network with a default route to the Internet.
   public:
@@ -96,7 +95,6 @@ security_groups:
     inbound:
       - ['web-elb',   'tcp',   80]
       - ['door',      'tcp',   22]
-      - ['web',       '-1', 'all']
   db:
     inbound:
       - ['web',       'tcp', 5432]

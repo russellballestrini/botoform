@@ -41,7 +41,7 @@ class EnvironmentBuilder(object):
             self.log.emit('Failure reason: {}'.format(e), 'error')
             self.log.emit(traceback.format_exc(), 'debug')
             self.log.emit('Tearing down failed environment!', 'error')
-            #self.evpc.terminate()
+            self.evpc.terminate()
             raise
 
     def _apply_all(self, config):
@@ -52,9 +52,18 @@ class EnvironmentBuilder(object):
         # set a var for no_cfg.
         no_cfg = {}
 
-        # attach EnrichedVPC to self.
-        self.evpc = EnrichedVPC(self.vpc_name, self.boto.region_name, self.boto.profile_name)
+        # builds the vpc
+        self.build_vpc(config.get('vpc_cidr', no_cfg))
 
+        # attach EnrichedVPC to self.
+        self.evpc = EnrichedVPC(self.vpc_name, self.boto.region_name, self.boto.profile_name, self.log)
+
+        # attach VPN gateway to the VPC
+        self.attach_vpn_gateway(config.get('vpn_gateway', no_cfg))
+        
+        # create and associate DHCP Options Set
+        self.dhcp_options(config.get('dhcp_options', no_cfg))
+        
         # the order of these method calls matters for new VPCs.
         self.route_tables(config.get('route_tables', no_cfg))
         self.subnets(config.get('subnets', no_cfg))
@@ -71,7 +80,7 @@ class EnvironmentBuilder(object):
         self.finish_instance_roles(
             config.get('instance_roles', no_cfg), new_instances,
         )
-        self.log.emit('done! don\'t you look awesome. : )')
+#         self.log.emit('done! don\'t you look awesome. : )')
 
     def build_vpc(self, cidrblock):
         """Build VPC"""
@@ -99,6 +108,42 @@ class EnvironmentBuilder(object):
             VpcId=vpc.id,
         )
 
+    def attach_vpn_gateway(self, vpn_gateway_cfg):
+        """Attach defined VPN gateway to VPC"""
+        if vpn_gateway_cfg:
+            vgw_id = vpn_gateway_cfg.get('id', None)
+            if vgw_id is not None:
+                self.log.emit('attaching vgw ({}) to vpc ({})'.format(vgw_id, self.vpc_name))
+                # attach_vpn_gateway is available with ec2 client object
+                self.evpc.attach_vpn_gateway(vgw_id)
+#                 self.vgw_id = vgw_id
+#                 self.boto.ec2_client.attach_vpn_gateway(
+#                     DryRun=False,
+#                     VpnGatewayId = self.vgw_id,
+#                     VpcId = self.evpc.id,                                    
+#                 )
+#                 # check & wait till VGW (2 min.) is attached
+#                 count = 0
+#                 while(not self.evpc.is_vgw_attached(vgw_id)):
+#                     time.sleep(10)
+#                     count += 1
+#                     if count == 11:
+#                         raise Exception({"message":"VPN Gateway is not yet attached.", "VGW_ID":vgw_id})
+                  
+    def dhcp_options(self, dhcp_options_cfg):
+        """Creates DHCP Options Set and associates with VPC"""
+        for dhcp_name, data in dhcp_options_cfg.items():
+            longname = '{}-{}'.format(self.evpc.name, dhcp_name)
+            self.log.emit('creating DHCP Options Set {}'.format(longname))
+            dhcp_options_id = self.evpc.create_dhcp_options(data)
+            # associate DHCP Options with VPC
+            self.log.emit('associating DHCP Options {} ({}) with VPC {}'.format(longname, dhcp_options_id, self.vpc_name))
+            self.evpc.associate_dhcp_options(
+                DhcpOptionsId=dhcp_options_id
+            )
+            self.evpc.reload()
+            update_tags(self.evpc.dhcp_options, Name=longname)
+        
     def route_tables(self, route_cfg):
         """Build route_tables defined in config"""
         for rt_name, data in route_cfg.items():
@@ -124,6 +169,18 @@ class EnvironmentBuilder(object):
                     route_table.create_route(
                         DestinationCidrBlock = destination,
                         GatewayId = list(self.evpc.internet_gateways.all())[0].id,
+                    )
+                if target.lower() == 'vpn_gateway':
+                    # this is ugly but we assume only one VPN gateway.
+                    route_table.create_route(
+                        DestinationCidrBlock = destination,
+                        GatewayId = self.evpc.vgw_id,
+                    )
+                    
+                    # if routed to VPN gateway propagate the route
+                    self.boto.ec2_client.enable_vgw_route_propagation(
+                        RouteTableId = route_table.route_table_id,
+                        GatewayId = self.evpc.vgw_id,
                     )
 
     def subnets(self, subnet_cfg):
@@ -199,11 +256,22 @@ class EnvironmentBuilder(object):
 
     def security_group_rules(self, security_group_cfg):
         """Build Security Group Rules defined in config."""
-        msg = "'{}' into '{}' over ports {} ({})"
+        # call the method to build the inbound rules
+        self.security_group_inbound_rules(security_group_cfg)
+
+        # call the method to revoke the default outbound rule
+        self.security_group_revoke_default_outbound_rules(security_group_cfg)
+        
+        # call the method to build the inbound rules
+        self.security_group_outbound_rules(security_group_cfg)
+
+    def security_group_inbound_rules(self, security_group_cfg):
+        """Build inbound rule for Security Group defined in config."""
+        msg = "inbound connection from '{}' to '{}' over ports {} ({})"
         for sg_name, rules in security_group_cfg.items():
             sg = self.evpc.get_security_group(sg_name)
             permissions = []
-            for rule in rules:
+            for rule in rules.get('inbound', {}):
                 protocol = rule[1]
                 from_port, to_port = get_port_range(rule[2], protocol)
                 src_sg = self.evpc.get_security_group(rule[0])
@@ -223,10 +291,79 @@ class EnvironmentBuilder(object):
 
                 fmsg = msg.format(rule[0],sg_name,rule[2],rule[1].upper())
                 self.log.emit(fmsg)
+            
+            if permissions:
+                sg.authorize_ingress(
+                    IpPermissions = permissions
+                )
 
-            sg.authorize_ingress(
-                IpPermissions = permissions
-            )
+    def security_group_revoke_default_outbound_rules(self, security_group_cfg):
+        """Revoke default outbound rule for Security Group defined in config."""
+        msg = "revoking outbound connection to '{}' from '{}' over ports {} ({})"
+        for sg_name, rules in security_group_cfg.items():
+            sg = self.evpc.get_security_group(sg_name)
+            permissions = []
+            
+            rule = ['0.0.0.0/0', '-1', 'all']
+            
+            protocol = rule[1]
+            from_port, to_port = get_port_range(rule[2], protocol)
+#             src_sg = self.evpc.get_security_group(rule[0])
+
+            permission = {
+                'IpProtocol' : protocol,
+                'FromPort'   : from_port,
+                'ToPort'     : to_port,
+            }
+
+            permission['IpRanges'] = [{'CidrIp' : rule[0]}]
+            
+#             if src_sg is None:
+#                 permission['IpRanges'] = [{'CidrIp' : rule[0]}]
+#             else:
+#                 permission['UserIdGroupPairs'] = [{'GroupId':src_sg.id}]
+
+            permissions.append(permission)
+
+            fmsg = msg.format(rule[0],sg_name,rule[2],rule[1].upper())
+            self.log.emit(fmsg)
+            
+            if permissions:
+                sg.revoke_egress(
+                    IpPermissions = permissions
+                )
+        
+    def security_group_outbound_rules(self, security_group_cfg):
+        """Build outbound rule for Security Group defined in config."""
+        msg = "outbound connection to '{}' from '{}' over ports {} ({})"
+        for sg_name, rules in security_group_cfg.items():
+            sg = self.evpc.get_security_group(sg_name)
+            permissions = []
+            for rule in rules.get('outbound', {}):
+                protocol = rule[1]
+                from_port, to_port = get_port_range(rule[2], protocol)
+                src_sg = self.evpc.get_security_group(rule[0])
+
+                permission = {
+                    'IpProtocol' : protocol,
+                    'FromPort'   : from_port,
+                    'ToPort'     : to_port,
+                }
+
+                if src_sg is None:
+                    permission['IpRanges'] = [{'CidrIp' : rule[0]}]
+                else:
+                    permission['UserIdGroupPairs'] = [{'GroupId':src_sg.id}]
+
+                permissions.append(permission)
+
+                fmsg = msg.format(rule[0],sg_name,rule[2],rule[1].upper())
+                self.log.emit(fmsg)
+            
+            if permissions:
+                sg.authorize_egress(
+                    IpPermissions = permissions
+                )
 
     def key_pairs(self, key_pair_cfg):
         key_pair_cfg.append('default')

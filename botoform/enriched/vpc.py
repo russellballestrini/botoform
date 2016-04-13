@@ -1,7 +1,8 @@
-from time import strftime
+import time
 
 from botoform.util import (
   BotoConnections,
+  Log,
   reflect_attrs,
   make_tag_dict,
   make_filter,
@@ -25,13 +26,16 @@ class EnrichedVPC(object):
     We also provide methods for managing the lifecycle of related AWS resources.
     """
 
-    def __init__(self, vpc_name=None, region_name=None, profile_name=None):
+    def __init__(self, vpc_name=None, region_name=None, profile_name=None, log=None):
         self.boto = BotoConnections(region_name, profile_name)
 
         # capture a list of this classes attributes before reflecting.
         self.self_attrs = dir(self)
 
+        self.log = log if log is not None else Log()
+        
         if vpc_name is not None:
+            self.vpc_name = vpc_name
             self.connect(vpc_name)
 
     def __str__(self):
@@ -265,6 +269,18 @@ class EnrichedVPC(object):
         """Accept security group name, return security group object or None."""
         return self._filter_collection_by_name(name, self.security_groups)
 
+    def get_vpn_gateways(self):
+        """Gets all the VGWs attached to the VPC"""
+        vgws = self.boto.ec2_client.describe_vpn_gateways(
+            Filters=[
+                     {
+                       'Name': 'attachment.vpc-id',
+                       'Values': [ self.id, ] 
+                     }, 
+                    ]
+        )
+        return vgws.get('VpnGateways', {})
+    
     def associate_route_table_with_subnet(self, rt_name, sn_name):
         """Accept a route table name and subnet name, associate them."""
         self.boto.ec2_client.associate_route_table(
@@ -282,6 +298,85 @@ class EnrichedVPC(object):
         for instance in self.get_instances(instances):
             instance.unlock()
 
+    def is_vgw_attached(self, vgw_id):
+        """Check whether the VGW is attached or not"""
+        vgw = self.boto.ec2_client.describe_vpn_gateways(
+                    VpnGatewayIds=[vgw_id]
+                )
+        return vgw.get('VpnGateways')[0].get('VpcAttachments')[0].get('State') == 'attached'
+
+    def is_vgw_detached(self, vgw_id):
+        """Check whether the VGW is attached or not"""
+        vgw = self.boto.ec2_client.describe_vpn_gateways(
+                    VpnGatewayIds=[vgw_id]
+                )
+        return vgw.get('VpnGateways')[0].get('VpcAttachments')[0].get('State') == 'detached'
+        
+    def attach_vpn_gateway(self, vgw_id):
+        """Attach VPN gateway to the VPC"""
+        self.vgw_id = vgw_id
+        self.boto.ec2_client.attach_vpn_gateway(
+                    DryRun=False,
+                    VpnGatewayId = self.vgw_id,
+                    VpcId = self.id,                                    
+                )
+        # check & wait till VGW (2 min.) is attached
+        count = 0
+        while(not self.is_vgw_attached(vgw_id)):
+            self.log.emit('\tattaching...', 'debug')
+            time.sleep(10)
+            count += 1
+            if count == 11:
+                raise Exception({"message":"VPN Gateway is not yet attached.", "VGW_ID":vgw_id})
+     
+    def detach_vpn_gateway(self):
+        """Detach VPN gateway from VPC"""
+        for vgw in self.get_vpn_gateways():
+            vgw_id = vgw.get('VpnGatewayId')
+            self.log.emit('detaching vgw - {} from vpc - {}'.format(vgw_id, self.vpc_name))
+            self.boto.ec2_client.detach_vpn_gateway(
+                        DryRun=False,
+                        VpnGatewayId = vgw_id,
+                        VpcId = self.id,                                    
+                    )
+            # check & wait till VGW (2 min.) is detached
+            self.log.emit('\tdetaching...', 'debug')
+            time.sleep(10)
+            count = 0
+            while(not self.is_vgw_detached(vgw_id)):
+                self.log.emit('\tdetaching...', 'debug')
+                time.sleep(10)
+                count += 1
+                if count == 11:
+                    raise Exception({"message":"VPN Gateway is not yet detached.", "VGW_ID":vgw_id})
+
+    def create_dhcp_options(self, data):
+        """Creates DHCP Options Set"""
+        dhcp_configurations = []
+        for k, v in data.items():
+            self.log.emit('\tDHCP Options - {} = {}'.format(k, v))
+            dhcp_configurations.append(
+                {
+                    'Key': k,
+                    'Values': v
+                }
+            )
+        
+        dhcp_options = self.boto.ec2_client.create_dhcp_options(
+                            DhcpConfigurations=dhcp_configurations
+                        )
+        dhcp_options_id = dhcp_options.get('DhcpOptions').get('DhcpOptionsId')
+        self.dhcp_options = self.boto.ec2.DhcpOptions(dhcp_options_id)
+        return dhcp_options_id
+        
+    def stop_instances(self, instances=None):
+        """Terminate all or a list of instances. Wait until terminated."""
+        instances = self.get_instances(instances)
+        for instance in instances:
+            self.log.emit('stopping instance - {}...'.format(instance.identity))
+            instance.disassociate_eips()
+            instance.stop()
+        
     def delete_instances(self, instances=None):
         """Terminate all or a list of instances. Wait until terminated."""
         instances = self.get_instances(instances)
@@ -290,29 +385,38 @@ class EnrichedVPC(object):
             instance.terminate()
         for instance in instances:
             # TODO: don't use print statements! use log facility...
-            #print('waiting for {} to terminate...'.format(instance.identity))
+            self.log.emit('waiting for {} to terminate...'.format(instance.identity))
             instance.wait_until_terminated()
 
     def delete_internet_gateways(self):
         """Delete related internet gatways."""
         for igw in self.internet_gateways.all():
+            self.log.emit('detaching internet gateway - {} from vpc - {}'.format(igw.id, self.vpc_name))
             igw.detach_from_vpc(VpcId = self.id)
+            self.log.emit('deleting internet gateway - {}'.format(igw.id))
             igw.delete()
 
     def delete_security_groups(self):
         """Delete related security groups."""
         for sg in self.security_groups.all():
             if len(sg.ip_permissions) >= 1:
+                self.log.emit('revoking all inbound rules of security group - {}'.format(sg.id))
                 sg.revoke_ingress(IpPermissions = sg.ip_permissions)
+
+            if len(sg.ip_permissions_egress) >= 1:
+                self.log.emit('revoking all outbound rules of security group - {}'.format(sg.id))
+                sg.revoke_egress(IpPermissions = sg.ip_permissions_egress)
 
         for sg in self.security_groups.all():
             if sg.group_name == 'default':
                 continue
+            self.log.emit('deleting security group - {}'.format(sg.id))
             sg.delete()
 
     def delete_subnets(self):
         """Delete related subnets."""
         for sn in self.subnets.all():
+            self.log.emit('deleting subnet - {}'.format(sn.id))
             sn.delete()
 
     def delete_route_tables(self):
@@ -321,11 +425,18 @@ class EnrichedVPC(object):
         for rt in self.route_tables.all():
             if rt.id != main_rt.id:
                 for a in rt.associations.all():
+                    self.log.emit('dissociating subnet {} from route table {}'.format(a.subnet_id, a.route_table_id))
                     a.delete()
+                self.log.emit('deleting route table {}'.format(rt.id))
                 rt.delete()
 
+    def delete_dhcp_options(self):
+        """Delete DHCP Options Set"""
+        self.log.emit('deleting DHCP Options set {}'.format(self.dhcp_options.id))
+        self.dhcp_options.delete()
+        
     def terminate(self):
-        """Terminate all resources related to this VPC!"""
+        """Terminate all resources related to this VPC!"""        
         self.delete_instances()
         self.key_pair.delete_key_pairs()
         self.vpc_endpoint.delete_related()
@@ -333,5 +444,8 @@ class EnrichedVPC(object):
         self.delete_subnets()
         self.delete_route_tables()
         self.delete_internet_gateways()
+        self.detach_vpn_gateway()
+        self.log.emit('deleting the VPC - {}'.format(self.id))
         self.vpc.delete()
+        self.delete_dhcp_options()
 

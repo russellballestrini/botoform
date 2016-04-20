@@ -80,7 +80,7 @@ class EnvironmentBuilder(object):
         self.finish_instance_roles(
             config.get('instance_roles', no_cfg), new_instances,
         )
-#         self.log.emit('done! don\'t you look awesome. : )')
+        self.log.emit('done! don\'t you look awesome. : )')
 
     def build_vpc(self, cidrblock):
         """Build VPC"""
@@ -116,20 +116,20 @@ class EnvironmentBuilder(object):
                 self.log.emit('attaching vgw ({}) to vpc ({})'.format(vgw_id, self.vpc_name))
                 # attach_vpn_gateway is available with ec2 client object
                 self.evpc.attach_vpn_gateway(vgw_id)
-#                 self.vgw_id = vgw_id
-#                 self.boto.ec2_client.attach_vpn_gateway(
-#                     DryRun=False,
-#                     VpnGatewayId = self.vgw_id,
-#                     VpcId = self.evpc.id,                                    
-#                 )
-#                 # check & wait till VGW (2 min.) is attached
-#                 count = 0
-#                 while(not self.evpc.is_vgw_attached(vgw_id)):
-#                     time.sleep(10)
-#                     count += 1
-#                     if count == 11:
-#                         raise Exception({"message":"VPN Gateway is not yet attached.", "VGW_ID":vgw_id})
-                  
+                #self.vgw_id = vgw_id
+                #self.boto.ec2_client.attach_vpn_gateway(
+                #    DryRun=False,
+                #    VpnGatewayId = self.vgw_id,
+                #    VpcId = self.evpc.id,
+                #)
+                ## check & wait till VGW (2 min.) is attached
+                #count = 0
+                #while(not self.evpc.is_vgw_attached(vgw_id)):
+                #    time.sleep(10)
+                #    count += 1
+                #    if count == 11:
+                #        raise Exception({"message":"VPN Gateway is not yet attached.", "VGW_ID":vgw_id})
+
     def dhcp_options(self, dhcp_options_cfg):
         """Creates DHCP Options Set and associates with VPC"""
         for dhcp_name, data in dhcp_options_cfg.items():
@@ -159,25 +159,26 @@ class EnvironmentBuilder(object):
                 update_tags(route_table, Name = longname)
 
             # TODO: move to separate method ...
-            # gatewayId, natGatewayId, networkInterfaceId, vpcPeeringConnectionId or instanceId
-            # add routes to route_table defined in configuration.
+            #   gatewayId, natGatewayId, networkInterfaceId,
+            #   vpcPeeringConnectionId or instanceId
+            #   add routes to route_table defined in configuration.
             for route in data.get('routes', []):
                 destination, target = route
                 self.log.emit('adding route {} to route_table ({})'.format(route, longname))
                 if target.lower() == 'internet_gateway':
-                    # this is ugly but we assume only one internet gateway.
+                    # TODO: ugly but we assume only one internet gateway.
                     route_table.create_route(
                         DestinationCidrBlock = destination,
                         GatewayId = list(self.evpc.internet_gateways.all())[0].id,
                     )
                 if target.lower() == 'vpn_gateway':
-                    # this is ugly but we assume only one VPN gateway.
+                    # TODO: ugly but we assume only one VPN gateway.
                     route_table.create_route(
                         DestinationCidrBlock = destination,
                         GatewayId = self.evpc.vgw_id,
                     )
                     
-                    # if routed to VPN gateway propagate the route
+                    # if routed to VPN gateway propagate the route.
                     self.boto.ec2_client.enable_vgw_route_propagation(
                         RouteTableId = route_table.route_table_id,
                         GatewayId = self.evpc.vgw_id,
@@ -481,4 +482,47 @@ class EnvironmentBuilder(object):
             self.evpc.lock_instances(instances)
         except:
             self.log.emit('could not lock instances, continuing...', 'warning')
+
+    def db_instances(self, db_instance_cfg):
+        """Build RDS DB Instances."""
+
+        for rds_name, db_cfg in db_instance_cfg.items():
+
+            # make list of security group ids.
+            security_groups = map(
+                self.evpc.get_security_group,
+                db_cfg.get('security_groups', [])
+            )
+            sg_ids = get_ids(security_groups)
+
+            # make list of subnet ids.
+            subnets = map(
+                self.evpc.get_subnet,
+                db_cfg.get('subnets', [])
+            )
+            sn_ids = get_ids(subnets)
+
+            self.evpc.rds.create_db_subnet_group(
+              DBSubnetGroupName = rds_name,
+              DBSubnetGroupDescription = db_cfg.get('description',''),
+              SubnetIds = sn_ids,
+            )
+
+            self.evpc.rds.create_db_instance(
+              DBInstanceIdentifier = rds_name,
+              DBSubnetGroupName = rds_name,
+              DBName = db_cfg.get('name', rds_name),
+              VpcSecurityGroupIds = sg_ids,
+              DBInstanceClass = db_cfg.get('class', 'db.t2.medium'),
+              AllocatedStorage = db_cfg.get('allocated_storage', 100),
+              Engine        = db_cfg.get('engine'),
+              EngineVersion = db_cfg.get('engine_version', ''),
+              Iops = db_cfg.get('iops', 0),
+              MultiAZ = db_cfg.get('multi_az', False),
+              MasterUsername = db_cfg.get('master_username'),
+              MasterUserPassword = generate_password(16),
+              BackupRetentionPeriod = db_cfg.get('backup_retention_period', 0),
+              Tags = [ { 'Key' : 'cust_id', 'Value' : self.evpc.cust_id } ],
+            )
+
 

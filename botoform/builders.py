@@ -10,6 +10,7 @@ from botoform.util import (
   get_port_range,
   get_ids,
   collection_len,
+  generate_password,
 )
 
 from botoform.subnetallocator import allocate
@@ -489,6 +490,8 @@ class EnvironmentBuilder(object):
 
         for rds_name, db_cfg in db_instance_cfg.items():
 
+            self.log.emit('creating {} RDS db_instance ...'.format(rds_name))
+
             # make list of security group ids.
             security_groups = map(
                 self.evpc.get_security_group,
@@ -511,19 +514,19 @@ class EnvironmentBuilder(object):
 
             self.evpc.rds.create_db_instance(
               DBInstanceIdentifier = rds_name,
-              DBSubnetGroupName = rds_name,
+              DBSubnetGroupName    = rds_name,
               DBName = db_cfg.get('name', rds_name),
-              VpcSecurityGroupIds = sg_ids,
-              DBInstanceClass = db_cfg.get('class', 'db.t2.medium'),
-              AllocatedStorage = db_cfg.get('allocated_storage', 100),
-              Engine        = db_cfg.get('engine'),
-              EngineVersion = db_cfg.get('engine_version', ''),
-              Iops = db_cfg.get('iops', 0),
-              MultiAZ = db_cfg.get('multi_az', False),
-              MasterUsername = db_cfg.get('master_username'),
-              MasterUserPassword = generate_password(16),
+              VpcSecurityGroupIds   = sg_ids,
+              DBInstanceClass       = db_cfg.get('class', 'db.t2.medium'),
+              AllocatedStorage      = db_cfg.get('allocated_storage', 100),
+              Engine                = db_cfg.get('engine'),
+              EngineVersion         = db_cfg.get('engine_version', ''),
+              Iops                  = db_cfg.get('iops', 0),
+              MultiAZ               = db_cfg.get('multi_az', False),
+              MasterUsername        = db_cfg.get('master_username'),
+              MasterUserPassword    = generate_password(16),
               BackupRetentionPeriod = db_cfg.get('backup_retention_period', 0),
-              Tags = [ { 'Key' : 'cust_id', 'Value' : self.evpc.cust_id } ],
+              Tags = [ { 'Key' : 'vpc_name', 'Value' : self.evpc.vpc_name } ],
             )
 
 

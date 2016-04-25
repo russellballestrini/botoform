@@ -105,6 +105,21 @@ security_groups:
     inbound:
       - ['0.0.0.0/0', 'tcp',   22]
 
+# define an RDS database.
+db_instances:
+  'webapp-psql':
+    name : 'webapp'
+    description: PostgreSQL Database For Persistence
+    subnets: ['private-1', 'private-2']
+    security_groups: ['psql-server']
+    engine: postgres
+    engine_version: 9.4.1
+    class: db.t2.micro
+    allocated_storage: 5
+    backup_retention_period: 0
+    master_username: postgres
+    multi_az: False
+
 # define a public ELB for webapp nodes.
 load_balancers:
 

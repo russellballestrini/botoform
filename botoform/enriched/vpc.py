@@ -15,6 +15,7 @@ from instance import EnrichedInstance
 from vpc_endpoint import EnrichedVpcEndpoint
 from elasticache import EnrichedElastiCache
 from elb import EnrichedElb
+from rds import EnrichedRds
 from key_pair import EnrichedKeyPair
 
 from nested_lookup import nested_lookup
@@ -73,6 +74,7 @@ class EnrichedVPC(object):
         self.vpc_endpoint = EnrichedVpcEndpoint(self)
         self.elasticache = EnrichedElastiCache(self)
         self.elb = EnrichedElb(self)
+        self.rds = EnrichedRds(self)
         self.key_pair = EnrichedKeyPair(self)
 
     @property
@@ -459,6 +461,7 @@ class EnrichedVPC(object):
     def terminate(self):
         """Terminate all resources related to this VPC!"""        
         self.delete_instances()
+        self.rds.delete_related_db_instances()
         self.key_pair.delete_key_pairs()
         self.vpc_endpoint.delete_related()
         self.delete_security_groups()

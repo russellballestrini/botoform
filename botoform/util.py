@@ -6,6 +6,10 @@ import boto3
 import hashlib
 import humanhash
 
+# used for generate_password function.
+from string import letters, digits
+from random import choice
+
 class BotoConnections(object):
     """Central Management of boto3 client and resource connection objects."""
     def __init__(self, region_name=None, profile_name=None):
@@ -61,12 +65,7 @@ class BotoConnections(object):
         self.rds = boto3.client('rds')
         self.elasticache = boto3.client('elasticache')
         self.elb = boto3.client('elb')
-        self.session = boto3._get_default_session()
         
-        # if region is not given through command line then region is set from profile
-        if self._region_name is None:
-            self._region_name = self.session.region_name
-
     @property
     def azones(self):
         """Return a list of available AZ names for active AWS profile/region."""
@@ -343,13 +342,28 @@ def write_private_key(key_pair):
 
     :param key_pair: The Boto3 KeyPair object to write to filesystem.
 
-    :returns None:
+    :returns: None
     """
     from os import chmod
     private_key_path = key_pair['KeyName'] + '.pem'
     with open(private_key_path, 'w') as f:
         f.write(key_pair['KeyMaterial'])
         chmod(private_key_path, 0400)
+
+def generate_password(size = 9, pool = None):
+    """
+    Return a system generated password.
+
+    :param size:
+        The desired length of the password to generate. (Default 9)
+    :param pool:
+        Pool of chars to choose from. (Default digits and letters [upper/lower])
+
+    :returns: String (raw password)
+    """
+    if pool == None:
+        pool = letters + digits
+    return ''.join( [ choice( pool ) for i in range( size ) ] )
 
 def id_to_human(id_string):
     """

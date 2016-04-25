@@ -70,6 +70,7 @@ class EnvironmentBuilder(object):
         self.associate_route_tables_with_subnets(config.get('subnets', no_cfg))
         self.security_groups(config.get('security_groups', no_cfg))
         self.key_pairs(config.get('key_pairs', []))
+        self.db_instances(config.get('db_instances', no_cfg))
         new_instances = self.instance_roles(
             config.get('instance_roles', no_cfg)
         )

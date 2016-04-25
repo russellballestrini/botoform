@@ -65,12 +65,7 @@ class BotoConnections(object):
         self.rds = boto3.client('rds')
         self.elasticache = boto3.client('elasticache')
         self.elb = boto3.client('elb')
-        self.session = boto3._get_default_session()
         
-        # if region is not given through command line then region is set from profile
-        if self._region_name is None:
-            self._region_name = self.session.region_name
-
     @property
     def azones(self):
         """Return a list of available AZ names for active AWS profile/region."""

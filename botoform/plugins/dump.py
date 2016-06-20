@@ -13,7 +13,7 @@ def instances(args, evpc):
         instances = evpc.find_instances(args.identifiers, args.roles, args.exclude)
     else:
         instances = evpc.instances
-    print(output_formatter(map(str, instances), args.output_format))
+    print(output_formatter(map(lambda i : i.identifiers, instances), args.output_format))
 
 def security_groups(args, evpc):
     """

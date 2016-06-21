@@ -65,6 +65,7 @@ class BotoConnections(object):
         self.rds = boto3.client('rds')
         self.elasticache = boto3.client('elasticache')
         self.elb = boto3.client('elb')
+        self.autoscaling = boto3.client('autoscaling')
         
     @property
     def azones(self):

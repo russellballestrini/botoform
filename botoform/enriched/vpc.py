@@ -13,6 +13,7 @@ from botoform.util import (
 
 from instance import EnrichedInstance
 from vpc_endpoint import EnrichedVpcEndpoint
+from autoscaling import EnrichedAutoscaling
 from elasticache import EnrichedElastiCache
 from elb import EnrichedElb
 from rds import EnrichedRds
@@ -72,6 +73,7 @@ class EnrichedVPC(object):
 
         # attach Enriched Connections to self.
         self.vpc_endpoint = EnrichedVpcEndpoint(self)
+        self.autoscaling = EnrichedAutoscaling(self)
         self.elasticache = EnrichedElastiCache(self)
         self.elb = EnrichedElb(self)
         self.rds = EnrichedRds(self)

@@ -48,7 +48,7 @@ class EnrichedAutoscaling(object):
         vpc_security_group_ids = get_ids(self.evpc.security_groups.all())
         for lc in self.get_all_launch_config_descriptions():
             lc_security_group_ids = set(lc['SecurityGroups'])
-            # we compare the subnet_ids from asg and vpc and assume relations on intersections.
+            # we compare the security_group ids from lc and vpc and assume relations on intersections.
             if lc_security_group_ids.intersection(vpc_security_group_ids):
                 descriptions.append(lc)
         return descriptions

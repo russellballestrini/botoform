@@ -125,7 +125,7 @@ load_balancers:
 
   # The Name tag of the this ELB will end up as webapp01-web-elb:
   web-elb:
-    register_instances: web
+    instance_role: web
     internal: false
     security_groups: ['web-elb']
     subnets: ['public-1', 'public-2']

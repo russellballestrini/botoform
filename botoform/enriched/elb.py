@@ -1,6 +1,7 @@
 from ..util import (
   reflect_attrs,
   merge_pages,
+  get_ids,
 )
 
 from nested_lookup import nested_lookup
@@ -37,7 +38,28 @@ class EnrichedElb(object):
                    self.get_related_elb_descriptions(),
                )
 
+    def format_listeners(self, listener_tuples):
+        listener_dicts = []
+        for listener in listner_tuples:
+            listener_dicts.append(
+                'LoadBalancerPort': listener[0],
+                'InstancePort': listener[1],
+                'Protocol': listener[2],
+                'InstanceProtocol': listener[2],
+            )
+        return listener_dicts
+
+    def format_instance_ids(self, instance_ids):
+        """god boto3 is a pain sometimes."""
+        return [ {'InstanceId' : instance_id } for instance_id in instance_ids ]
+
+    def register_role_with_load_balancer(self, elb_name, role_name):
+        role = self.evpc.get_role(role_name)
+        instance_ids = get_ids(role)
+        self.register_instances_with_load_balancer(
+          LoadBalancerName = elb_name,
+          Instances = self.format_instance_ids(instance_ids),
+        )
+
     # TODO:
-    # 1. method to refresh related elb registrations & wait until in service.
-    # 2. method to create a new related elb.
     # 3. method to delete related elbs.

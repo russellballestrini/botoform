@@ -82,6 +82,7 @@ class EnvironmentBuilder(object):
         self.finish_instance_roles(
             config.get('instance_roles', no_cfg), new_instances,
         )
+        self.load_balancers(config.get('load_balancers', no_cfg))
         self.log.emit('done! don\'t you look awesome. : )')
 
     def build_vpc(self, cidrblock):
@@ -529,4 +530,42 @@ class EnvironmentBuilder(object):
               Tags = [ { 'Key' : 'vpc_name', 'Value' : self.evpc.vpc_name } ],
             )
 
+    def load_balancers(self, load_balancer_cfg):
+        """Build ELB load balancers."""
+        for lb_name, lb_cfg in load_balancers_cfg.items():
 
+            lb_fullname = '{}-{}'.format(self.evpc.name, lb_name),
+            self.log.emit('creating {} load_balancer ...'.format(lb_fullname))
+
+            # make list of security group ids.
+            security_groups = map(
+                self.evpc.get_security_group,
+                lb_cfg.get('security_groups', [])
+            )
+            sg_ids = get_ids(security_groups)
+
+            # make list of subnet ids.
+            subnets = map(
+                self.evpc.get_subnet,
+                lb_cfg.get('subnets', [])
+            )
+            sn_ids = get_ids(subnets)
+
+            scheme = 'internal'
+            if lb_cfg.get('internal', True) == False:
+                scheme = 'internet-facing'
+
+            listeners = self.elb.format_listeners(lb_cfg.get('listeners', []))
+
+            self.evpc.elb.create_load_balancer(
+              LoadBalancerName = lb_fullname,
+              Subnets = sn_ids,
+              SecurityGroups = sg_ids,
+              Scheme = scheme,
+              Tags = [ { 'Key' : 'vpc_name', 'Value' : self.evpc.vpc_name } ],
+              Listeners = listeners,
+            )
+
+            self.log.emit('created {} load_balancer ...'.format(lb_fullname))
+
+            self.elb.register_role_with_load_balancer(lb_fullname, lb_cfg['instance_role'])

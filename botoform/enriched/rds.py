@@ -88,6 +88,7 @@ class EnrichedRds(object):
 
         for db_id in db_ids:
             # delete the db_instance.
+            self.evpc.log.emit('deleting rds: {}'.format(db_id))
             if skip_snapshot:
                 self.delete_db_instance(
                     DBInstanceIdentifier = db_id,
@@ -100,6 +101,7 @@ class EnrichedRds(object):
                 )
 
         # wait for all db_ids to reach db_instance_deleted state.
+        self.evpc.log.emit('waiting for rds delete ...')
         self.wait_for_related_dbs('db_instance_deleted', db_ids)
 
         for subnet_id in subnet_ids:

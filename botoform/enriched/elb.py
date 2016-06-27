@@ -40,12 +40,14 @@ class EnrichedElb(object):
 
     def format_listeners(self, listener_tuples):
         listener_dicts = []
-        for listener in listner_tuples:
+        for listener in listener_tuples:
             listener_dicts.append(
+              {
                 'LoadBalancerPort': listener[0],
                 'InstancePort': listener[1],
                 'Protocol': listener[2],
                 'InstanceProtocol': listener[2],
+              }
             )
         return listener_dicts
 
@@ -61,5 +63,7 @@ class EnrichedElb(object):
           Instances = self.format_instance_ids(instance_ids),
         )
 
-    # TODO:
-    # 3. method to delete related elbs.
+    def delete_related_elbs(self):
+        for elb_name in self.get_related_elb_names():
+            self.evpc.log.emit('deleting load balancer: {}'.format(elb_name))
+            self.delete_load_balancer(LoadBalancerName = elb_name)

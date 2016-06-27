@@ -117,7 +117,8 @@ class EnrichedVPC(object):
 
     def get_running_instances(self, instances=None):
         """Return list running EnrichedInstance object related to this VPC."""
-        return [i for i in self.get_instances(instances) if i.state['Code'] == 16]
+        instances = self.get_instances(instances)
+        return [instance for instance in instances if instance.state['Code'] == 16]
 
     def get_roles(self, instances=None):
         """
@@ -125,7 +126,8 @@ class EnrichedVPC(object):
         a list of EnrichedInstance objects is the value.
         """
         roles = {}
-        for instance in self.get_instances(instances):
+        instances = self.get_instances(instances)
+        for instance in instances:
             if instance.role not in roles:
                 roles[instance.role] = []
             roles[instance.role].append(instance)
@@ -159,17 +161,18 @@ class EnrichedVPC(object):
 
         :returns: EnrichedInstance or None
         """
-        instances = []
-        for instance in self.get_instances():
+        instances = self.get_instances(instances)
+        hits = []
+        for instance in instances:
             if identifier in instance.identifiers:
-                instances.append(instance)
+                hits.append(instance)
         if len(instances) > 1:
             msg = "Multiple instances '{}' have '{}' identifier."
-            instance_names = ', '.join(map(str, instances))
+            instance_names = ', '.join(map(str, hits))
             raise Exception(msg.format(instance_names, identifier))
         if len(instances) == 0:
             return None
-        return instances[0]
+        return hits[0]
 
     @staticmethod
     def _set(x):
@@ -210,14 +213,15 @@ class EnrichedVPC(object):
 
         :returns: A list of EnrichedInstance objets or an empty list.
         """
-        instances = []
-        for i in self.get_instances():
+        instances = self.get_instances(instances)
+        hits = []
+        for i in instances:
             qualified = self._identify_instance(i, identifiers, roles)
             if qualified and exclude == False:
-                instances.append(i)
+                hits.append(i)
             elif not qualified and exclude == True:
-                instances.append(i)
-        return instances
+                hits.append(i)
+        return hits
 
     def include_instances(self, identifiers = None, roles = None):
         """
@@ -294,12 +298,14 @@ class EnrichedVPC(object):
 
     def lock_instances(self, instances=None):
         """Lock all or a list of instances."""
-        for instance in self.get_instances(instances):
+        instances = self.get_instances(instances)
+        for instance in instances:
             instance.lock()
 
     def unlock_instances(self, instances=None):
         """Unlock all or a list of instances."""
-        for instance in self.get_instances(instances):
+        instances = self.get_instances(instances)
+        for instance in instances:
             instance.unlock()
 
     def is_vgw_attached(self, vgw_id):
@@ -463,6 +469,7 @@ class EnrichedVPC(object):
     def terminate(self):
         """Terminate all resources related to this VPC!"""        
         self.delete_instances()
+        self.elb.delete_related_elbs()
         self.rds.delete_related_db_instances()
         self.key_pair.delete_key_pairs()
         self.vpc_endpoint.delete_related()

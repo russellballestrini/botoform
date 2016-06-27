@@ -78,11 +78,11 @@ class EnvironmentBuilder(object):
         # lets do more work while new_instances move from pending to running.
         self.endpoints(config.get('endpoints', []))
         self.security_group_rules(config.get('security_groups', no_cfg))
+        self.load_balancers(config.get('load_balancers', no_cfg))
         # lets finish building the new instances.
         self.finish_instance_roles(
             config.get('instance_roles', no_cfg), new_instances,
         )
-        self.load_balancers(config.get('load_balancers', no_cfg))
         self.log.emit('done! don\'t you look awesome. : )')
 
     def build_vpc(self, cidrblock):
@@ -532,9 +532,9 @@ class EnvironmentBuilder(object):
 
     def load_balancers(self, load_balancer_cfg):
         """Build ELB load balancers."""
-        for lb_name, lb_cfg in load_balancers_cfg.items():
+        for lb_name, lb_cfg in load_balancer_cfg.items():
 
-            lb_fullname = '{}-{}'.format(self.evpc.name, lb_name),
+            lb_fullname = '{}-{}'.format(self.evpc.name, lb_name)
             self.log.emit('creating {} load_balancer ...'.format(lb_fullname))
 
             # make list of security group ids.
@@ -555,7 +555,7 @@ class EnvironmentBuilder(object):
             if lb_cfg.get('internal', True) == False:
                 scheme = 'internet-facing'
 
-            listeners = self.elb.format_listeners(lb_cfg.get('listeners', []))
+            listeners = self.evpc.elb.format_listeners(lb_cfg.get('listeners', []))
 
             self.evpc.elb.create_load_balancer(
               LoadBalancerName = lb_fullname,
@@ -568,4 +568,4 @@ class EnvironmentBuilder(object):
 
             self.log.emit('created {} load_balancer ...'.format(lb_fullname))
 
-            self.elb.register_role_with_load_balancer(lb_fullname, lb_cfg['instance_role'])
+            self.evpc.elb.register_role_with_load_balancer(lb_fullname, lb_cfg['instance_role'])

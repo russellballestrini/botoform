@@ -9,3 +9,12 @@ from instance import EnrichedInstance
 from elb import EnrichedElb
 
 from elasticache import EnrichedElastiCache
+
+from rds import EnrichedRds
+
+from enriched import (
+  Enriched,
+  EnrichedRouteTable,
+  EnrichedSubnet,
+  EnrichedSecurityGroup,
+)

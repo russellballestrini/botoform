@@ -19,6 +19,13 @@ from elb import EnrichedElb
 from rds import EnrichedRds
 from key_pair import EnrichedKeyPair
 
+from enriched import (
+  Enriched,
+  EnrichedRouteTable,
+  EnrichedSubnet,
+  EnrichedSecurityGroup,
+)
+
 from nested_lookup import nested_lookup
 
 class EnrichedVPC(object):
@@ -267,15 +274,28 @@ class EnrichedVPC(object):
 
     def get_route_table(self, name):
         """Accept route table name, return route_table object or None."""
-        return self._filter_collection_by_name(name, self.route_tables)
+        ec2_object = self._filter_collection_by_name(name, self.route_tables)
+        if ec2_object is not None:
+            return EnrichedRouteTable(ec2_object, evpc=self)
 
     def get_subnet(self, name):
         """Accept subnet name, return subnet object or None."""
-        return self._filter_collection_by_name(name, self.subnets)
+        ec2_object = self._filter_collection_by_name(name, self.subnets)
+        if ec2_object is not None:
+            return EnrichedSubnet(ec2_object, evpc=self)
 
     def get_security_group(self, name):
         """Accept security group name, return security group object or None."""
-        return self._filter_collection_by_name(name, self.security_groups)
+        ec2_object = self._filter_collection_by_name(name, self.security_groups)
+        if ec2_object is not None:
+            return EnrichedSecurityGroup(ec2_object, evpc=self)
+
+    def associate_route_table_with_subnet(self, rt_name, sn_name):
+        """Accept a route table name and subnet name, associate them."""
+        self.boto.ec2_client.associate_route_table(
+                        RouteTableId = self.get_route_table(rt_name).id,
+                        SubnetId     = self.get_subnet(sn_name).id,
+        )
 
     def get_vpn_gateways(self):
         """Gets all the VGWs attached to the VPC"""
@@ -283,18 +303,11 @@ class EnrichedVPC(object):
             Filters=[
                      {
                        'Name': 'attachment.vpc-id',
-                       'Values': [ self.id, ] 
-                     }, 
+                       'Values': [ self.id, ]
+                     },
                     ]
         )
         return vgws.get('VpnGateways', {})
-    
-    def associate_route_table_with_subnet(self, rt_name, sn_name):
-        """Accept a route table name and subnet name, associate them."""
-        self.boto.ec2_client.associate_route_table(
-                        RouteTableId = self.get_route_table(rt_name).id,
-                        SubnetId     = self.get_subnet(sn_name).id,
-        )
 
     def lock_instances(self, instances=None):
         """Lock all or a list of instances."""

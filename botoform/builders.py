@@ -17,6 +17,8 @@ from botoform.subnetallocator import allocate
 
 from uuid import uuid4
 
+from random import choice
+
 class EnvironmentBuilder(object):
 
     def __init__(self, vpc_name, config=None, region_name=None, profile_name=None, log=None):
@@ -79,6 +81,7 @@ class EnvironmentBuilder(object):
         self.endpoints(config.get('endpoints', []))
         self.security_group_rules(config.get('security_groups', no_cfg))
         self.load_balancers(config.get('load_balancers', no_cfg))
+        self.route_table_rules(config.get('route_tables', no_cfg))
         # lets finish building the new instances.
         self.finish_instance_roles(
             config.get('instance_roles', no_cfg), new_instances,
@@ -161,20 +164,22 @@ class EnvironmentBuilder(object):
                 self.log.emit('tagging route_table (Name:{})'.format(longname), 'debug')
                 update_tags(route_table, Name = longname)
 
-            # TODO: move to separate method ...
-            #   gatewayId, natGatewayId, networkInterfaceId,
-            #   vpcPeeringConnectionId or instanceId
-            #   add routes to route_table defined in configuration.
+    def route_table_rules(self, route_cfg):
+        """Build route table rules defined in config"""
+        # currently supports: igw, vgw, and instance_roles
+        for rt_name, data in route_cfg.items():
+            # this method assumes the route_table was already created.
+            route_table = self.evpc.get_route_table(rt_name)
             for route in data.get('routes', []):
                 destination, target = route
-                self.log.emit('adding route {} to route_table ({})'.format(route, longname))
+                self.log.emit('adding route {} to route_table ({})'.format(route, route_table.name))
                 if target.lower() == 'internet_gateway':
                     # TODO: ugly but we assume only one internet gateway.
                     route_table.create_route(
                         DestinationCidrBlock = destination,
                         GatewayId = list(self.evpc.internet_gateways.all())[0].id,
                     )
-                if target.lower() == 'vpn_gateway':
+                elif target.lower() == 'vpn_gateway':
                     # TODO: ugly but we assume only one VPN gateway.
                     route_table.create_route(
                         DestinationCidrBlock = destination,
@@ -185,6 +190,17 @@ class EnvironmentBuilder(object):
                     self.boto.ec2_client.enable_vgw_route_propagation(
                         RouteTableId = route_table.route_table_id,
                         GatewayId = self.evpc.vgw_id,
+                    )
+                else:
+                    # assume the target is an instance_role.
+                    instances = self.evpc.get_role(target)
+
+                    # janky: role may have more then one instance.
+                    nat_instance = choice(instances)
+
+                    route_table.create_route(
+                        DestinationCidrBlock = destination,
+                        InstanceId = nat_instance.id,
                     )
 
     def subnets(self, subnet_cfg):
@@ -424,7 +440,7 @@ class EnvironmentBuilder(object):
                 continue
 
             subnet_name = make_tag_dict(subnet)['Name']
-            msg = '{} instances of role {} launching into {}'
+            msg = '{} instances of role {} launching into {} subnet'
             self.log.emit(msg.format(count, role_name, subnet_name))
 
             # create a batch of instances in subnet!

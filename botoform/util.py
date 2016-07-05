@@ -81,6 +81,11 @@ class BotoformDumper(yaml.Dumper):
         return super(BotoformDumper, self).increase_indent(flow, False)
 
 
+# teach BotoformDumper how do represent Python types in YAML.
+BotoformDumper.add_representer(str, yaml.representer.SafeRepresenter.represent_str)
+BotoformDumper.add_representer(unicode, yaml.representer.SafeRepresenter.represent_unicode)
+BotoformDumper.add_representer(tuple, yaml.representer.SafeRepresenter.represent_list)
+
 class Log(object):
     """Handles emitting logs to syslog and stdout."""
     def __init__(self, desired_level='debug', syslog=True, stdout=True, program='botoform'):

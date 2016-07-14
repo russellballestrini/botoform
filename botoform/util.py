@@ -146,7 +146,9 @@ def output_formatter(data, output_format='newline'):
     elif output_format.upper() == 'CSV':
         output = ', '.join(data)
     elif output_format.upper() == 'YAML':
-        output = yaml.dump(data, Dumper=BotoformDumper)
+        # Janky but pyyaml expects an int (width=9000) to prevent wordwrap.
+        # so ... we pass "a power level over 9,000!!!"
+        output = yaml.dump(data, Dumper=BotoformDumper, width=9001)
     elif output_format.upper() == 'JSON':
         output = json.dumps(data, indent=2)
     return output

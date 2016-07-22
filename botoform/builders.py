@@ -279,33 +279,41 @@ class EnvironmentBuilder(object):
         self.security_group_inbound_rules(security_group_cfg)
         self.security_group_outbound_rules(security_group_cfg)
 
+    def security_group_rule_to_permission(self, rule):
+        """Return a permission dictionary from a rule tuple."""
+        protocol = rule[1]
+        from_port, to_port = get_port_range(rule[2], protocol)
+        sg = self.evpc.get_security_group(rule[0])
+
+        permission = {
+            'IpProtocol' : protocol,
+            'FromPort'   : from_port,
+            'ToPort'     : to_port,
+        }
+
+        if sg is None:
+            permission['IpRanges'] = [{'CidrIp' : rule[0]}]
+        else:
+            permission['UserIdGroupPairs'] = [{'GroupId':sg.id}]
+
+        return permission
+
+    def security_group_rules_to_permissions(self, sg_name, rules, direction='inbound'):
+        msg = "{} rule: '{}' {} '{}' over ports {} ({})"
+        symbol = { 'inbound' : '->', 'outbound' : '<-' }.get(direction, '->')
+        permissions = []
+        for rule in rules.get(direction, {}):
+            permissions.append(self.security_group_rule_to_permission(rule))
+            self.log.emit(
+              msg.format(direction, rule[0], symbol, sg_name, rule[2], rule[1].upper())
+            )
+        return permissions
+
     def security_group_inbound_rules(self, security_group_cfg):
         """Build inbound rule for Security Group defined in config."""
-        msg = "inbound connection from '{}' to '{}' over ports {} ({})"
         for sg_name, rules in security_group_cfg.items():
             sg = self.evpc.get_security_group(sg_name)
-            permissions = []
-            for rule in rules.get('inbound', {}):
-                protocol = rule[1]
-                from_port, to_port = get_port_range(rule[2], protocol)
-                src_sg = self.evpc.get_security_group(rule[0])
-
-                permission = {
-                    'IpProtocol' : protocol,
-                    'FromPort'   : from_port,
-                    'ToPort'     : to_port,
-                }
-
-                if src_sg is None:
-                    permission['IpRanges'] = [{'CidrIp' : rule[0]}]
-                else:
-                    permission['UserIdGroupPairs'] = [{'GroupId':src_sg.id}]
-
-                permissions.append(permission)
-
-                fmsg = msg.format(rule[0],sg_name,rule[2],rule[1].upper())
-                self.log.emit(fmsg)
-            
+            permissions = self.security_group_rules_to_permissions(sg_name, rules, 'inbound')
             if permissions:
                 sg.authorize_ingress(
                     IpPermissions = permissions
@@ -313,49 +321,25 @@ class EnvironmentBuilder(object):
 
     def security_group_outbound_rules(self, security_group_cfg):
         """Build outbound rule for Security Group defined in config."""
-        msg = "outbound connection to '{}' from '{}' over ports {} ({})"
         for sg_name, rules in security_group_cfg.items():
             sg = self.evpc.get_security_group(sg_name)
-
-            permissions = []
-            for rule in rules.get('outbound', {}):
-
-                self.log.emit("revoking default outbound rule from {}".format(sg_name))
-                sg.revoke_egress(
-                  IpPermissions = [
-                    {
-                      'IpProtocol' : '-1',
-                      'FromPort'   : -1,
-                      'ToPort'     : -1,
-                      'IpRanges'   : [ { 'CidrIp' : '0.0.0.0/0' } ],
-                    }
-                  ]
-                )
-
-                protocol = rule[1]
-                from_port, to_port = get_port_range(rule[2], protocol)
-                src_sg = self.evpc.get_security_group(rule[0])
-
-                permission = {
-                    'IpProtocol' : protocol,
-                    'FromPort'   : from_port,
-                    'ToPort'     : to_port,
-                }
-
-                if src_sg is None:
-                    permission['IpRanges'] = [{'CidrIp' : rule[0]}]
-                else:
-                    permission['UserIdGroupPairs'] = [{'GroupId':src_sg.id}]
-
-                permissions.append(permission)
-
-                fmsg = msg.format(rule[0],sg_name,rule[2],rule[1].upper())
-                self.log.emit(fmsg)
-            
+            permissions = self.security_group_rules_to_permissions(sg_name, rules, 'outbound')
             if permissions:
+                self.log.emit("revoking default outbound rule from {}".format(sg_name))
+                self.security_group_outbound_revoke_default_rule(sg)
                 sg.authorize_egress(
                     IpPermissions = permissions
                 )
+
+    def security_group_outbound_revoke_default_rule(self, sg):
+        sg.revoke_egress(
+          IpPermissions = [
+            {
+              'IpProtocol' : '-1', 'FromPort' : -1, 'ToPort' : -1,
+              'IpRanges' : [ { 'CidrIp' : '0.0.0.0/0' } ],
+            }
+          ]
+        )
 
     def key_pairs(self, key_pair_cfg):
         key_pair_cfg.append('default')

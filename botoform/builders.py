@@ -74,14 +74,20 @@ class EnvironmentBuilder(object):
         self.security_groups(config.get('security_groups', no_cfg))
         self.key_pairs(config.get('key_pairs', []))
         self.db_instances(config.get('db_instances', no_cfg))
+
         new_instances = self.instance_roles(
             config.get('instance_roles', no_cfg)
         )
+        self.autoscaling_instance_roles(
+            config.get('instance_roles', no_cfg)
+        )
+
         # lets do more work while new_instances move from pending to running.
         self.endpoints(config.get('endpoints', []))
         self.security_group_rules(config.get('security_groups', no_cfg))
         self.load_balancers(config.get('load_balancers', no_cfg))
         self.route_table_rules(config.get('route_tables', no_cfg))
+
         # lets finish building the new instances.
         self.finish_instance_roles(
             config.get('instance_roles', no_cfg), new_instances,
@@ -362,6 +368,11 @@ class EnvironmentBuilder(object):
         return new_instances
 
     def instance_role(self, role_name, role_data, desired_count):
+
+        if role_data.get('autoscaling', False) == True:
+            # exit early if this instance_role is autoscaling.
+            return []
+
         self.log.emit('creating role: {}'.format(role_name))
         ami = self.amis[role_data['ami']][self.evpc.region_name]
 
@@ -446,6 +457,68 @@ class EnvironmentBuilder(object):
         self.tag_instances(role_name, role_instances)
 
         return role_instances
+
+    def autoscaling_instance_roles(self, instance_role_cfg):
+        """Create Autoscaling Groups and Launch Configurations."""
+        for role_name, role_data in instance_role_cfg.items():
+            desired_count = role_data.get('count', 0)
+            self.autoscaling_instance_role(
+                                 role_name,
+                                 role_data,
+                                 desired_count,
+                             )
+
+    def autoscaling_instance_role(self, role_name, role_data, desired_count):
+        if role_data.get('autoscaling', False) != True:
+            # exit early if this instance_role is not autoscaling.
+            return None
+
+        long_role_name = '{}-{}'.format(self.evpc.name, role_name)
+
+        ami = self.amis[role_data['ami']][self.evpc.region_name]
+
+        key_pair = self.evpc.key_pair.get_key_pair(
+                       role_data.get('key_pair', 'default')
+                   )
+
+        security_groups = map(
+            self.evpc.get_security_group,
+            role_data.get('security_groups', [])
+        )
+
+        subnets = map(
+            self.evpc.get_subnet,
+            role_data.get('subnets', [])
+        )
+
+        self.log.emit('creating launch configuration for role: {}'.format(long_role_name))
+        self.evpc.autoscaling.create_launch_configuration(
+            LaunchConfigurationName = long_role_name,
+            ImageId = ami,
+            KeyName = key_pair.name,
+            SecurityGroups = get_ids(security_groups),
+            InstanceType=role_data.get('instance_type'),
+        )
+
+        self.log.emit('creating autoscaling group for role: {}'.format(long_role_name))
+        self.evpc.autoscaling.create_auto_scaling_group(
+            AutoScalingGroupName = long_role_name,
+            LaunchConfigurationName = long_role_name,
+            MinSize = desired_count,
+            MaxSize = desired_count,
+            DesiredCapacity = desired_count,
+            # LoadBalancerNames = [],
+            VPCZoneIdentifier = ','.join(get_ids(subnets)),
+            Tags = [
+              { 'Key' : 'Name', 'Value' : long_role_name + '-autoscaled', 'PropagateAtLaunch' : True, },
+              { 'Key' : 'role', 'Value' : role_name, 'PropagateAtLaunch' : True, },
+            ]
+        )
+
+        # LoadBalancerNames (list) --
+        #   One or more load balancers.
+        #   For more information, see Using a Load Balancer With an Auto Scaling
+        #   Group in the Auto Scaling Developer Guide .
 
     def tag_instances(self, role_name, instances):
         """Accept a list of EnrichedInstance, objects create tags."""

@@ -118,6 +118,11 @@ class EnrichedInstance(object):
                        self.private_ip_address, self.public_ip_address)
         return tuple([x for x in _identifiers if x is not None])
 
+    @property
+    def autoscale_group(self):
+        """Return autoscaling group name (AWS aws:autoscaling:groupName tag)."""
+        return self.tag_dict.get('aws:autoscaling:groupName', None)
+
     def disable_api_termination(self, boolean):
         self.modify_attribute(DisableApiTermination={'Value':boolean})
 

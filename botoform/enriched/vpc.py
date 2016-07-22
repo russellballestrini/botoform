@@ -122,6 +122,16 @@ class EnrichedVPC(object):
         instances = self._ec2_instances() if instances is None else instances
         return self._ec2_to_enriched_instances(instances)
 
+    def get_autoscaled_instances(self, instances=None):
+        """return a list of instances which were created via autoscaling."""
+        instances = self.get_instances()
+        return [instance for instance in instances if instance.autoscale_group is not None]
+
+    def get_normal_instances(self, instances=None):
+        """return a list of instances which were _not_ created via autoscaling."""
+        instances = self.get_instances()
+        return [instance for instance in instances if instance.autoscale_group is None]
+
     def get_running_instances(self, instances=None):
         """Return list running EnrichedInstance object related to this VPC."""
         instances = self.get_instances(instances)
@@ -481,7 +491,9 @@ class EnrichedVPC(object):
         
     def terminate(self):
         """Terminate all resources related to this VPC!"""        
-        self.delete_instances()
+        self.delete_instances(self.get_normal_instances())
+        self.autoscaling.delete_related_autoscaling_groups()
+        self.autoscaling.delete_related_launch_configs()
         self.elb.delete_related_elbs()
         self.rds.delete_related_db_instances()
         self.key_pair.delete_key_pairs()

@@ -36,6 +36,12 @@ class EnrichedAutoscaling(object):
                 descriptions.append(asg)
         return descriptions
 
+    def get_related_autoscaling_group_names(self):
+        return nested_lookup(
+            'AutoScalingGroupName',
+            self.get_related_autoscaling_group_descriptions()
+        )
+
     def get_all_launch_config_descriptions(self):
         """Return a list of all launch configuration descriptions."""
         pages = self.get_paginator('describe_launch_configurations').paginate()
@@ -52,3 +58,26 @@ class EnrichedAutoscaling(object):
             if lc_security_group_ids.intersection(vpc_security_group_ids):
                 descriptions.append(lc)
         return descriptions
+
+    def get_related_launch_config_names(self):
+        return nested_lookup(
+            'LaunchConfigurationName',
+            self.get_related_launch_config_descriptions()
+        )
+
+    def delete_related_autoscaling_groups(self):
+        autoscaling_group_names = self.get_related_autoscaling_group_names()
+        for autoscaling_group_name in autoscaling_group_names:
+            self.update_auto_scaling_group(
+              AutoScalingGroupName = autoscaling_group_name,
+              MinSize=0,
+              DesiredCapacity = 0
+            )
+
+        for autoscaling_group_name in autoscaling_group_names:
+            self.delete_auto_scaling_group(AutoScalingGroupName = autoscaling_group_name)
+
+    def delete_related_launch_configs(self):
+        launch_config_names = self.get_related_launch_config_names()
+        for launch_config_name in launch_config_names:
+            self.delete_launch_configuration(LaunchConfigurationName = launch_config_name)

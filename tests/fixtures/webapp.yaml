@@ -33,7 +33,7 @@ route_tables:
   # private network without a default route to the Internet.
   private:
     main: true
-    routes: []
+    routes:
       #- ['10.0.0.0/8', 'vpn_gateway']
       - ['0.0.0.0/0', 'nat']
 
@@ -142,6 +142,7 @@ instance_roles:
   # define how an instance in the web role should look.
   web:
     description: web nodes run Nginx/uWSGI/Pyramid on port 80
+    autoscaling: True
     instance_type: t2.micro
     ami: 'ubuntu-14.04-lts-hvm'
     count: 2

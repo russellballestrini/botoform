@@ -75,7 +75,7 @@ class EnrichedAutoscaling(object):
             )
 
         for autoscaling_group_name in autoscaling_group_names:
-            self.delete_auto_scaling_group(AutoScalingGroupName = autoscaling_group_name)
+            self.delete_auto_scaling_group(AutoScalingGroupName = autoscaling_group_name, ForceDelete = True)
 
     def delete_related_launch_configs(self):
         launch_config_names = self.get_related_launch_config_names()

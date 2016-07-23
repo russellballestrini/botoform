@@ -498,6 +498,7 @@ class EnrichedVPC(object):
         self.rds.delete_related_db_instances()
         self.key_pair.delete_key_pairs()
         self.vpc_endpoint.delete_related()
+        # we need to wait for autoscaled instances to terminate ...
         self.delete_security_groups()
         self.delete_subnets()
         self.delete_route_tables()

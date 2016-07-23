@@ -16,7 +16,7 @@ class EnrichedKeyPair(object):
         """Return a list of ssh key pair names from AWS VPC tag."""
         key_name_csv = self.evpc.tag_dict.get('key_pairs', None)
         key_names = []
-        if key_name_csv is not None:
+        if key_name_csv:
             key_names = key_name_csv.split(',')
         return key_names
 
@@ -43,6 +43,12 @@ class EnrichedKeyPair(object):
             
     def _update_key_pairs_tag(self, key_names):
         update_tags(self.evpc, key_pairs = ','.join(key_names))
+
+    def delete_key_pairs_tag(self):
+        self.evpc.boto.ec2_client.delete_tags(
+          Resources=[self.evpc.id],
+          Tags=[{'Key' : 'key_pairs'}],
+        )
 
     def create_key_pair(self, short_key_pair_name):
         """Create a KeyPair object, update key_pairs AWS tag."""
@@ -84,6 +90,6 @@ class EnrichedKeyPair(object):
         """Delete ALL related KeyPair objects, update key_pairs AWS tag."""
         for key_pair in self.key_pairs.values():
             key_pair.delete()
-        self._update_key_pairs_tag([])
+        self.delete_key_pairs_tag()
 
 

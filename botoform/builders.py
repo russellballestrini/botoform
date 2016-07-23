@@ -78,6 +78,7 @@ class EnvironmentBuilder(object):
         new_instances = self.instance_roles(
             config.get('instance_roles', no_cfg)
         )
+
         self.autoscaling_instance_roles(
             config.get('instance_roles', no_cfg)
         )
@@ -92,6 +93,7 @@ class EnvironmentBuilder(object):
         self.finish_instance_roles(
             config.get('instance_roles', no_cfg), new_instances,
         )
+
         self.log.emit('done! don\'t you look awesome. : )')
 
     def build_vpc(self, cidrblock):
@@ -515,11 +517,6 @@ class EnvironmentBuilder(object):
             ]
         )
 
-        # LoadBalancerNames (list) --
-        #   One or more load balancers.
-        #   For more information, see Using a Load Balancer With an Auto Scaling
-        #   Group in the Auto Scaling Developer Guide .
-
     def tag_instances(self, role_name, instances):
         """Accept a list of EnrichedInstance, objects create tags."""
         msg = 'tagging instance {} (Name:{}, role:{})'
@@ -635,10 +632,24 @@ class EnvironmentBuilder(object):
               Subnets = sn_ids,
               SecurityGroups = sg_ids,
               Scheme = scheme,
-              Tags = [ { 'Key' : 'vpc_name', 'Value' : self.evpc.vpc_name } ],
+              Tags = [
+                { 'Key' : 'vpc_name', 'Value' : self.evpc.vpc_name },
+                { 'Key' : 'role', 'Value' : lb_cfg['instance_role'] },
+              ],
               Listeners = listeners,
             )
 
             self.log.emit('created {} load_balancer ...'.format(lb_fullname))
 
-            self.evpc.elb.register_role_with_load_balancer(lb_fullname, lb_cfg['instance_role'])
+            asg_name  = '{}-{}'.format(self.evpc.name, lb_cfg['instance_role'])
+            if asg_name in self.evpc.autoscaling.get_related_autoscaling_group_names():
+                self.log.emit('attaching {} load balancer to {} autoscaling group ...'.format(lb_fullname, asg_name))
+                self.evpc.autoscaling.attach_load_balancers(
+                  AutoScalingGroupName = asg_name,
+                  LoadBalancerNames = [lb_fullname],
+                )
+            else:
+                self.log.emit('registering {} role to {} load balancer ...'.format(lb_cfg['instance_role'], lb_fullname))
+                self.evpc.elb.register_role_with_load_balancer(lb_fullname, lb_cfg['instance_role'])
+
+

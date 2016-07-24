@@ -493,9 +493,9 @@ class EnrichedVPC(object):
         """Terminate all resources related to this VPC!"""        
         autoscaled_instances = self.get_autoscaled_instances()
         self.delete_instances(self.get_normal_instances())
+        self.elb.delete_related_elbs()
         self.autoscaling.delete_related_autoscaling_groups()
         self.autoscaling.delete_related_launch_configs()
-        self.elb.delete_related_elbs()
         self.rds.delete_related_db_instances()
         self.key_pair.delete_key_pairs()
         self.vpc_endpoint.delete_related()

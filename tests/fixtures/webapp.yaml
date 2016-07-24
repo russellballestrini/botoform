@@ -148,13 +148,9 @@ instance_roles:
     count: 2
     security_groups: ['web']
     subnets: ['private-1', 'private-2']
-    root_volume:
-      size: 30
-      ssd: true
     block_devices:
-      count: 2
-      size: 60
-      start_device: /dev/sdf
+      "/dev/sda1":
+        size: 10
 
   # define how an instance in the db role should look.
   db:
@@ -164,9 +160,9 @@ instance_roles:
     count: 1
     security_groups: ['db']
     subnets: ['private-1', 'private-2']
-    root_volume:
-      size: 30
-      ssd: true
+    block_devices:
+      "/dev/sda1":
+        size: 10
 
   # define how an instance in the nat role should look.
   nat:
@@ -178,9 +174,9 @@ instance_roles:
     subnets: ['public-1', 'public-2']
     create_eip: true
     source_dest_check: false
-    root_volume:
-      size: 30
-      ssd: true
+    block_devices:
+      "/dev/sda1":
+        size: 10
 
   # define how an instance in the door role should look.
   door:
@@ -192,7 +188,7 @@ instance_roles:
     subnets: ['public-1', 'public-2']
     key_pair: door
     eip: True
-    root_volume:
-      size: 30
-      ssd: true
+    block_devices:
+      "/dev/sda1":
+        size: 10
 

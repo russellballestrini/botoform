@@ -11,6 +11,7 @@ from botoform.util import (
   get_ids,
   collection_len,
   generate_password,
+  get_block_device_map_from_role_config,
 )
 
 from botoform.subnetallocator import allocate
@@ -421,6 +422,8 @@ class EnvironmentBuilder(object):
 
         role_instances = []
 
+        block_device_map = get_block_device_map_from_role_config(role_data)
+
         for subnet in subnets:
             # ensure Run_Instance_Idempotency.html#client-tokens
             client_token = str(uuid4())
@@ -449,6 +452,7 @@ class EnvironmentBuilder(object):
                        KeyName           = key_pair.name,
                        SecurityGroupIds  = get_ids(security_groups),
                        ClientToken       = client_token,
+                       BlockDeviceMappings = block_device_map,
             )
             # accumulate all new instances into a single list.
             role_instances += instances
@@ -493,13 +497,16 @@ class EnvironmentBuilder(object):
             role_data.get('subnets', [])
         )
 
+        block_device_map = get_block_device_map_from_role_config(role_data)
+
         self.log.emit('creating launch configuration for role: {}'.format(long_role_name))
         self.evpc.autoscaling.create_launch_configuration(
             LaunchConfigurationName = long_role_name,
             ImageId = ami,
             KeyName = key_pair.name,
             SecurityGroups = get_ids(security_groups),
-            InstanceType=role_data.get('instance_type'),
+            InstanceType = role_data.get('instance_type'),
+            BlockDeviceMappings = block_device_map,
         )
 
         self.log.emit('creating autoscaling group for role: {}'.format(long_role_name))

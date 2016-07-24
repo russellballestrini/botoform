@@ -344,6 +344,29 @@ def get_port_range(raw_range, ip_protocol='tcp'):
         port_range = [raw_range, raw_range]
     return tuple(map(int, port_range))
 
+def get_block_device_map_from_role_config(role_cfg):
+    """accept role config data and return a Boto3 friendly BlockDeviceMappings."""
+    block_device_map = []
+    for device_name, device_cfg in role_cfg.get('block_devices', {}).items():
+        device = {
+          'DeviceName':device_name,
+          'Ebs': {
+            'VolumeSize' : device_cfg.get('size', 30),
+            'VolumeType' : device_cfg.get('type', 'gp2'),
+            'DeleteOnTermination' : device_cfg.get('delete_on_termination', True),
+          }
+        }
+
+        if device_cfg.get('virtual_name', None):
+            device['VirtualName'] = device_cfg['virtual_name']
+
+        if device_cfg.get('encrypted', False):
+            device['Ebs']['Encrypted'] = device_cfg.get('encrypted', False)
+
+        block_device_map.append(device)
+
+    return block_device_map
+
 def write_private_key(key_pair):
     """
     Write private key to filesystem.

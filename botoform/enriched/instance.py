@@ -123,6 +123,11 @@ class EnrichedInstance(object):
         """Return autoscaling group name (AWS aws:autoscaling:groupName tag)."""
         return self.tag_dict.get('aws:autoscaling:groupName', None)
 
+    @property
+    def is_autoscaled(self):
+        """Return True if this instance was autoscaled else False"""
+        return False if self.autoscale_group is None else True
+
     def disable_api_termination(self, boolean):
         self.modify_attribute(DisableApiTermination={'Value':boolean})
 
@@ -152,6 +157,13 @@ class EnrichedInstance(object):
                 )
             )
         return addresses
+
+    def wait_until_status_ok(self):
+        """Wait (block) until this instance state is 'OK'."""
+        waiter = self.evpc.boto.ec2_client.get_waiter('instance_status_ok')
+        waiter.wait(InstanceIds=[self.id])
+        # once 'OK' reload to in sure autoscaled instances have tags applied.
+        self.reload()
 
     def allocate_eip(self):
         """

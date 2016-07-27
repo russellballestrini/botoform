@@ -88,12 +88,14 @@ class EnvironmentBuilder(object):
         self.endpoints(config.get('endpoints', []))
         self.security_group_rules(config.get('security_groups', no_cfg))
         self.load_balancers(config.get('load_balancers', no_cfg))
-        self.route_table_rules(config.get('route_tables', no_cfg))
 
         # lets finish building the new instances.
         self.finish_instance_roles(
-            config.get('instance_roles', no_cfg), new_instances,
+            config.get('instance_roles', no_cfg)
         )
+
+        # run after tagging instances in case we have a NAT instance_role.
+        self.route_table_rules(config.get('route_tables', no_cfg))
 
         self.log.emit('done! don\'t you look awesome. : )')
 
@@ -547,10 +549,16 @@ class EnvironmentBuilder(object):
         eip = instance.allocate_eip()
         self.log.emit(eip2_msg.format(eip.public_ip, instance.identity))
 
-    def finish_instance_roles(self, instance_role_cfg, instances):
+    def finish_instance_roles(self, instance_role_cfg, instances=None):
+        instances = self.evpc.get_instances(instances)
         for instance in instances:
+
             self.log.emit('waiting for {} to start'.format(instance.identity))
             instance.wait_until_running()
+
+            self.log.emit('waiting for {} to be in status OK'.format(instance.identity))
+            instance.wait_until_status_ok()
+
             self.tag_instance_volumes(instance)
 
             # allocate eips and associate for the needful instances.
@@ -558,8 +566,8 @@ class EnvironmentBuilder(object):
                 self.add_eip_to_instance(instance)
 
         try:
-            self.log.emit('locking new instances to prevent termination')
-            self.evpc.lock_instances(instances)
+            self.log.emit('locking new normal (not autoscaled) instances to prevent termination')
+            self.evpc.lock_instances(self.evpc.get_normal_instances(instances))
         except:
             self.log.emit('could not lock instances, continuing...', 'warning')
 

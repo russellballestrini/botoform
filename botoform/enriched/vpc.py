@@ -124,13 +124,13 @@ class EnrichedVPC(object):
 
     def get_autoscaled_instances(self, instances=None):
         """return a list of instances which were created via autoscaling."""
-        instances = self.get_instances()
-        return [instance for instance in instances if instance.autoscale_group is not None]
+        instances = self.get_instances(instances)
+        return [instance for instance in instances if instance.is_autoscaled == True]
 
     def get_normal_instances(self, instances=None):
         """return a list of instances which were _not_ created via autoscaling."""
-        instances = self.get_instances()
-        return [instance for instance in instances if instance.autoscale_group is None]
+        instances = self.get_instances(instances)
+        return [instance for instance in instances if instance.is_autoscaled == False]
 
     def get_running_instances(self, instances=None):
         """Return list running EnrichedInstance object related to this VPC."""

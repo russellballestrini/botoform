@@ -1,5 +1,34 @@
 from botoform.util import output_formatter
 
+def ansible_hosts(args, evpc):
+    """
+    Output an Ansible host inventory for the VPC.
+
+    :param args: The parsed arguments and flags from the CLI.
+    :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
+
+    :returns: Ansible inventory to standard out.
+    """
+    instance_line = "{} eip={} name={} id={}"
+    roles = evpc.roles
+    print('[' + evpc.name + ':children]')
+    for role in roles:
+        print(role)
+    print('')
+    for role, instances in roles.items():
+        print('[' + role + ']')
+        for i in instances:
+            print(
+              instance_line.format(
+                i.private_ip_address,
+                i.public_ip_address,
+                i.name,
+                i.id,
+                i.id_human,
+              )
+            )
+        print('')
+
 def instances(args, evpc):
     """
     Output instance roles to standard out in :ref:`Botoform Schema <schema reference>`.
@@ -55,6 +84,7 @@ def security_groups(args, evpc):
 dump_subcommands = {
   'instances'       : instances,
   'security_groups' : security_groups,
+  'ansible_hosts'   : ansible_hosts,
 }
 
 class Dump(object):

@@ -455,6 +455,7 @@ class EnvironmentBuilder(object):
                        SecurityGroupIds  = get_ids(security_groups),
                        ClientToken       = client_token,
                        BlockDeviceMappings = block_device_map,
+                       UserData          = role_data.get('userdata', ''),
             )
             # accumulate all new instances into a single list.
             role_instances += instances
@@ -509,6 +510,7 @@ class EnvironmentBuilder(object):
             SecurityGroups = get_ids(security_groups),
             InstanceType = role_data.get('instance_type'),
             BlockDeviceMappings = block_device_map,
+            UserData = role_data.get('userdata', ''),
         )
 
         self.log.emit('creating autoscaling group for role: {}'.format(long_role_name))

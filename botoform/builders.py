@@ -206,6 +206,11 @@ class EnvironmentBuilder(object):
                     # assume the target is an instance_role.
                     instances = self.evpc.get_role(target)
 
+                    # disable source destination check for NAT instances.
+                    for i in instances:
+                        self.log.emit('disable source dest check for {}'.format(i.identity))
+                        i.disable_source_dest_check(False)
+
                     # janky: role may have more then one instance.
                     nat_instance = choice(instances)
 

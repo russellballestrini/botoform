@@ -128,6 +128,9 @@ class EnrichedInstance(object):
         """Return True if this instance was autoscaled else False"""
         return False if self.autoscale_group is None else True
 
+    def disable_source_dest_check(self, boolean):
+        self.modify_attribute(SourceDestCheck={'Value':boolean})
+
     def disable_api_termination(self, boolean):
         self.modify_attribute(DisableApiTermination={'Value':boolean})
 

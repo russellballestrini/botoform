@@ -87,27 +87,45 @@ key_pairs:
 # we reference these security_groups by name in:
 # role_instances, load_balancers, cache_clusters, db_instances, and more.
 security_groups:
+
+  all:
+    inbound:
+      - ['door',      'tcp',   22]
+
   web-elb:
     inbound:
       - ['0.0.0.0/0', 'tcp',   80]
+
   web:
     inbound:
       - ['web-elb',   'tcp',   80]
-      - ['door',      'tcp',   22]
+
   db:
     inbound:
       - ['web',       'tcp', 5432]
-      - ['door',      'tcp',   22]
+
     outbound:
       # this is purely an example of an outbound rule.
       # we typically default allow all outbound traffic.
-      - ['door',      'tcp',   22]
+      - ['web',      'tcp',   5432]
+
   nat:
     inbound:
-      - ['door',      'tcp',   22]
+      # allow subnets in VPC to ping the NAT hosts.
+      - ['{{ vpc_cidr }}',      'icmp',   'all']
+      # allow subnets in VPC to get NTP time via the NAT hosts.
+      - ['{{ vpc_cidr }}',      'udp',    123]
+      # allow subnets in VPC to http/https via the NAT hosts.
+      - ['{{ vpc_cidr }}',      'tcp',    80]
+      - ['{{ vpc_cidr }}',      'tcp',    443]
+
   door:
     inbound:
       - ['0.0.0.0/0', 'tcp',   22]
+
+  psql-server:
+    inbound:
+      - ['web',       'tcp', 5432]
 
 # define an RDS database.
 db_instances:
@@ -142,11 +160,11 @@ instance_roles:
   # define how an instance in the web role should look.
   web:
     description: web nodes run Nginx/uWSGI/Pyramid on port 80
-    autoscaling: True
+    autoscaling: true
     instance_type: t2.micro
     ami: 'ubuntu-14.04-lts-hvm'
     count: 2
-    security_groups: ['web']
+    security_groups: ['all', 'web']
     subnets: ['private-1', 'private-2']
     block_devices:
       "/dev/sda1":
@@ -158,7 +176,7 @@ instance_roles:
     instance_type: t2.micro
     ami: 'ubuntu-14.04-lts-hvm'
     count: 1
-    security_groups: ['db']
+    security_groups: ['all', 'db']
     subnets: ['private-1', 'private-2']
     block_devices:
       "/dev/sda1":
@@ -170,10 +188,9 @@ instance_roles:
     instance_type: t2.micro
     ami: 'ubuntu-14.04-lts-hvm'
     count: 1
-    security_groups: ['nat']
+    security_groups: ['all', 'nat']
     subnets: ['public-1', 'public-2']
-    create_eip: true
-    source_dest_check: false
+    eip: true
     block_devices:
       "/dev/sda1":
         size: 10
@@ -184,11 +201,10 @@ instance_roles:
     instance_type: t2.micro
     ami: 'ubuntu-14.04-lts-hvm'
     count: 1
-    security_groups: ['door']
+    security_groups: ['all', 'door']
     subnets: ['public-1', 'public-2']
     key_pair: door
-    eip: True
+    eip: true
     block_devices:
       "/dev/sda1":
         size: 10
-

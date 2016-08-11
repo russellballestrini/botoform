@@ -37,6 +37,7 @@ setup(
         'repl = botoform.plugins.repl:REPL',
         'cli = botoform.plugins.repl:REPL',
         'shell = botoform.plugins.repl:REPL',
+        'atmosphere = botoform.plugins.atmosphere:Atmosphere',
       ],
       'console_scripts': [
         'bf = botoform.__main__:main',

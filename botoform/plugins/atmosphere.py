@@ -27,7 +27,7 @@ def get_region_names(session):
 
 class Atmosphere(ClassPlugin):
     """
-    Dump every AWS Profile, Every region, Every VPC.
+    For every AWS profile + region, dump every VPC to STDOUT.
 
     This is a :ref:`class plugin` for the :ref:`bf` tool.
     """
@@ -54,7 +54,7 @@ class Atmosphere(ClassPlugin):
     @staticmethod
     def main(args, evpc=None):
         """
-        Dump every AWS Profile, Every region, Every VPC.
+        For every AWS profile + region, dump every VPC to STDOUT.
         :param args: The parsed arguments and flags from the CLI.
         :returns: None
         """
@@ -79,5 +79,4 @@ class Atmosphere(ClassPlugin):
                     vpcs[session.profile][region_name][vpc_name] = vpc.id
 
         print(output_formatter(vpcs, args.output_format))
-
 

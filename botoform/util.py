@@ -66,6 +66,7 @@ class BotoConnections(object):
         self.elasticache = boto3.client('elasticache')
         self.elb = boto3.client('elb')
         self.autoscaling = boto3.client('autoscaling')
+        self.route53 = boto3.client('route53')
         
     @property
     def azones(self):
@@ -247,7 +248,8 @@ def update_tags(ec2_object, **kwargs):
     for key, value in kwargs.iteritems():
         if tag_dict.get(key, None) != value:
             tags_to_update.append({'Key' : key, 'Value' : value})
-    ec2_object.create_tags(Tags = tags_to_update)
+    if tags_to_update:
+        ec2_object.create_tags(Tags = tags_to_update)
 
 def dict_to_key_value(data, sep='=', pair_sep=','):
     """

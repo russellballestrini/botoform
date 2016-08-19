@@ -97,6 +97,10 @@ class EnvironmentBuilder(object):
         # run after tagging instances in case we have a NAT instance_role.
         self.route_table_rules(config.get('route_tables', no_cfg))
 
+        self.log.emit('managing route53 private zone.')
+        self.evpc.route53.create_private_zone()
+        self.evpc.route53.refresh_private_zone()
+
         self.log.emit('done! don\'t you look awesome. : )')
 
     def build_vpc(self, cidrblock):
@@ -365,8 +369,7 @@ class EnvironmentBuilder(object):
                 self.evpc.key_pair.create_key_pair(short_key_pair_name)
 
     def instance_roles(self, instance_role_cfg):
-        """Returns a list of new created EnrichedInstance objects."""
-        new_instances = []
+        """Create instance roles defined in config."""
         for role_name, role_data in instance_role_cfg.items():
             desired_count = role_data.get('count', 0)
             role_instances = self.instance_role(
@@ -374,8 +377,6 @@ class EnvironmentBuilder(object):
                                  role_data,
                                  desired_count,
                              )
-            new_instances += role_instances
-        return new_instances
 
     def instance_role(self, role_name, role_data, desired_count):
 
@@ -427,9 +428,9 @@ class EnvironmentBuilder(object):
         needed_per_subnet = needed_count / len(subnets)
         needed_remainder  = needed_count % len(subnets)
 
-        role_instances = []
-
         block_device_map = get_block_device_map_from_role_config(role_data)
+
+        role_instances = []
 
         for subnet in subnets:
             # ensure Run_Instance_Idempotency.html#client-tokens
@@ -465,12 +466,9 @@ class EnvironmentBuilder(object):
             # accumulate all new instances into a single list.
             role_instances += instances
 
-        # cast role Instance objets to EnrichedInstance objects.
-        role_instances = self.evpc.get_instances(role_instances)
-
-        self.tag_instances(role_name, role_instances)
-
-        return role_instances
+        # add role tag to each instance.
+        for instance in role_instances:
+            update_tags(instance, role = role_name)
 
     def autoscaling_instance_roles(self, instance_role_cfg):
         """Create Autoscaling Groups and Launch Configurations."""
@@ -525,22 +523,19 @@ class EnvironmentBuilder(object):
             MinSize = desired_count,
             MaxSize = desired_count,
             DesiredCapacity = desired_count,
-            # LoadBalancerNames = [],
             VPCZoneIdentifier = ','.join(get_ids(subnets)),
             Tags = [
-              { 'Key' : 'Name', 'Value' : long_role_name + '-autoscaled', 'PropagateAtLaunch' : True, },
               { 'Key' : 'role', 'Value' : role_name, 'PropagateAtLaunch' : True, },
             ]
         )
 
-    def tag_instances(self, role_name, instances):
-        """Accept a list of EnrichedInstance, objects create tags."""
-        msg = 'tagging instance {} (Name:{}, role:{})'
-        for instance in instances:
-            h = '{}-{}-{}'
-            hostname = h.format(self.evpc.name, role_name, instance.id_human)
-            self.log.emit(msg.format(instance.identity, hostname, role_name))
-            update_tags(instance, Name = hostname, role = role_name)
+    def tag_instance_name(self, instance):
+        """Accept a EnrichedInstance, objects create tags."""
+        msg = 'tagging instance {} (Name:{})'
+        h = '{}-{}-{}'
+        hostname = h.format(self.evpc.name, instance.role, instance.id_human)
+        self.log.emit(msg.format(instance.identity, hostname))
+        update_tags(instance, Name = hostname)
 
     def tag_instance_volumes(self, instance):
         """Accept an EnrichedInstance, tag all attached volumes."""
@@ -558,6 +553,7 @@ class EnvironmentBuilder(object):
 
     def finish_instance_roles(self, instance_role_cfg, instances=None):
         instances = self.evpc.get_instances(instances)
+
         for instance in instances:
 
             self.log.emit('waiting for {} to start'.format(instance.identity))
@@ -566,11 +562,14 @@ class EnvironmentBuilder(object):
             self.log.emit('waiting for {} to be in status OK'.format(instance.identity))
             instance.wait_until_status_ok()
 
+            # we wait all this time for autoscaled role tag to be set.
+            self.tag_instance_name(instance)
             self.tag_instance_volumes(instance)
 
-            # allocate eips and associate for the needful instances.
-            if instance_role_cfg[instance.role].get('eip', False) == True:
-                self.add_eip_to_instance(instance)
+            if len(instance.eips) == 0:
+                if instance_role_cfg[instance.role].get('eip', False) == True:
+                    # if instance role should have an eip but doesn't have one, add one.
+                    self.add_eip_to_instance(instance)
 
         try:
             self.log.emit('locking new normal (not autoscaled) instances to prevent termination')

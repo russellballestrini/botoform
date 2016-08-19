@@ -7,7 +7,6 @@ from botoform.util import (
   make_tag_dict,
   make_filter,
   tag_filter,
-  update_tags,
   write_private_key,
 )
 
@@ -18,6 +17,7 @@ from elasticache import EnrichedElastiCache
 from elb import EnrichedElb
 from rds import EnrichedRds
 from key_pair import EnrichedKeyPair
+from route53 import EnrichedRoute53
 
 from enriched import (
   Enriched,
@@ -85,6 +85,7 @@ class EnrichedVPC(object):
         self.elb = EnrichedElb(self)
         self.rds = EnrichedRds(self)
         self.key_pair = EnrichedKeyPair(self)
+        self.route53 = EnrichedRoute53(self)
 
     @property
     def region_name(self): return self.boto.region_name
@@ -506,6 +507,7 @@ class EnrichedVPC(object):
         self.delete_internet_gateways()
         self.detach_vpn_gateway()
         self.log.emit('deleting the VPC - {}'.format(self.id))
+        self.route53.delete_private_zone()
         self.vpc.delete()
         self.delete_dhcp_options()
 

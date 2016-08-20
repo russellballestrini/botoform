@@ -388,15 +388,10 @@ class EnrichedVPC(object):
 
     def create_dhcp_options(self, data):
         """Creates DHCP Options Set"""
-        dhcp_configurations = []
-        for k, v in data.items():
-            self.log.emit('\tDHCP Options - {} = {}'.format(k, v))
-            dhcp_configurations.append(
-                {
-                    'Key': k,
-                    'Values': v
-                }
-            )
+        dhcp_configurations = [
+            { 'Key' : 'domain-name-servers', 'Values' : data['domain-name-servers'] },
+            { 'Key' : 'domain-name', 'Values' : [self.route53.private_zone_name] },
+        ]
         
         dhcp_options = self.boto.ec2_client.create_dhcp_options(
                             DhcpConfigurations=dhcp_configurations

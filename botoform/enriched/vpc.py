@@ -1,5 +1,3 @@
-import time
-
 from botoform.util import (
   BotoConnections,
   Log,
@@ -8,6 +6,7 @@ from botoform.util import (
   make_filter,
   tag_filter,
   write_private_key,
+  update_tags,
 )
 
 from instance import EnrichedInstance
@@ -334,36 +333,28 @@ class EnrichedVPC(object):
         for instance in instances:
             instance.unlock()
 
-    def is_vgw_attached(self, vgw_id):
-        """Check whether the VGW is attached or not"""
-        vgw = self.boto.ec2_client.describe_vpn_gateways(
-                    VpnGatewayIds=[vgw_id]
-                )
-        return vgw.get('VpnGateways')[0].get('VpcAttachments')[0].get('State') == 'attached'
+    def get_vgw(self, vgw_id):
+        """Accept vgw_id and return vgw description."""
+        return self.boto.ec2_client.describe_vpn_gateways(VpnGatewayIds=[vgw_id])
 
-    def is_vgw_detached(self, vgw_id):
-        """Check whether the VGW is attached or not"""
-        vgw = self.boto.ec2_client.describe_vpn_gateways(
-                    VpnGatewayIds=[vgw_id]
-                )
-        return vgw.get('VpnGateways')[0].get('VpcAttachments')[0].get('State') == 'detached'
-        
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+    def ensure_vgw_state(vgw_id, desired_state='attached'):
+        """if vgw is not in expected state, throw exception."""
+        vgw = self.get_vgw(vgw_id)
+        self.log.emit('waiting for {} to become {}'.format(vgw_id, desired_state), 'debug')
+        # Janky: this if statement is terrible... but I don't know the structure.
+        if vgw.get('VpnGateways')[0].get('VpcAttachments')[0].get('State') != desired_state:
+            raise Exception('{} not in {} desired_State'.format(vgw_id, desired_state))
+
     def attach_vpn_gateway(self, vgw_id):
         """Attach VPN gateway to the VPC"""
-        self.vgw_id = vgw_id
+        self.log.emit('attaching vgw {} to vpc {}'.format(vgw_id, self.vpc_name))
         self.boto.ec2_client.attach_vpn_gateway(
                     DryRun=False,
-                    VpnGatewayId = self.vgw_id,
+                    VpnGatewayId = vgw_id,
                     VpcId = self.id,                                    
                 )
-        # check & wait till VGW (2 min.) is attached
-        count = 0
-        while(not self.is_vgw_attached(vgw_id)):
-            self.log.emit('\tattaching...', 'debug')
-            time.sleep(10)
-            count += 1
-            if count == 11:
-                raise Exception({"message":"VPN Gateway is not yet attached.", "VGW_ID":vgw_id})
+        self.ensure_vgw_state(vgw_id, 'attached')
      
     def detach_vpn_gateway(self):
         """Detach VPN gateway from VPC"""
@@ -375,31 +366,8 @@ class EnrichedVPC(object):
                         VpnGatewayId = vgw_id,
                         VpcId = self.id,                                    
                     )
-            # check & wait till VGW (2 min.) is detached
-            self.log.emit('\tdetaching...', 'debug')
-            time.sleep(10)
-            count = 0
-            while(not self.is_vgw_detached(vgw_id)):
-                self.log.emit('\tdetaching...', 'debug')
-                time.sleep(10)
-                count += 1
-                if count == 11:
-                    raise Exception({"message":"VPN Gateway is not yet detached.", "VGW_ID":vgw_id})
+            self.ensure_vgw_state(vgw_id, 'detached')
 
-    def create_dhcp_options(self, data):
-        """Creates DHCP Options Set"""
-        dhcp_configurations = [
-            { 'Key' : 'domain-name-servers', 'Values' : data['domain-name-servers'] },
-            { 'Key' : 'domain-name', 'Values' : [self.route53.private_zone_name] },
-        ]
-        
-        dhcp_options = self.boto.ec2_client.create_dhcp_options(
-                            DhcpConfigurations=dhcp_configurations
-                        )
-        dhcp_options_id = dhcp_options.get('DhcpOptions').get('DhcpOptionsId')
-        self.dhcp_options = self.boto.ec2.DhcpOptions(dhcp_options_id)
-        return dhcp_options_id
-        
     def wait_until_instances(self, instances=None, state=None):
         instances = self.get_instances(instances)
         msg = 'waiting for {} to transition to {}'
@@ -482,9 +450,19 @@ class EnrichedVPC(object):
                 self.log.emit('deleting route table {}'.format(rt.id))
                 rt.delete()
 
+    @property
+    def dhcp_options_name(self):
+        return make_tag_dict(self.dhcp_options)['Name']
+
+    @dhcp_options_name.setter
+    def dhcp_options_name(self, new_name):
+        update_tags(self.dhcp_options, Name = new_name)
+        self.dhcp_options.reload()
+
     def delete_dhcp_options(self):
         """Delete DHCP Options Set"""
-        self.log.emit('deleting DHCP Options set {}'.format(self.dhcp_options.id))
+        msg = 'deleting DHCP Options set {} ({})'
+        self.log.emit(msg.format( self.dhcp_options_name, self.dhcp_options.id))
         self.dhcp_options.delete()
         
     def terminate(self):

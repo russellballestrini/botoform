@@ -156,19 +156,26 @@ class EnvironmentBuilder(object):
                 #    if count == 11:
                 #        raise Exception({"message":"VPN Gateway is not yet attached.", "VGW_ID":vgw_id})
 
+    def create_dhcp_options(self, data):
+        """Creates DHCP Options Set, return DHCP Option Set ID."""
+        dhcp_configurations = [
+            { 'Key' : 'domain-name-servers', 'Values' : data['domain-name-servers'] },
+            { 'Key' : 'domain-name', 'Values' : [self.evpc.route53.private_zone_name] },
+        ]
+
+        dhcp_options = self.boto.ec2_client.create_dhcp_options(
+                            DhcpConfigurations=dhcp_configurations
+                        )
+        return dhcp_options.get('DhcpOptions').get('DhcpOptionsId')
+
     def dhcp_options(self, dhcp_options_cfg):
         """Creates DHCP Options Set and associates with VPC"""
-        for dhcp_name, data in dhcp_options_cfg.items():
-            longname = '{}-{}'.format(self.evpc.name, dhcp_name)
-            self.log.emit('creating DHCP Options Set {}'.format(longname))
-            dhcp_options_id = self.evpc.create_dhcp_options(data)
-            # associate DHCP Options with VPC
-            self.log.emit('associating DHCP Options {} ({}) with VPC {}'.format(longname, dhcp_options_id, self.vpc_name))
-            self.evpc.associate_dhcp_options(
-                DhcpOptionsId=dhcp_options_id
-            )
-            self.evpc.reload()
-            update_tags(self.evpc.dhcp_options, Name=longname)
+        self.log.emit('creating DHCP Options Set for {}'.format(self.evpc.name))
+        dhcp_options_id = self.create_dhcp_options(dhcp_options_cfg)
+        self.log.emit('associating DHCP Options {} with VPC {}'.format(dhcp_options_id, self.evpc.name))
+        self.evpc.associate_dhcp_options(DhcpOptionsId=dhcp_options_id)
+        self.evpc.reload()
+        self.evpc.dhcp_options_name = self.evpc.name
         
     def route_tables(self, route_cfg):
         """Build route_tables defined in config"""

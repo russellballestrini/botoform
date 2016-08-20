@@ -1,7 +1,7 @@
 # Avoid repeating yourself, include other YAML files here.
 includes:
   # route_tables: /path/to/common_route_tables_layout.yaml
-  # subnets: /path/to/webapp_subnets_formation.yaml
+  # subnets: /path/to/webapp_subnets.yaml
 
   # import the amis stanza from amis.yaml.
   amis: nested/amis.yaml
@@ -12,15 +12,11 @@ vpc_cidr: {{ vpc_cidr }}
 
 # DHCP Options Set
 dhcp_options:
-  dns:
-    # only 1 domain name can be given
-    domain-name:
-      - example.com
 
-    # max. of 4 domain name servers can be given
-    domain-name-servers:
-      - AmazonProvidedDNS
-      - 8.8.8.8
+  # max. of 4 domain name servers can be given
+  domain-name-servers:
+    - AmazonProvidedDNS
+    - 8.8.8.8
 
 # VPN Gateway ID to attach to VPC,
 # by default associated routes will be propagated
@@ -65,13 +61,11 @@ subnets:
     size: 27
     route_table: public
     description: public subnet 1
-    #public: True
 
   public-2: 
     size: 27
     route_table: public
     description: public subnet 2
-    #public: True
 
 # This is an example of how to create VPC Endpoints.
 # This is optional, this allows private subnets to reach S3.

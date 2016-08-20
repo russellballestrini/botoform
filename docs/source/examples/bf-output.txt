@@ -1,75 +1,47 @@
-bf --profile=development --region=ap-southeast-1 create dogtest01 -e 'vpc_cidr=192.168.1.0/24' tests/fixtures/webapp.yaml
+bf -p development -r us-east-1 create -e 'vpc_cidr=10.20.20.0/24' stg example.yaml
 
-creating vpc (dogtest01, 192.168.1.0/24)
-tagging vpc (Name:dogtest01)
+creating vpc (stg, 10.20.20.0/24)
+tagging vpc (Name:stg)
 modifying vpc for dns support
 modifying vpc for dns hostnames
-creating internet_gateway (igw-dogtest01)
-tagging gateway (Name:igw-dogtest01)
-attaching igw to vpc (igw-dogtest01)
-creating DHCP Options Set dogtest01-dns
-    DHCP Options - domain-name = ['eu-central-1.compute.internal']
-    DHCP Options - domain-name-servers = ['10.10.10.1', '8.8.8.8', '4.2.2.2', 'AmazonProvidedDNS']
-associating DHCP Options dogtest01-dns (dopt-ca98f9af) with VPC dogtest01
-creating route_table (dogtest01-public)
-tagging route_table (Name:dogtest01-public)
-adding route ['0.0.0.0/0', 'internet_gateway'] to route_table (dogtest01-public)
-creating route_table (dogtest01-private)
-tagging route_table (Name:dogtest01-private)
-creating subnet 192.168.1.96/27 in ap-southeast-1b
-tagging subnet (Name:dogtest01-private-2)
-creating subnet 192.168.1.64/27 in ap-southeast-1a
-tagging subnet (Name:dogtest01-private-1)
-creating subnet 192.168.1.32/27 in ap-southeast-1a
-tagging subnet (Name:dogtest01-public-1)
-creating subnet 192.168.1.0/27 in ap-southeast-1b
-tagging subnet (Name:dogtest01-public-2)
+creating internet_gateway (igw-stg)
+tagging gateway (Name:igw-stg)
+attaching igw to vpc (igw-stg)
+creating DHCP Options Set for stg
+associating DHCP Options dopt-30731454 with VPC stg
+creating route_table (stg-public)
+tagging route_table (Name:stg-public)
+creating route_table (stg-private)
+tagging route_table (Name:stg-private)
+creating subnet 10.20.20.96/27 in us-east-1c
+tagging subnet (Name:stg-private-2)
+creating subnet 10.20.20.64/27 in us-east-1b
+tagging subnet (Name:stg-private-1)
+creating subnet 10.20.20.32/27 in us-east-1b
+tagging subnet (Name:stg-public-1)
+creating subnet 10.20.20.0/27 in us-east-1c
+tagging subnet (Name:stg-public-2)
+creating security_group stg-all
+tagging security_group (Name:stg-all)
+creating security_group stg-bastion
+tagging security_group (Name:stg-bastion)
+creating key pair default
 associating rt private with sn private-2
 associating rt private with sn private-1
 associating rt public with sn public-1
 associating rt public with sn public-2
-creating security_group dogtest01-db
-tagging security_group (Name:dogtest01-db)
-creating security_group dogtest01-web
-tagging security_group (Name:dogtest01-web)
-creating security_group dogtest01-door
-tagging security_group (Name:dogtest01-door)
-creating security_group dogtest01-web-elb
-tagging security_group (Name:dogtest01-web-elb)
-creating key pair door
-creating key pair default
-creating role: db
-1 instances of role db launching into dogtest01-private-1
-tagging instance i-f73e6879 (Name:dogtest01-db-orangeblossom, role:db)
-creating role: web
-1 instances of role web launching into dogtest01-private-2
-1 instances of role web launching into dogtest01-private-1
-tagging instance i-e953634d (Name:dogtest01-web-fixbakerloo, role:web)
-tagging instance i-3e3c6ab0 (Name:dogtest01-web-princessohio, role:web)
-creating role: door
-1 instances of role door launching into dogtest01-public-1
-tagging instance i-f03e687e (Name:dogtest01-door-bakerlooohio, role:door)
-creating vpc endpoints in private
-inbound connection from 'web' to 'db' over ports 5432 (TCP)
-inbound connection from 'door' to 'db' over ports 22 (TCP)
-inbound connection from 'web-elb' to 'web' over ports 80 (TCP)
-inbound connection from 'door' to 'web' over ports 22 (TCP)
-inbound connection from 'web' to 'web' over ports all (-1)
-inbound connection from '0.0.0.0/0' to 'door' over ports 22 (TCP)
-inbound connection from '0.0.0.0/0' to 'web-elb' over ports 80 (TCP)
-revoking outbound connection to '0.0.0.0/0' from 'db' over ports all (-1)
-revoking outbound connection to '0.0.0.0/0' from 'web' over ports all (-1)
-revoking outbound connection to '0.0.0.0/0' from 'door' over ports all (-1)
-revoking outbound connection to '0.0.0.0/0' from 'web-elb' over ports all (-1)
-outbound connection to '0.0.0.0/0' from 'door' over ports all (-1)
-waiting for dogtest01-db-orangeblossom to start
-tagging volumes for instance dogtest01-db-orangeblossom (Name:dogtest01-db-orangeblossom)
-waiting for dogtest01-web-fixbakerloo to start
-tagging volumes for instance dogtest01-web-fixbakerloo (Name:dogtest01-web-fixbakerloo)
-waiting for dogtest01-web-princessohio to start
-tagging volumes for instance dogtest01-web-princessohio (Name:dogtest01-web-princessohio)
-waiting for dogtest01-door-bakerlooohio to start
-tagging volumes for instance dogtest01-door-bakerlooohio (Name:dogtest01-door-bakerlooohio)
-allocating eip and associating with dogtest01-door-bakerlooohio
-allocated eip 52.77.67.111 and associated with dogtest01-door-bakerlooohio
-locking new instances to prevent termination
+creating role: bastion
+1 instances of role bastion launching into stg-public-1 subnet
+inbound rule: 'bastion' -> 'all' over ports 22 (TCP)
+inbound rule: '98.110.147.178/32' -> 'bastion' over ports 22 (TCP)
+inbound rule: '184.188.101.86/32' -> 'bastion' over ports 22 (TCP)
+waiting for i-00b858ff5644d8634 to start
+waiting for i-00b858ff5644d8634 to be in status OK
+tagging instance i-00b858ff5644d8634 (Name:stg-bastion-delawareriver)
+tagging volumes for instance stg-bastion-delawareriver (Name:stg-bastion-delawareriver)
+allocating eip and associating with stg-bastion-delawareriver
+allocated eip 54.80.219.185 and associated with stg-bastion-delawareriver
+locking new normal (not autoscaled) instances to prevent termination
+adding route ['0.0.0.0/0', 'internet_gateway'] to route_table (stg-public)
+managing route53 private zone.
+done! don't you look awesome. : )

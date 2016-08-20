@@ -1,6 +1,6 @@
 .. _amis:
 
-AMIs
+amis
 ####
 
 Define AMIs using the following schema:

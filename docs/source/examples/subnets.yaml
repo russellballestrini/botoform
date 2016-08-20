@@ -1,0 +1,24 @@
+# This is an example of a 4 subnet schema.
+# Each subnet has a size of 27 which is a /27 CIDR (32 addresses).
+# Two are attached to the private route_table, and two to the public.
+# We round robin AZ letters if availability_zone is not defined.
+# Instances will launch into subnet with public IPs, if public is True.
+subnets:
+
+  private-1:
+    size: 27
+    route_table: private
+
+  private-2:
+    size: 27
+    route_table: private
+
+  public-1:
+    size: 27
+    route_table: public
+    availability_zone: a
+
+  public-2:
+    size: 27
+    route_table: public
+    availability_zone: b

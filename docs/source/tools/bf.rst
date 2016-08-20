@@ -7,6 +7,10 @@ Botoform tools are namespaced under the ``bf`` command.
 
 For a list built-in subcommands and interactive help, run ``bf --help``.
 
+Currently Implemented subcommands::
+
+ {atmosphere,shell,cli,dump,lock,create,stop,start,unlock,repl,destroy}
+
 create
 ------
 
@@ -145,6 +149,17 @@ dump
 Output existing resources or services in a Botoform campatible format.
 
 * instances
-* security-groups
+* security_groups
+* ansible_hosts
 
 
+atmosphere
+-----------
+
+For every AWS profile + region, dump every VPC to STDOUT.
+
+This command takes a while to run, so you should likely redirect the output to a file.
+
+Reason for this tool is we have many AWS accounts and we use many regions.
+
+Using the output of this tool, we can easily grep for a vpc_name and find where it lives.

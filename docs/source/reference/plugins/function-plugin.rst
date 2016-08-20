@@ -18,7 +18,7 @@ First we define an :ref:`entry point` and subcommand named ``destroy``.
       ]
     }
 
-The `entry point`_ named ``destroy`` shows the path to the ``destroy`` function.
+The :ref:`entry point` named ``destroy`` shows the path to the ``destroy`` function.
 
 :ref:`bf` function plugins must accept an *args* object and an *evpc* object.
 
@@ -38,5 +38,4 @@ For Example:
      :returns: None
      """
      evpc.terminate()
-
 

@@ -1,6 +1,4 @@
 
-.. _plugins:
-
 plugins
 #######
 
@@ -15,8 +13,8 @@ A :ref:`bf` plugin must take one of two forms:
    class-plugin.rst
 
 Regardless of the form of plugin you choose, your plugin project's
-*setup.py* must define an `entry point`_ in the ``botoform.plugins`` group.
-The name of the `entry point`_ will be the subcommand on the CLI.
+*setup.py* must define an :ref:`entry point` in the ``botoform.plugins`` group.
+The name of the :ref:`entry point` will be the subcommand on the CLI.
 
 All :ref:`bf` subcommands (:ref:`core plugins`) are implemented in this way.
 
@@ -34,6 +32,9 @@ terms
 =====
 
 .. _entry point:
+
+entry point
+-----------
 
 entry point:
   An entry point is a Python object identified in a project's ``setup.py`` file.

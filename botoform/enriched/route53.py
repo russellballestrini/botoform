@@ -33,10 +33,7 @@ class EnrichedRoute53(object):
         self.evpc.reload()
 
     def create_private_zone(self):
-        if self.private_zone_id:
-            # exit early, private zone already exists.
-            return None
-
+        if self.private_zone_id: return None
         comment = 'private zone for {}'.format(self.evpc.name)
         response = self.create_hosted_zone(
             Name = self.private_zone_name,
@@ -57,6 +54,7 @@ class EnrichedRoute53(object):
         )
 
     def empty_private_zone(self):
+        if not self.private_zone_id: return None
         response = self.list_resource_record_sets(HostedZoneId = self.private_zone_id)
         record_sets = response['ResourceRecordSets']
         change_docs = []
@@ -70,12 +68,12 @@ class EnrichedRoute53(object):
         self.change_private_zone(change_docs)
 
     def delete_private_zone(self):
+        if not self.private_zone_id: return None
         self.empty_private_zone()
         self.delete_hosted_zone(Id = self.private_zone_id)
         self.private_zone_id = None
 
     def refresh_private_zone(self):
-        # exit early, private zone needs to be created first.
         if not self.private_zone_id: return None
         change_docs = [self._ipcd(i) for i in self.evpc.instances]
         self.change_private_zone(change_docs)

@@ -10,6 +10,8 @@ import humanhash
 from string import letters, digits
 from random import choice
 
+from retrying import retry
+
 class BotoConnections(object):
     """Central Management of boto3 client and resource connection objects."""
     def __init__(self, region_name=None, profile_name=None):
@@ -234,6 +236,7 @@ def make_tag_dict(ec2_object):
         tag_dict[tag['Key']] = tag['Value']
     return tag_dict
 
+@retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 def update_tags(ec2_object, **kwargs):
     """
     Add or update tags to reflect given keyword args

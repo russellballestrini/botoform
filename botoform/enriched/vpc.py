@@ -28,6 +28,8 @@ from enriched import (
 
 from nested_lookup import nested_lookup
 
+from retrying import retry
+
 class EnrichedVPC(object):
     """
     This class uses composition to enrich Boto3's VPC resource class.

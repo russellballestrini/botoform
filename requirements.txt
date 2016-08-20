@@ -10,3 +10,6 @@ jinja2
 
 # dynamic nonsequential hostnames.
 humanhash
+
+# deal with AWS API eventual consistency by retrying...
+retrying

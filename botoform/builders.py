@@ -62,6 +62,9 @@ class EnvironmentBuilder(object):
         # attach EnrichedVPC to self.
         self.evpc = EnrichedVPC(self.vpc_name, self.boto.region_name, self.boto.profile_name, self.log)
 
+        # create and attach internet gateway to vpc.
+        self.build_internet_gateway()
+
         # attach VPN gateway to the VPC
         self.attach_vpn_gateway(config.get('vpn_gateway', no_cfg))
         
@@ -71,9 +74,9 @@ class EnvironmentBuilder(object):
         # the order of these method calls matters for new VPCs.
         self.route_tables(config.get('route_tables', no_cfg))
         self.subnets(config.get('subnets', no_cfg))
-        self.associate_route_tables_with_subnets(config.get('subnets', no_cfg))
         self.security_groups(config.get('security_groups', no_cfg))
         self.key_pairs(config.get('key_pairs', []))
+        self.associate_route_tables_with_subnets(config.get('subnets', no_cfg))
         self.db_instances(config.get('db_instances', no_cfg))
 
         new_instances = self.instance_roles(
@@ -116,17 +119,19 @@ class EnvironmentBuilder(object):
         self.log.emit('modifying vpc for dns hostnames', 'debug')
         vpc.modify_attribute(EnableDnsHostnames={'Value': True})
 
-        igw_name = 'igw-' + self.vpc_name
+    def build_internet_gateway(self):
+        """Build and attach Internet Gateway to VPC."""
+        igw_name = 'igw-' + self.evpc.name
         self.log.emit('creating internet_gateway ({})'.format(igw_name))
         gw = self.boto.ec2.create_internet_gateway()
         self.log.emit('tagging gateway (Name:{})'.format(igw_name), 'debug')
         update_tags(gw, Name = igw_name)
 
         self.log.emit('attaching igw to vpc ({})'.format(igw_name))
-        vpc.attach_internet_gateway(
+        self.evpc.attach_internet_gateway(
             DryRun=False,
             InternetGatewayId=gw.id,
-            VpcId=vpc.id,
+            VpcId=self.evpc.id,
         )
 
     def attach_vpn_gateway(self, vpn_gateway_cfg):

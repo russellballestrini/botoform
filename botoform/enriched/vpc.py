@@ -450,19 +450,10 @@ class EnrichedVPC(object):
                 self.log.emit('deleting route table {}'.format(rt.id))
                 rt.delete()
 
-    @property
-    def dhcp_options_name(self):
-        return make_tag_dict(self.dhcp_options)['Name']
-
-    @dhcp_options_name.setter
-    def dhcp_options_name(self, new_name):
-        update_tags(self.dhcp_options, Name = new_name)
-        self.dhcp_options.reload()
-
     def delete_dhcp_options(self):
         """Delete DHCP Options Set"""
-        msg = 'deleting DHCP Options set {} ({})'
-        self.log.emit(msg.format( self.dhcp_options_name, self.dhcp_options.id))
+        msg = 'deleting DHCP Options set {}'
+        self.log.emit(msg.format(self.dhcp_options.id))
         self.dhcp_options.delete()
         
     def terminate(self):
@@ -481,8 +472,8 @@ class EnrichedVPC(object):
         self.delete_route_tables()
         self.delete_internet_gateways()
         self.detach_vpn_gateway()
-        self.log.emit('deleting the VPC - {}'.format(self.id))
         self.route53.delete_private_zone()
+        self.log.emit('deleting the VPC - {}'.format(self.id))
         self.vpc.delete()
         self.delete_dhcp_options()
 

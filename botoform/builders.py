@@ -20,6 +20,10 @@ from uuid import uuid4
 
 from random import choice
 
+from nested_lookup import nested_lookup
+
+from retrying import retry
+
 class EnvironmentBuilder(object):
 
     def __init__(self, vpc_name, config=None, region_name=None, profile_name=None, log=None):
@@ -156,26 +160,37 @@ class EnvironmentBuilder(object):
                 #    if count == 11:
                 #        raise Exception({"message":"VPN Gateway is not yet attached.", "VGW_ID":vgw_id})
 
-    def create_dhcp_options(self, data):
-        """Creates DHCP Options Set, return DHCP Option Set ID."""
-        dhcp_configurations = [
-            { 'Key' : 'domain-name-servers', 'Values' : data['domain-name-servers'] },
-            { 'Key' : 'domain-name', 'Values' : [self.evpc.route53.private_zone_name] },
-        ]
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+    def _get_dhcp_options_from_id(self, dhcp_options_id):
+        return self.boto.ec2.DhcpOptions(dhcp_options_id)
 
-        dhcp_options = self.boto.ec2_client.create_dhcp_options(
-                            DhcpConfigurations=dhcp_configurations
-                        )
-        return dhcp_options.get('DhcpOptions').get('DhcpOptionsId')
+    def create_dhcp_options(self, dhcp_configurations):
+        """Creates and return a new dhcp_options set."""
+        response = self.boto.ec2_client.create_dhcp_options(
+                     DhcpConfigurations = dhcp_configurations
+                   )
+
+        dhcp_options_id = nested_lookup('DhcpOptionsId', response)[0]
+        dhcp_options = self._get_dhcp_options_from_id(dhcp_options_id)
+
+        self.log.emit('tagging dhcp_options (Name:{})'.format(self.evpc.name), 'debug')
+        update_tags(dhcp_options, Name = self.evpc.name)
+
+        self.log.emit('associating dhcp_options to {}'.format(self.evpc.name))
+        dhcp_options.associate_with_vpc(VpcId = self.evpc.id)
 
     def dhcp_options(self, dhcp_options_cfg):
         """Creates DHCP Options Set and associates with VPC"""
         self.log.emit('creating DHCP Options Set for {}'.format(self.evpc.name))
-        dhcp_options_id = self.create_dhcp_options(dhcp_options_cfg)
-        self.log.emit('associating DHCP Options {} with VPC {}'.format(dhcp_options_id, self.evpc.name))
-        self.evpc.associate_dhcp_options(DhcpOptionsId=dhcp_options_id)
-        self.evpc.reload()
-        self.evpc.dhcp_options_name = self.evpc.name
+
+        cfg = dhcp_options_cfg
+
+        dhcp_configurations = [
+            { 'Key' : 'domain-name-servers', 'Values' : cfg['domain-name-servers']},
+            { 'Key' : 'domain-name', 'Values' : [self.evpc.route53.private_zone_name] },
+        ]
+
+        self.create_dhcp_options(dhcp_configurations)
         
     def route_tables(self, route_cfg):
         """Build route_tables defined in config"""
@@ -541,6 +556,8 @@ class EnvironmentBuilder(object):
             ]
         )
 
+    # retry because autoscaled instances don't have the role tag right away.
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
     def tag_instance_name(self, instance):
         """Accept a EnrichedInstance, objects create tags."""
         msg = 'tagging instance {} (Name:{})'
@@ -557,10 +574,10 @@ class EnvironmentBuilder(object):
             update_tags(volume, Name = instance.identity)
 
     def add_eip_to_instance(self, instance):
-        eip1_msg = 'allocating eip and associating with {}'
-        eip2_msg = 'allocated eip {} and associated with {}'
+        eip1_msg = 'allocating and associating eip for {}'
+        eip2_msg = 'associated eip {} to {}'
         self.log.emit(eip1_msg.format(instance.identity))
-        eip = instance.allocate_eip()
+        eip = instance.allocate_and_associate_eip()
         self.log.emit(eip2_msg.format(eip.public_ip, instance.identity))
 
     def finish_instance_roles(self, instance_role_cfg, instances=None):
@@ -571,17 +588,13 @@ class EnvironmentBuilder(object):
             self.log.emit('waiting for {} to start'.format(instance.identity))
             instance.wait_until_running()
 
-            self.log.emit('waiting for {} to be in status OK'.format(instance.identity))
-            instance.wait_until_status_ok()
-
-            # we wait all this time for autoscaled role tag to be set.
+            # this method call will block (retry) until instance is named.
             self.tag_instance_name(instance)
             self.tag_instance_volumes(instance)
 
-            if len(instance.eips) == 0:
-                if instance_role_cfg[instance.role].get('eip', False) == True:
-                    # if instance role should have an eip but doesn't have one, add one.
-                    self.add_eip_to_instance(instance)
+            if len(instance.eips) == 0 and instance_role_cfg[instance.role].get('eip', False):
+               # if instance role should have an eip but doesn't have one, add one.
+               self.add_eip_to_instance(instance)
 
         try:
             self.log.emit('locking new normal (not autoscaled) instances to prevent termination')

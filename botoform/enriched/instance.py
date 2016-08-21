@@ -6,6 +6,8 @@ from botoform.util import (
   id_to_human,
 )
 
+from retrying import retry
+
 class EnrichedInstance(object):
     """
     This class uses composition to enrich Boto3's Instance resource class.
@@ -170,18 +172,43 @@ class EnrichedInstance(object):
 
     def allocate_eip(self):
         """
-        Allocate a new EIP and associate with this instance.
+        Allocate a new EIP and return allocation_id
+
+        :returns: New allocation_id
+        """
+        allocation = self.evpc.boto.ec2_client.allocate_address()
+        return allocation['AllocationId']
+
+    def _get_eip_by_allocation_id(self, allocation_id):
+        """
+        Allocations of eips are eventually consistent.
+        This means we could have an id for an allocation that doesn't yet exist.
+        We deal with this by blocking and retrying until the alloation exists.
+
+        :returns: New VPCAddress EIP object
+        """
+        return self.evpc.boto.ec2.VpcAddress(allocation_id = allocation_id)
+
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+    def associate_eip(self, allocation_id):
+        """
+        Associate EIP with instance and return EIP.
 
         :returns: New VpcAddress EIP object
         """
         self.wait_until_running()
-        allocation = self.evpc.boto.ec2_client.allocate_address()
-        eip = self.evpc.boto.ec2.VpcAddress(
-                                     allocation_id = allocation['AllocationId']
-                                 )
+        eip = self._get_eip_by_allocation_id(allocation_id)
         eip.associate(InstanceId = self.id)
         self.reload()
         return eip
+
+    def allocate_and_associate_eip(self):
+        """
+        Allocate and Associate a new EIP with instance and return EIP.
+
+        :returns: New VpcAddress EIP object
+        """
+        return self.associate_eip(self.allocate_eip())
 
     def disassociate_eips(self, release=True):
         """

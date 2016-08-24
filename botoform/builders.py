@@ -588,8 +588,12 @@ class EnvironmentBuilder(object):
             self.log.emit('waiting for {} to start'.format(instance.identity))
             instance.wait_until_running()
 
+            self.log.emit('waiting for {} to be ok'.format(instance.identity))
+            instance.wait_until_status_ok()
+
             # this method call will block (retry) until instance is named.
             self.tag_instance_name(instance)
+
             self.tag_instance_volumes(instance)
 
             if len(instance.eips) == 0 and instance_role_cfg[instance.role].get('eip', False):

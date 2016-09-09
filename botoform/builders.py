@@ -83,7 +83,7 @@ class EnvironmentBuilder(object):
         self.associate_route_tables_with_subnets(config.get('subnets', no_cfg))
         self.db_instances(config.get('db_instances', no_cfg))
 
-        new_instances = self.instance_roles(
+        self.instance_roles(
             config.get('instance_roles', no_cfg)
         )
 

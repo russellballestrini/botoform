@@ -4,6 +4,11 @@ from pkg_resources import iter_entry_points
 
 from botoform.enriched import EnrichedVPC
 
+def get_profile_names():
+    """Return a list of profile names in ~/.aws/config"""
+    import botocore.session
+    return botocore.session.get_session().full_config.get('profiles', {}).keys()
+
 def load_entry_points(group_name):
     """Return a dictionary of entry_points related to given group_name"""
     entry_points = {}
@@ -35,6 +40,7 @@ def build_parser(description):
     parser = argparse.ArgumentParser(description = description)
     #requiredNamed = parser.add_argument_group('required named arguments')
     parser.add_argument('-p', '--profile', default='default',
+      metavar=','.join(get_profile_names()),
       help='botocore profile name for AWS creds and other vars.')
     parser.add_argument('-r', '--region', default=None,
       help='AWS region to use')

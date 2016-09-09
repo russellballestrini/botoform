@@ -40,7 +40,7 @@ def build_parser(description):
     parser = argparse.ArgumentParser(description = description)
     #requiredNamed = parser.add_argument_group('required named arguments')
     parser.add_argument('-p', '--profile', default='default',
-      metavar=','.join(get_profile_names()),
+      choices=get_profile_names(),
       help='botocore profile name for AWS creds and other vars.')
     parser.add_argument('-r', '--region', default=None,
       help='AWS region to use')

@@ -180,17 +180,20 @@ class EnrichedVPC(object):
 
         :returns: EnrichedInstance or None
         """
-        instances = self.get_instances(instances)
+        instances = self.get_instances()
         hits = []
         for instance in instances:
             if identifier in instance.identifiers:
                 hits.append(instance)
-        if len(instances) > 1:
+
+        if len(hits) == 0:
+            return None
+
+        if len(hits) > 1:
             msg = "Multiple instances '{}' have '{}' identifier."
             instance_names = ', '.join(map(str, hits))
             raise Exception(msg.format(instance_names, identifier))
-        if len(instances) == 0:
-            return None
+
         return hits[0]
 
     @staticmethod
@@ -232,7 +235,7 @@ class EnrichedVPC(object):
 
         :returns: A list of EnrichedInstance objets or an empty list.
         """
-        instances = self.get_instances(instances)
+        instances = self.get_instances()
         hits = []
         for i in instances:
             qualified = self._identify_instance(i, identifiers, roles)
@@ -416,22 +419,34 @@ class EnrichedVPC(object):
             self.log.emit('deleting internet gateway - {}'.format(igw.id))
             igw.delete()
 
-    def delete_security_groups(self):
-        """Delete related security groups."""
-        for sg in self.security_groups.all():
-            if len(sg.ip_permissions) >= 1:
-                self.log.emit('revoking all inbound rules of security group - {}'.format(sg.id))
-                sg.revoke_ingress(IpPermissions = sg.ip_permissions)
+    def revoke_inbound_rules_from_sg(self, sg):
+        if len(sg.ip_permissions) >= 1:
+            self.log.emit('revoking all inbound rules of security group - {}'.format(sg.id))
+            sg.revoke_ingress(IpPermissions = sg.ip_permissions)
 
-            if len(sg.ip_permissions_egress) >= 1:
-                self.log.emit('revoking all outbound rules of security group - {}'.format(sg.id))
-                sg.revoke_egress(IpPermissions = sg.ip_permissions_egress)
+    def revoke_outbound_rules_from_sg(self, sg):
+        if len(sg.ip_permissions_egress) >= 1:
+            self.log.emit('revoking all outbound rules of security group - {}'.format(sg.id))
+            sg.revoke_egress(IpPermissions = sg.ip_permissions_egress)
 
-        for sg in self.security_groups.all():
-            if sg.group_name == 'default':
-                continue
+    def revoke_security_group_rules(self, sg):
+        self.revoke_inbound_rules_from_sg(sg)
+        self.revoke_outbound_rules_from_sg(sg)
+
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+    def delete_security_group(self, sg):
+        if sg.group_name != 'default':
             self.log.emit('deleting security group - {}'.format(sg.id))
             sg.delete()
+
+    def delete_security_groups(self):
+        """Delete related security groups."""
+        sgs = self.security_groups.all()
+        for sg in sgs:
+            self.revoke_security_group_rules(sg)
+
+        for sg in sgs:
+            self.delete_security_group(sg)
 
     def delete_subnets(self):
         """Delete related subnets."""

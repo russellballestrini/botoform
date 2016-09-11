@@ -47,9 +47,15 @@ class Create(ClassPlugin):
 
         :returns: None
         """
-        extra_vars = key_value_to_dict(args.extra_vars)
+        # TODO: tags not implemented, not used. Pass to template or builder?
         aws_tags = key_value_to_dict(args.tags)
-        loader = ConfigLoader(context_vars = extra_vars)
+
+        # get extra_vars (context_vars) from command line.
+        context_vars = key_value_to_dict(args.extra_vars)
+        # get directionary from ArgParse Namespace object and merge into context_vars.
+        context_vars.update(vars(args))
+
+        loader = ConfigLoader(context_vars = context_vars)
         config = loader.load(template_path = args.config)
         ebuilder = EnvironmentBuilder(
                        args.vpc_name, config, args.region, args.profile)

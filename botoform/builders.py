@@ -433,9 +433,15 @@ class EnvironmentBuilder(object):
         )
         return instance_profile
 
+    # retry because instance_profile / iam role not ready right away...
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+    def wait_for_instance_profile(self, instance_profile_name):
+        msg = 'waiting for {} instance_profile / iam_role to exist ...'
+        if self.get_instance_profile(instance_profile_name) is None:
+            self.log.emit(msg.format(instance_profile_name))
+            raise Exception(msg.format(instance_profile_name))
+
     def _get_or_create_iam_instance_profile(self, instance_profile_name):
-        if instance_profile_name:
-            return None
         instance_profile = self.get_instance_profile(instance_profile_name)
         if instance_profile is None:
             instance_profile = self.create_instance_profile(instance_profile_name)
@@ -612,6 +618,7 @@ class EnvironmentBuilder(object):
         if profile_name:
             # only add profile if set. Empty string causes error.
             kwargs['IamInstanceProfile'] = profile_name
+            self.wait_for_instance_profile(profile_name)
 
         self.log.emit('creating launch configuration for role: {}'.format(long_role_name))
         self.evpc.autoscaling.create_launch_configuration(**kwargs)

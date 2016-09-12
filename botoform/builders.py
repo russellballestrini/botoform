@@ -24,6 +24,18 @@ from nested_lookup import nested_lookup
 
 from retrying import retry
 
+# instance profiles / roles require this to work:
+DEFAULT_EC2_TRUST_POLICY = """{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": { "Service": "ec2.amazonaws.com"},
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}"""
+
 class EnvironmentBuilder(object):
 
     def __init__(self, vpc_name, config=None, region_name=None, profile_name=None, log=None):
@@ -74,6 +86,12 @@ class EnvironmentBuilder(object):
         
         # create and associate DHCP Options Set
         self.dhcp_options(config.get('dhcp_options', no_cfg))
+
+        # iam instance profiles / iam roles need to be created early because
+        # there isn't a way to make launch config idempotent and safe to retry...
+        self.instance_profiles(
+            config.get('instance_roles', no_cfg)
+        )
         
         # the order of these method calls matters for new VPCs.
         self.route_tables(config.get('route_tables', no_cfg))
@@ -395,6 +413,39 @@ class EnvironmentBuilder(object):
                 self.log.emit('creating key pair {}'.format(short_key_pair_name))
                 self.evpc.key_pair.create_key_pair(short_key_pair_name)
 
+    def get_instance_profile(self, instance_profile_name):
+        """Return instance_profile or None."""
+        for profile in list(self.boto.iam.instance_profiles.all()):
+            if profile.name == instance_profile_name:
+                return profile
+
+    def create_instance_profile(self, instance_profile_name):
+        """Create instance_profile and role, return instance_profile."""
+        instance_profile = self.boto.iam.create_instance_profile(
+            InstanceProfileName = instance_profile_name
+        )
+        iam_role = self.boto.iam.create_role(
+            RoleName = instance_profile_name,
+            AssumeRolePolicyDocument = DEFAULT_EC2_TRUST_POLICY,
+        )
+        instance_profile.add_role(
+            RoleName = instance_profile_name,
+        )
+        return instance_profile
+
+    def _get_or_create_iam_instance_profile(self, instance_profile_name):
+        if instance_profile_name is None:
+            return None
+        instance_profile = self.get_instance_profile(instance_profile_name)
+        if instance_profile is None:
+            instance_profile = self.create_instance_profile(instance_profile_name)
+        return instance_profile
+
+    def instance_profiles(self, instance_role_cfg):
+        for role_name, role_data in instance_role_cfg.items():
+            profile_name = role_data.get('instance_profile_name', None)
+            self._get_or_create_iam_instance_profile(profile_name)
+
     def instance_roles(self, instance_role_cfg):
         """Create instance roles defined in config."""
         for role_name, role_data in instance_role_cfg.items():
@@ -459,13 +510,28 @@ class EnvironmentBuilder(object):
 
         role_instances = []
 
+        kwargs = {
+          'ImageId'             : ami,
+          'InstanceType'        : role_data.get('instance_type'),
+          'KeyName'             : key_pair.name,
+          'SecurityGroupIds'    : get_ids(security_groups),
+          'BlockDeviceMappings' : block_device_map,
+          'UserData'            : role_data.get('userdata', ''),
+          'IamInstanceProfile'  : {},
+        }
+
+        profile_name = role_data.get('instance_profile_name', None)
+        if profile_name:
+            kwargs['IamInstanceProfile'] = { 'Name' : profile_name }
+
         for subnet in subnets:
             # ensure Run_Instance_Idempotency.html#client-tokens
-            client_token = str(uuid4())
+            kwargs['ClientToken'] = str(uuid4())
 
             # figure out how many instances this subnet needs to create ...
             existing_in_subnet = len(self.evpc.get_role(role_name, subnet.instances.all()))
             count = needed_per_subnet - existing_in_subnet
+
             if needed_remainder != 0:
                 needed_remainder -= 1
                 count += 1
@@ -479,23 +545,20 @@ class EnvironmentBuilder(object):
             self.log.emit(msg.format(count, role_name, subnet_name))
 
             # create a batch of instances in subnet!
-            instances = subnet.create_instances(
-                       ImageId           = ami,
-                       InstanceType      = role_data.get('instance_type'),
-                       MinCount          = count,
-                       MaxCount          = count,
-                       KeyName           = key_pair.name,
-                       SecurityGroupIds  = get_ids(security_groups),
-                       ClientToken       = client_token,
-                       BlockDeviceMappings = block_device_map,
-                       UserData          = role_data.get('userdata', ''),
-            )
+            kwargs['MinCount'] = kwargs['MaxCount'] = count
+            instances = self._create_instances(subnet, **kwargs)
+
             # accumulate all new instances into a single list.
             role_instances += instances
 
         # add role tag to each instance.
         for instance in role_instances:
             update_tags(instance, role = role_name)
+
+    # retry because iam role not ready right away...
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+    def _create_instances(self, subnet, **kwargs):
+        return subnet.create_instances(**kwargs)
 
     def autoscaling_instance_roles(self, instance_role_cfg):
         """Create Autoscaling Groups and Launch Configurations."""
@@ -532,16 +595,23 @@ class EnvironmentBuilder(object):
 
         block_device_map = get_block_device_map_from_role_config(role_data)
 
+        kwargs = {
+          'LaunchConfigurationName' : long_role_name,
+          'ImageId'             : ami,
+          'InstanceType'        : role_data.get('instance_type'),
+          'KeyName'             : key_pair.name,
+          'SecurityGroups'      : get_ids(security_groups),
+          'BlockDeviceMappings' : block_device_map,
+          'UserData'            : role_data.get('userdata', ''),
+        }
+
+        profile_name = role_data.get('instance_profile_name', None)
+        if profile_name:
+            # only add profile if set. Empty string causes error.
+            kwargs['IamInstanceProfile'] = profile_name
+
         self.log.emit('creating launch configuration for role: {}'.format(long_role_name))
-        self.evpc.autoscaling.create_launch_configuration(
-            LaunchConfigurationName = long_role_name,
-            ImageId = ami,
-            KeyName = key_pair.name,
-            SecurityGroups = get_ids(security_groups),
-            InstanceType = role_data.get('instance_type'),
-            BlockDeviceMappings = block_device_map,
-            UserData = role_data.get('userdata', ''),
-        )
+        self.evpc.autoscaling.create_launch_configuration(**kwargs)
 
         self.log.emit('creating autoscaling group for role: {}'.format(long_role_name))
         self.evpc.autoscaling.create_auto_scaling_group(

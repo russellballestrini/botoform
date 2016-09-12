@@ -62,6 +62,7 @@ class BotoConnections(object):
 
     def refresh_boto_connections(self):
         """Attach related Boto3 clients and resources."""
+        self.iam = boto3.resource('iam')
         self.ec2 = boto3.resource('ec2')
         self.ec2_client = boto3.client('ec2')
         self.rds = boto3.client('rds')

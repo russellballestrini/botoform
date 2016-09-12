@@ -434,7 +434,7 @@ class EnvironmentBuilder(object):
         return instance_profile
 
     def _get_or_create_iam_instance_profile(self, instance_profile_name):
-        if instance_profile_name is None:
+        if instance_profile_name:
             return None
         instance_profile = self.get_instance_profile(instance_profile_name)
         if instance_profile is None:
@@ -442,9 +442,12 @@ class EnvironmentBuilder(object):
         return instance_profile
 
     def instance_profiles(self, instance_role_cfg):
+        msg = "make sure {} instance_profile and iam_role exist"
         for role_name, role_data in instance_role_cfg.items():
             profile_name = role_data.get('instance_profile_name', None)
-            self._get_or_create_iam_instance_profile(profile_name)
+            if profile_name:
+                self.log.emit(msg.format(profile_name))
+                self._get_or_create_iam_instance_profile(profile_name)
 
     def instance_roles(self, instance_role_cfg):
         """Create instance roles defined in config."""

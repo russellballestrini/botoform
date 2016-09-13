@@ -122,7 +122,7 @@ class EnvironmentBuilder(object):
         # run after tagging instances in case we have a NAT instance_role.
         self.route_table_rules(config.get('route_tables', no_cfg))
 
-        config.get('private_zone', False):
+        if config.get('private_zone', False):
             self.log.emit('managing route53 private zone.')
             self.evpc.route53.create_private_zone()
             self.evpc.route53.refresh_private_zone()

@@ -677,7 +677,8 @@ class EnvironmentBuilder(object):
 
             self.tag_instance_volumes(instance)
 
-            if len(instance.eips) == 0 and instance_role_cfg[instance.role].get('eip', False):
+            requires_eip = instance_role_cfg.get(instance.role, {}).get('eip', False)
+            if requires_eip and len(instance.eips) == 0:
                # if instance role should have an eip but doesn't have one, add one.
                self.add_eip_to_instance(instance)
 

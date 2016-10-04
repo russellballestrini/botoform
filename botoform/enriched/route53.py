@@ -65,7 +65,9 @@ class EnrichedRoute53(object):
             if record_set['Type'] not in ['NS', 'SOA']:
                 # only add the change_doc if its _not_ an NS or SOA record.
                 change_docs.append(change_doc)
-        self.change_private_zone(change_docs)
+
+        if len(change_docs) != 0:
+            self.change_private_zone(change_docs)
 
     def delete_private_zone(self):
         if not self.private_zone_id: return None

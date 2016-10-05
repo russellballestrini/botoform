@@ -11,6 +11,18 @@ def get_builder_for_existing_vpc(evpc, config_path):
     builder.evpc = evpc
     return builder
 
+def ec2_tags(args, evpc):
+    """
+    Refresh private zone with new records / values.
+
+    :param args: The parsed arguments and flags from the CLI.
+    :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
+
+    :returns: None
+    """
+    builder = get_builder_for_existing_vpc(evpc, args.config)
+    builder.finish_instance_roles(builder.config['instance_roles'])
+
 def private_zone(args, evpc):
     """
     Refresh private zone with new records / values.
@@ -25,7 +37,8 @@ def private_zone(args, evpc):
     evpc.route53.refresh_private_zone()
 
 refresh_subcommands = {
-  'private_zone'    : private_zone,
+  'ec2_tags'     : ec2_tags,
+  'private_zone' : private_zone,
 }
 
 class Refresh(object):

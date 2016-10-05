@@ -72,8 +72,10 @@ class EnrichedRoute53(object):
     def delete_private_zone(self):
         if not self.private_zone_id: return None
         self.empty_private_zone()
-        self.delete_hosted_zone(Id = self.private_zone_id)
-        self.private_zone_id = None
+        try:
+            self.delete_hosted_zone(Id = self.private_zone_id)
+        except:
+            return None
 
     def refresh_private_zone(self):
         if not self.private_zone_id: return None

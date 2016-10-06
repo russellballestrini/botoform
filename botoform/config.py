@@ -57,6 +57,20 @@ class ConfigLoader(object):
             config[key] = self._load(template_path=path)[key]
         return config
 
+    def _sg_rule_tuples(self, config):
+        """change security group rules to be tuples instead of lists."""
+        sg_config = config.get('security_groups', {})
+        _sg_config = config.get('security_groups', {})
+        for sg_name, values in sg_config.items():
+            if 'inbound' in values:
+                rules = sg_config[sg_name]['inbound']
+                _sg_config[sg_name]['inbound'] = [tuple(rule) for rule in rules]
+            if 'outbound' in values:
+                rules = sg_config[sg_name]['outbound']
+                _sg_config[sg_name]['outbound'] = [tuple(rule) for rule in rules]
+        config['security_groups'] = _sg_config
+        return config
+
     def load(self, template_path=None, template_string=None):
         """
         Load a :ref:`Botoform Schema <schema reference>` config and render with Jinja2.
@@ -69,5 +83,6 @@ class ConfigLoader(object):
         """
         config = self._load(template_path, template_string)
         config = self._load_includes(config)
+        config = self._sg_rule_tuples(config)
         return config
 

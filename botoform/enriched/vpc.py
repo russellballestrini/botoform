@@ -492,3 +492,59 @@ class EnrichedVPC(object):
         self.vpc.delete()
         self.delete_dhcp_options()
 
+    def _strip_vpc_name(self, string):
+        return string[len(self.vpc_name)+1:] if string.startswith(self.vpc_name+'-') else string
+
+    def _permission_to_rules(self, perm):
+        rules = []
+        ip_protocol = perm['IpProtocol']
+        from_port = perm.get('FromPort', -1)
+        to_port   = perm.get('ToPort', -1)
+        port_range = from_port
+        if from_port != to_port:
+            port_range = '{}-{}'.format(from_port, to_port)
+        if len(perm['IpRanges']) >= 1:
+            for iprange in perm['IpRanges']:
+                rule = []
+                rule.append(iprange['CidrIp'])
+                rule.append(ip_protocol)
+                rule.append(port_range)
+                rules.append(tuple(rule))
+        if len(perm['UserIdGroupPairs']) >= 1:
+            for pair in perm['UserIdGroupPairs']:
+                rule = []
+                related_sg = self.boto.ec2.SecurityGroup(id=pair['GroupId'])
+                related_sg_name = self._strip_vpc_name(related_sg.group_name)
+                rule.append(related_sg_name)
+                rule.append(ip_protocol)
+                rule.append(port_range)
+                rules.append(tuple(rule))
+        return rules
+
+    @property
+    def enriched_security_groups(self):
+        """
+        Format Security Groups (and permissions) in :ref:`Botoform Schema <schema reference>`.
+
+        :returns: security_groups in :ref:`Botoform Schema <schema reference>`.
+        """
+        sgs = {}
+        for sg in self.security_groups.all():
+            sg_name = self._strip_vpc_name(sg.group_name)
+            sgs[sg_name] = {'inbound' : []}
+            for perm in sg.ip_permissions:
+                rules = self._permission_to_rules(perm)
+                sgs[sg_name]['inbound'] += rules
+
+            for perm in sg.ip_permissions_egress:
+                # only add outbound rules if not the default rule.
+                rules = self._permission_to_rules(perm)
+                if len(rules) == 1 and rules[0] == ('0.0.0.0/0', '-1', -1):
+                    continue
+                if 'outbound' not in sgs[sg_name]:
+                    sgs[sg_name]['outbound'] = []
+                sgs[sg_name]['outbound'] += rules
+
+        return sgs
+
+

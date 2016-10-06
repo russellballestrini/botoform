@@ -53,33 +53,8 @@ def security_groups(args, evpc):
 
     :returns: security_groups to standard out in :ref:`Botoform Schema <schema reference>`.
     """ 
-    sgs = {}
-    for sg in evpc.security_groups.all():
-        sgs[sg.group_name] = []
-        for perm in sg.ip_permissions:
-            ip_protocol = perm['IpProtocol']
-            from_port = perm.get('FromPort', -1)
-            to_port   = perm.get('ToPort', -1)
-            port_range = from_port
-            if from_port != to_port:
-                port_range = '{}-{}'.format(from_port, to_port)
-            if len(perm['IpRanges']) >= 1:
-                for iprange in perm['IpRanges']:
-                    rule = []
-                    rule.append(iprange['CidrIp'])
-                    rule.append(ip_protocol)
-                    rule.append(port_range)
-                    sgs[sg.group_name].append(rule)
-            if len(perm['UserIdGroupPairs']) >= 1:
-                for pair in perm['UserIdGroupPairs']:
-                    rule = []
-                    related_sg = evpc.boto.ec2.SecurityGroup(id=pair['GroupId'])
-                    rule.append(related_sg.group_name)
-                    rule.append(ip_protocol)
-                    rule.append(port_range)
-                    sgs[sg.group_name].append(rule)
-
-    print(output_formatter({'security_groups' : sgs}, args.output_format))
+    sgs = {'security_groups' : evpc.enriched_security_groups}
+    print(output_formatter(sgs, args.output_format))
 
 dump_subcommands = {
   'instances'       : instances,

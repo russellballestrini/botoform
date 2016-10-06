@@ -4,6 +4,8 @@ from botoform.builders import EnvironmentBuilder
 
 from botoform.config import ConfigLoader
 
+from collections import defaultdict
+
 def get_builder_for_existing_vpc(evpc, config_path):
     loader = ConfigLoader(context_vars={'vpc_name' : evpc.name, 'vpc_cidr' : evpc.cidr_block})
     config = loader.load(config_path)
@@ -13,7 +15,7 @@ def get_builder_for_existing_vpc(evpc, config_path):
 
 def ec2_tags(args, evpc):
     """
-    Refresh private zone with new records / values.
+    Refresh ec2 instances and volumes with tags.
 
     :param args: The parsed arguments and flags from the CLI.
     :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
@@ -36,9 +38,47 @@ def private_zone(args, evpc):
     builder.finish_instance_roles(builder.config['instance_roles'])
     evpc.route53.refresh_private_zone()
 
+def security_groups(args, evpc):
+    """
+    Refresh security_groups: add missing groups and rules.
+
+    :param args: The parsed arguments and flags from the CLI.
+    :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
+
+    :returns: None
+    """
+    builder = get_builder_for_existing_vpc(evpc, args.config)
+    builder.security_groups(builder.config.get('security_groups', {}))
+
+    security_groups_config  = builder.config.get('security_groups', {})
+    security_groups_current = evpc.enriched_security_groups
+    
+    rules_to_add = defaultdict(dict)
+    rules_to_del = defaultdict(dict)
+
+    for sg_name in security_groups_config:
+        config  = security_groups_config[sg_name]
+        current = security_groups_current[sg_name]
+        
+        to_add_inbound  = set(config.get('inbound', [])) - set(current.get('inbound',[]))
+        to_add_outbound = set(config.get('outbound', [])) - set(current.get('outbound',[]))
+
+        #to_remove_inbound  = set(current.get('inbound', [])) - set(config.get('inbound',[]))
+        #to_remove_outbound = set(current.get('outbound', [])) - set(config.get('outbound',[]))
+
+        if len(to_add_inbound) != 0:
+            rules_to_add[sg_name]['inbound'] = list(to_add_inbound)
+        if len(to_add_outbound) != 0:
+            rules_to_add[sg_name]['outbound'] = list(to_add_outbound)
+
+    #print rules_to_del
+
+    builder.security_group_rules(rules_to_add)
+
 refresh_subcommands = {
   'ec2_tags'     : ec2_tags,
   'private_zone' : private_zone,
+  'security_groups' : security_groups,
 }
 
 class Refresh(object):

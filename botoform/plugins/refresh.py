@@ -36,6 +36,7 @@ def private_zone(args, evpc):
     """
     builder = get_builder_for_existing_vpc(evpc, args.config)
     builder.finish_instance_roles(builder.config['instance_roles'])
+    evpc.route53.create_private_zone()
     evpc.route53.refresh_private_zone()
 
 def security_groups(args, evpc):

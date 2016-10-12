@@ -114,6 +114,11 @@ class EnvironmentBuilder(object):
         self.security_group_rules(config.get('security_groups', no_cfg))
         self.load_balancers(config.get('load_balancers', no_cfg))
 
+        # block until instance_role counts are sane.
+        self.wait_for_instance_roles_to_exist(
+            config.get('instance_roles', no_cfg)
+        )
+
         # lets finish building the new instances.
         self.finish_instance_roles(
             config.get('instance_roles', no_cfg)
@@ -668,16 +673,24 @@ class EnvironmentBuilder(object):
         eip = instance.allocate_and_associate_eip()
         self.log.emit(eip2_msg.format(eip.public_ip, instance.identity))
 
+    @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
+    def wait_for_instance_roles_to_exist(self, instance_role_cfg):
+        raw_msg = 'waiting: we desire {} instances but only {} exist in role {}'
+        for role, instances in self.evpc.roles.items():
+            desired_count = instance_role_cfg.get(role, {}).get('count', 0)
+            actual_count  = len(instances)
+            if actual_count < desired_count:
+                msg = raw_msg.format(desired_count, actual_count, role)
+                self.log.emit(msg, 'debug')
+                raise Exception(msg)
+
     def finish_instance_roles(self, instance_role_cfg, instances=None):
         instances = self.evpc.get_instances(instances)
 
         for instance in instances:
 
-            self.log.emit('waiting for {} to start'.format(instance.identity))
+            self.log.emit('waiting for {} to start'.format(instance))
             instance.wait_until_running()
-
-            self.log.emit('waiting for {} to be ok'.format(instance.identity))
-            instance.wait_until_status_ok()
 
             # this method call will block (retry) until instance is named.
             self.tag_instance_name(instance)

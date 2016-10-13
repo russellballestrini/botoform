@@ -16,7 +16,7 @@ def ansible_hosts(args, evpc):
         print(role)
     print('')
     for role, instances in roles.items():
-        print('[' + role + ']')
+        print('[' + str(role) + ']')
         for i in instances:
             print(
               instance_line.format(

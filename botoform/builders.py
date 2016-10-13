@@ -676,11 +676,12 @@ class EnvironmentBuilder(object):
     @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
     def wait_for_instance_roles_to_exist(self, instance_role_cfg):
         raw_msg = 'waiting: we desire {} instances but only {} exist in role {}'
-        for role, instances in self.evpc.roles.items():
-            desired_count = instance_role_cfg.get(role, {}).get('count', 0)
-            actual_count  = len(instances)
-            if actual_count < desired_count:
-                msg = raw_msg.format(desired_count, actual_count, role)
+        roles = self.evpc.roles
+        for role_name, role_cfg in instance_role_cfg.items():
+            desired_count = role_cfg.get('count', 0)
+            actual_count  = len(roles.get(role_name, []))
+            if desired_count > actual_count:
+                msg = raw_msg.format(desired_count, actual_count, role_name)
                 self.log.emit(msg, 'debug')
                 raise Exception(msg)
 

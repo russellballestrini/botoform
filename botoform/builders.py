@@ -258,23 +258,23 @@ class EnvironmentBuilder(object):
                         GatewayId = self.evpc.vgw_id,
                     )
                 else:
+                    # availability_zones of subnets associated to route_table.
+                    azones = [a.subnet.availability_zone for a in route_table.associations.all()]
+
                     # assume the target is an instance_role.
                     instances = self.evpc.get_role(target)
 
                     # by default just randomly select one of the instances in the role.
                     nat_instance = choice(instances)
 
-                    # availability_zones of subnets associated to route_table.
-                    azones = [a.subnet.availability_zone for a in route_table.associations.all()]
-
+                    # try to correlate the route_table's associated subnet's availability_zone
+                    # and the nat instance's subnet's availability_zone. Not always possible.
                     for instance in instances:
-                        self.log.emit('disable source dest check for {}'.format(instance.identity))
-                        instance.disable_source_dest_check(False)
-
                         if instance.subnet.availability_zone in azones:
-                            # try to correlate the route_table's associated subnet's availability_zone
-                            # and the nat instance's subnet's availability_zone. Not always possible.
                             nat_instance = instance
+
+                    self.log.emit('disable source dest check for {}'.format(nat_instance.identity))
+                    nat_instance.disable_source_dest_check(False)
 
                     route_table.create_route(
                         DestinationCidrBlock = destination,

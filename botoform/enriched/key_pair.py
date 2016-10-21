@@ -34,6 +34,8 @@ class EnrichedKeyPair(object):
         for key_name in self.key_names:
             if key_name.startswith(name):
                 return key_name
+            if key_name == short_key_pair_name:
+                return key_name
 
     def get_key_pair(self, short_key_pair_name):
         """Return a KeyPair object by key_name."""

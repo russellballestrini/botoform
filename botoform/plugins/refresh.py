@@ -11,6 +11,7 @@ def get_builder_for_existing_vpc(evpc, config_path):
     config = loader.load(config_path)
     builder = EnvironmentBuilder(evpc.name, config, evpc.boto.region_name, evpc.boto.profile_name)
     builder.evpc = evpc
+    builder.amis = config['amis']
     return builder
 
 def ec2_tags(args, evpc):
@@ -23,6 +24,20 @@ def ec2_tags(args, evpc):
     :returns: None
     """
     builder = get_builder_for_existing_vpc(evpc, args.config)
+    builder.finish_instance_roles(builder.config['instance_roles'])
+
+def instance_roles(args, evpc):
+    """
+    Refresh ec2 instances and volumes with tags.
+
+    :param args: The parsed arguments and flags from the CLI.
+    :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
+
+    :returns: None
+    """
+    builder = get_builder_for_existing_vpc(evpc, args.config)
+    builder.instance_roles(builder.config['instance_roles'])
+    builder.wait_for_instance_roles_to_exist(builder.config['instance_roles'])
     builder.finish_instance_roles(builder.config['instance_roles'])
 
 def private_zone(args, evpc):
@@ -80,6 +95,7 @@ refresh_subcommands = {
   'ec2_tags'     : ec2_tags,
   'private_zone' : private_zone,
   'security_groups' : security_groups,
+  'instance_roles' : instance_roles,
 }
 
 class Refresh(object):

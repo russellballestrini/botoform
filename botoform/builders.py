@@ -520,13 +520,13 @@ class EnvironmentBuilder(object):
 
         if existing_count >= desired_count:
             # for now we exit early, maybe terminate extras...
-            self.log.emit(existing_count + ' ' + desired_count, 'debug')
+            self.log.emit('{} {}'.format(existing_count, desired_count), 'debug')
             return None
 
         # determine count of additional instances needed to reach desired_count.
         needed_count      = desired_count - existing_count
-        needed_per_subnet = needed_count / len(subnets)
-        needed_remainder  = needed_count % len(subnets)
+        needed_per_subnet = desired_count / len(subnets)
+        needed_remainder  = desired_count % len(subnets)
 
         block_device_map = get_block_device_map_from_role_config(role_data)
 

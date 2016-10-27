@@ -42,7 +42,7 @@ route_tables:
 # Each subnet has a size of 27 which is a /27 CIDR (32 addresses).
 # Two are attached to the private route_table, and two to the public.
 # We round robin AZ letters if availability_zone is not defined.
-# Instances will launch into subnet with public IPs, if public is True.
+# Instances will launch into subnet with public IPs, if public: True.
 subnets:
 
   private-1: 
@@ -61,11 +61,15 @@ subnets:
     size: 27
     route_table: public
     description: public subnet 1
+    # The subnet's public IP addressing behavior, map public IP on instance launch?
+    public: True
 
   public-2: 
     size: 27
     route_table: public
     description: public subnet 2
+    # The subnet's public IP addressing behavior, map public IP on instance launch?
+    public: True
 
 # This is an example of how to create VPC Endpoints.
 # This is optional, this allows private subnets to reach S3.
@@ -122,19 +126,19 @@ security_groups:
       - ['web',       'tcp', 5432]
 
 # define an RDS database.
-db_instances:
-  'webapp-psql':
-    name : 'webapp'
-    description: PostgreSQL Database For Persistence
-    subnets: ['private-1', 'private-2']
-    security_groups: ['psql-server']
-    engine: postgres
-    engine_version: 9.4.1
-    class: db.t2.micro
-    allocated_storage: 5
-    backup_retention_period: 0
-    master_username: postgres
-    multi_az: False
+#db_instances:
+#  'webapp-psql':
+#    name : 'webapp'
+#    description: PostgreSQL Database For Persistence
+#    subnets: ['private-1', 'private-2']
+#    security_groups: ['psql-server']
+#    engine: postgres
+#    engine_version: 9.4.1
+#    class: db.t2.micro
+#    allocated_storage: 5
+#    backup_retention_period: 0
+#    master_username: postgres
+#    multi_az: False
 
 # define a public ELB for webapp nodes.
 load_balancers:

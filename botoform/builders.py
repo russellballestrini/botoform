@@ -774,9 +774,9 @@ class EnvironmentBuilder(object):
             )
             sn_ids = get_ids(subnets)
 
-            scheme = 'internal'
-            if lb_cfg.get('internal', True) == False:
-                scheme = 'internet-facing'
+            scheme = 'internet-facing'
+            if lb_cfg.get('internal', False):
+                scheme = 'internal'
 
             listeners = self.evpc.elb.format_listeners(lb_cfg.get('listeners', []))
 

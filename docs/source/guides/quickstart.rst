@@ -17,7 +17,11 @@ Clone botoform repo:
 
 Create and activate a Python virtualenv named env:
 
-  hint: `sudo pip install virtualenv`
+ .. Note:: to install virtualenv use:
+
+  .. code-block:: bash
+
+   sudo pip install virtualenv
 
 .. code-block:: bash
 

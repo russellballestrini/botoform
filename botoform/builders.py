@@ -778,7 +778,7 @@ class EnvironmentBuilder(object):
             if lb_cfg.get('internal', False):
                 scheme = 'internal'
 
-            listeners = self.evpc.elb.format_listeners(lb_cfg.get('listeners', []))
+            listeners = lb_cfg.get('listeners', [])
 
             self.evpc.elb.create_load_balancer(
               LoadBalancerName = lb_fullname,
@@ -789,7 +789,7 @@ class EnvironmentBuilder(object):
                 { 'Key' : 'vpc_name', 'Value' : self.evpc.vpc_name },
                 { 'Key' : 'role', 'Value' : lb_cfg['instance_role'] },
               ],
-              Listeners = listeners,
+              Listeners = self.evpc.elb.format_listeners(listeners),
             )
 
             self.log.emit('created {} load_balancer ...'.format(lb_fullname))

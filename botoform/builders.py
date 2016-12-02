@@ -798,8 +798,8 @@ class EnvironmentBuilder(object):
 
             hc_cfg = lb_cfg.get('healthcheck', {})
             
-            hc_default_target = 'TCP:' + listeners[0][1]
-
+            hc_default_target = 'TCP:{}'.format(listeners[0][1])
+            
             self.evpc.elb.configure_health_check(
                 LoadBalancerName= lb_fullname,
                 HealthCheck={

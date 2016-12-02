@@ -259,7 +259,7 @@ class EnvironmentBuilder(object):
                     )
                 else:
                     # availability_zones of subnets associated to route_table.
-                    azones = [a.subnet.availability_zone for a in route_table.associations.all() if a.subnet is not None]
+                    azones = [a.subnet.availability_zone for a in route_table.associations if a.subnet is not None]
 
                     # assume the target is an instance_role.
                     instances = self.evpc.get_role(target)

@@ -797,11 +797,13 @@ class EnvironmentBuilder(object):
             self.log.emit('Configure Health Check for {} load_balancer ...'.format(lb_fullname))
 
             hc_cfg = lb_cfg.get('healthcheck', {})
+            
+            hc_default_target = 'TCP:' + listeners[0][1]
 
             self.evpc.elb.configure_health_check(
                 LoadBalancerName= lb_fullname,
                 HealthCheck={
-                    'Target': hc_cfg.get('target','HTTPS:443/env/live'),
+                    'Target': hc_cfg.get('target',hc_default_target),
                     'Interval': hc_cfg.get('interval',15),
                     'Timeout': hc_cfg.get('timeout',5),
                     'UnhealthyThreshold': hc_cfg.get('unhealthy_threshold',4),

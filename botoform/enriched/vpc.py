@@ -275,7 +275,7 @@ class EnrichedVPC(object):
         """Return the main (default) route table for VPC."""
         main_route_table = []
         for route_table in self.route_tables.all():
-            for association in route_table.associations.all():
+            for association in route_table.associations:
                 if association.main == True:
                     main_route_table.append(route_table)
         if len(main_route_table) != 1:
@@ -459,7 +459,7 @@ class EnrichedVPC(object):
         main_rt = self.get_main_route_table()
         for rt in self.route_tables.all():
             if rt.id != main_rt.id:
-                for a in rt.associations.all():
+                for a in rt.associations:
                     self.log.emit('dissociating subnet {} from route table {}'.format(a.subnet_id, a.route_table_id))
                     a.delete()
                 self.log.emit('deleting route table {}'.format(rt.id))

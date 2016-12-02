@@ -259,7 +259,7 @@ class EnvironmentBuilder(object):
                     )
                 else:
                     # availability_zones of subnets associated to route_table.
-                    azones = [a.subnet.availability_zone for a in route_table.associations.all() if a.subnet is not None]
+                    azones = [a.subnet.availability_zone for a in route_table.associations if a.subnet is not None]
 
                     # assume the target is an instance_role.
                     instances = self.evpc.get_role(target)
@@ -793,7 +793,24 @@ class EnvironmentBuilder(object):
             )
 
             self.log.emit('created {} load_balancer ...'.format(lb_fullname))
+            
+            self.log.emit('Configure Health Check for {} load_balancer ...'.format(lb_fullname))
 
+            hc_cfg = lb_cfg.get('healthcheck', {})
+
+            self.evpc.elb.configure_health_check(
+                LoadBalancerName= lb_fullname,
+                HealthCheck={
+                    'Target': hc_cfg.get('target','HTTPS:443/env/live'),
+                    'Interval': hc_cfg.get('interval',15),
+                    'Timeout': hc_cfg.get('timeout',5),
+                    'UnhealthyThreshold': hc_cfg.get('unhealthy_threshold',4),
+                    'HealthyThreshold': hc_cfg.get('healthy_threshold',4)
+                }
+            )
+
+            self.log.emit('Configured Health Check for {} load_balancer ...'.format(lb_fullname))
+            
             asg_name  = '{}-{}'.format(self.evpc.name, lb_cfg['instance_role'])
             if asg_name in self.evpc.autoscaling.get_related_autoscaling_group_names():
                 self.log.emit('attaching {} load balancer to {} autoscaling group ...'.format(lb_fullname, asg_name))

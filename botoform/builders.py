@@ -793,7 +793,36 @@ class EnvironmentBuilder(object):
             )
 
             self.log.emit('created {} load_balancer ...'.format(lb_fullname))
+            
+            self.log.emit('Configure Health Check for {} load_balancer ...'.format(lb_fullname))
 
+            lb_hc_target = 'HTTPS:443/env/live'
+            lb_hc_interval = 15
+            lb_hc_timeout = 5
+            lb_hc_unhealtythreshold = 4
+            lb_hc_healtythreshold = 4
+
+            if lb_cfg['healthcheck']:
+                lb_hc_target = lb_cfg['healthcheck'].target if lb_cfg['healthcheck'].target else lb_hc_target
+                lb_hc_interval = int(lb_cfg['healthcheck'].interval) if lb_cfg['healthcheck'].interval else lb_hc_interval
+                lb_hc_timeout = int(lb_cfg['healthcheck'].timeout) if lb_cfg['healthcheck'].timeout else lb_hc_timeout
+                lb_hc_unhealtythreshold = int(lb_cfg['healthcheck'].unhealthy_threshold) if lb_cfg['healthcheck'].unhealthy_threshold else lb_hc_unhealtythreshold
+                lb_hc_healtythreshold = int(lb_cfg['healthcheck'].healthy_threshold) if lb_cfg['healthcheck'].healthy_threshold else lb_hc_healtythreshold
+
+            self.evpc.elb.configure_health_check(
+                LoadBalancerName= lb_fullname,
+                HealthCheck={
+                    'Target': lb_hc_target,
+                    'Interval': lb_hc_interval,
+                    'Timeout': lb_hc_timeout,
+                    'UnhealthyThreshold': lb_hc_unhealtythreshold,
+                    'HealthyThreshold': lb_hc_healtythreshold
+                }
+            )
+
+            self.log.emit('Configured Health Check for {} load_balancer with target {} interval {} timeout {} unhealthy_threshold {} healthy_threshold {}...'
+                          .format(lb_fullname,lb_hc_target,lb_hc_interval,lb_hc_timeout,lb_hc_unhealtythreshold,lb_hc_healtythreshold))
+            
             asg_name  = '{}-{}'.format(self.evpc.name, lb_cfg['instance_role'])
             if asg_name in self.evpc.autoscaling.get_related_autoscaling_group_names():
                 self.log.emit('attaching {} load balancer to {} autoscaling group ...'.format(lb_fullname, asg_name))

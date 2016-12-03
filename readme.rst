@@ -28,6 +28,10 @@ and create and destroy a real test VPC using botoform.
 Hello World
 ------------------
 
+Here we show a small example of what botoform can do.
+
+This will build a VPC, Internet Gateway, Route table, Subnet, Security Group, and a single EC2 instance.
+
 .. code-block:: yaml
 
  vpc_cidr: {{ vpc_cidr }}

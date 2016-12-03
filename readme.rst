@@ -25,6 +25,46 @@ Quickstart
 The `Quickstart Guide`_ will teach you how to setup your aws credential config file
 and create and destroy a real test VPC using botoform.
 
+Hello World
+------------------
+
+.. code-block:: yaml
+
+ vpc_cidr: {{ vpc_cidr }}
+
+ amis:
+   ubuntu-14.04-lts-hvm:
+     us-east-1: ami-fce3c696
+
+ route_tables:
+   public:
+     routes:
+       - ['0.0.0.0/0', 'internet_gateway']
+
+ subnets:
+   public-1: 
+     size: 27
+     route_table: public
+     public: True
+
+ security_groups:
+   bastion:
+     inbound:
+       - ['0.0.0.0/0', 'tcp',   22]
+
+ instance_roles:
+   bastion:
+     instance_type: t2.micro
+     ami: 'ubuntu-14.04-lts-hvm'
+     count: 1
+     security_groups: ['bastion']
+     subnets: ['public-1']
+     eip: true
+     block_devices:
+       "/dev/sda1":
+         size: 10
+
+
 Schema Reference
 ------------------
 

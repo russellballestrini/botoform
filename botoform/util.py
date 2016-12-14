@@ -2,6 +2,9 @@ import yaml
 import json
 import boto3
 
+# this lets us view the ~/.aws/config file.
+from botocore.session import Session
+
 # dynamic nonsequential hostnames.
 import hashlib
 import humanhash
@@ -20,6 +23,7 @@ class BotoConnections(object):
         Attach boto3 client and resource connection objects.
         """
         # defaults.
+        self.config = {}
         self._region_name = self._profile_name = None
         # trigger region_name.setter
         self.region_name = region_name
@@ -34,10 +38,14 @@ class BotoConnections(object):
     def profile_name(self, new_name):
         """set profile_name and refresh_boto_connections"""
         self._profile_name = new_name
+        if new_name is not None:
+            self.config = Session(profile=new_name).get_scoped_config()
         self.setup_session_and_refresh_connections()
 
     @property
     def region_name(self):
+        if self._region_name is None:
+            return self.config.get('region', None)
         return self._region_name
 
     @region_name.setter

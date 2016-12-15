@@ -472,17 +472,17 @@ class EnvironmentBuilder(object):
         """Create instance roles defined in config."""
         for role_name, role_data in instance_role_cfg.items():
             desired_count = role_data.get('count', 0)
-            role_instances = self.instance_role(
-                                 role_name,
-                                 role_data,
-                                 desired_count,
-                             )
+            self.instance_role(
+                role_name,
+                role_data,
+                desired_count,
+            )
 
     def instance_role(self, role_name, role_data, desired_count):
 
         if role_data.get('autoscaling', False) == True:
             # exit early if this instance_role is autoscaling.
-            return []
+            return None
 
         self.log.emit('creating role: {}'.format(role_name))
         ami = self.amis[role_data['ami']][self.evpc.region_name]
@@ -587,10 +587,10 @@ class EnvironmentBuilder(object):
         for role_name, role_data in instance_role_cfg.items():
             desired_count = role_data.get('count', 0)
             self.autoscaling_instance_role(
-                                 role_name,
-                                 role_data,
-                                 desired_count,
-                             )
+                role_name,
+                role_data,
+                desired_count,
+            )
 
     def autoscaling_instance_role(self, role_name, role_data, desired_count):
         if role_data.get('autoscaling', False) != True:

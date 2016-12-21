@@ -92,10 +92,10 @@ def security_groups(args, evpc):
     builder.security_group_rules(rules_to_add)
 
 refresh_subcommands = {
-  'ec2_tags'     : ec2_tags,
-  'private_zone' : private_zone,
+  'ec2_tags'        : ec2_tags,
+  'private_zone'    : private_zone,
+  'instance_roles'  : instance_roles,
   'security_groups' : security_groups,
-  'instance_roles' : instance_roles,
 }
 
 class Refresh(object):

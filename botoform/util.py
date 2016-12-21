@@ -381,6 +381,22 @@ def get_block_device_map_from_role_config(role_cfg):
 
     return block_device_map
 
+def map_filter_false(function, items):
+    """
+    Works like map but automatically filters out untruthy items.
+
+    .. code-block:: python
+
+      >>> map_filter_false(lambda i : i, [1,2,None,3,False,0,4])
+      [1, 2, 3, 4]
+
+    :param function: the function to map items through
+    :param items: a list of items to map through the function
+
+    :returns: list
+    """
+    return filter(lambda x : x, map(function, items))
+
 def write_private_key(key_pair):
     """
     Write private key to filesystem.

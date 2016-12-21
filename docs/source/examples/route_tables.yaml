@@ -1,0 +1,18 @@
+# This is an example route_tables schema.
+route_tables:
+
+  private-1:
+    routes:
+      - ['0.0.0.0/0', 'nat']
+
+  private-2:
+    routes:
+      - ['0.0.0.0/0', 'nat']
+
+  private-3:
+    routes:
+      - ['0.0.0.0/0', 'nat']
+
+  public:
+    routes:
+      - ['0.0.0.0/0', 'internet_gateway']

@@ -11,7 +11,7 @@ with open('requirements.txt', 'r') as f:
 
 setup( 
     name = 'botoform',
-    version = '0.0.1',
+    version = '0.0.2',
     description = 'botoform: Manage AWS Infrastructure with JSON or YAML.',
     keywords = 'botoform manage aws infrastructure json yaml',
     long_description = open('readme.rst').read(),

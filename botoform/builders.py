@@ -12,6 +12,7 @@ from botoform.util import (
   collection_len,
   generate_password,
   get_block_device_map_from_role_config,
+  map_filter_false,
 )
 
 from botoform.subnetallocator import allocate
@@ -491,12 +492,12 @@ class EnvironmentBuilder(object):
                        role_data.get('key_pair', 'default')
                    )
 
-        security_groups = map(
+        security_groups = map_filter_false(
             self.evpc.get_security_group,
             role_data.get('security_groups', [])
         )
 
-        subnets = map(
+        subnets = map_filter_false(
             self.evpc.get_subnet,
             role_data.get('subnets', [])
         )
@@ -605,12 +606,12 @@ class EnvironmentBuilder(object):
                        role_data.get('key_pair', 'default')
                    )
 
-        security_groups = map(
+        security_groups = map_filter_false(
             self.evpc.get_security_group,
             role_data.get('security_groups', [])
         )
 
-        subnets = map(
+        subnets = map_filter_false(
             self.evpc.get_subnet,
             role_data.get('subnets', [])
         )
@@ -717,14 +718,14 @@ class EnvironmentBuilder(object):
             self.log.emit('creating {} RDS db_instance ...'.format(rds_name))
 
             # make list of security group ids.
-            security_groups = map(
+            security_groups = map_filter_false(
                 self.evpc.get_security_group,
                 db_cfg.get('security_groups', [])
             )
             sg_ids = get_ids(security_groups)
 
             # make list of subnet ids.
-            subnets = map(
+            subnets = map_filter_false(
                 self.evpc.get_subnet,
                 db_cfg.get('subnets', [])
             )
@@ -761,14 +762,14 @@ class EnvironmentBuilder(object):
             self.log.emit('creating {} load_balancer ...'.format(lb_fullname))
 
             # make list of security group ids.
-            security_groups = map(
+            security_groups = map_filter_false(
                 self.evpc.get_security_group,
                 lb_cfg.get('security_groups', [])
             )
             sg_ids = get_ids(security_groups)
 
             # make list of subnet ids.
-            subnets = map(
+            subnets = map_filter_false(
                 self.evpc.get_subnet,
                 lb_cfg.get('subnets', [])
             )

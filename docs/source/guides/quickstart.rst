@@ -92,5 +92,4 @@ Example Output
 ==============
 
 .. literalinclude:: ../examples/bf-output.txt
-   :language: bash
 

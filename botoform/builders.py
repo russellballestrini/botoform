@@ -521,7 +521,8 @@ class EnvironmentBuilder(object):
 
         if existing_count >= desired_count:
             # for now we exit early, maybe terminate extras...
-            self.log.emit('{} {}'.format(existing_count, desired_count), 'debug')
+            msg = 'skipping role: {} (existing_count {} is greater than or equal to {})'
+            self.log.emit(msg.format(role_name, existing_count, desired_count), 'debug')
             return None
 
         # determine count of additional instances needed to reach desired_count.

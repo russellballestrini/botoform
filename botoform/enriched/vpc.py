@@ -550,7 +550,7 @@ class EnrichedVPC(object):
 
     @property
     def taggable_resources(self):
-        """Return a list of tagable objects related to this VPC."""
+        """Return a list of taggable objects related to this VPC."""
         instances = self.instances
         resources = [self, self.dhcp_options]
         resources += instances

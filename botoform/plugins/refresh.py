@@ -14,9 +14,9 @@ def get_builder_for_existing_vpc(evpc, config_path):
     builder.amis = config['amis']
     return builder
 
-def ec2_tags(args, evpc):
+def tags(args, evpc):
     """
-    Refresh ec2 instances and volumes with tags.
+    Refresh tags.
 
     :param args: The parsed arguments and flags from the CLI.
     :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
@@ -25,10 +25,12 @@ def ec2_tags(args, evpc):
     """
     builder = get_builder_for_existing_vpc(evpc, args.config)
     builder.finish_instance_roles(builder.config['instance_roles'])
+    builder.tags(builder.config.get('tags', {}))
+    builder.log.emit('done tagging resources.')
 
 def instance_roles(args, evpc):
     """
-    Refresh ec2 instances and volumes with tags.
+    Refresh ec2 instances and volumes, create missing ec2 resources.
 
     :param args: The parsed arguments and flags from the CLI.
     :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
@@ -92,7 +94,7 @@ def security_groups(args, evpc):
     builder.security_group_rules(rules_to_add)
 
 refresh_subcommands = {
-  'ec2_tags'        : ec2_tags,
+  'tags'            : tags,
   'private_zone'    : private_zone,
   'instance_roles'  : instance_roles,
   'security_groups' : security_groups,

@@ -38,16 +38,14 @@ For example:
 refresh
 -------
 
-.. note:: not implemented yet.
-
 Refresh VPC by adding resources defined but missing in given YAML template.
 
-* instances
-* security groups
-* security group rules
-* rds database instances
-* elasticache clusters
-* load balancers
+So far we have implemented the following subcommands:
+
+* ``instance_roles``
+* ``security_groups``
+* ``tags``
+* ``private_zone``
 
 
 reflect
@@ -59,12 +57,11 @@ reflect
 
 Make VPC reflect given YAML template by adding and removing resources.
 
-* instances
-* security groups
-* security group rules
-* rds database instances
-* elasticache clusters
-* load balancers
+* ``instance_roles``
+* ``security_groups``
+* ``tags``
+* ``private_zone``
+
 
 stop
 -------
@@ -87,23 +84,6 @@ unlock
 -------
 
 Disable API Termination Protection on all instances in VPC.
-
-tag
--------
-
-.. note:: not implemented yet.
-
-Tag all ec2objects with given tags.
-
-untag
--------
-
-.. note:: not implemented yet.
-
-Untag all ec2objects with given tags.
-
-
-.. _repl:
 
 repl
 -----
@@ -148,9 +128,10 @@ dump
 
 Output existing resources or services in a Botoform campatible format.
 
-* instances
-* security_groups
-* ansible_hosts
+* ``instances``
+* ``security_groups``
+* ``ansible_hosts``
+* ``tags``
 
 
 atmosphere

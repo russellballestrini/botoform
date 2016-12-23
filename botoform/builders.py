@@ -133,6 +133,8 @@ class EnvironmentBuilder(object):
             self.evpc.route53.create_private_zone()
             self.evpc.route53.refresh_private_zone()
 
+        self.tags(config.get('tags', no_cfg))
+
         self.log.emit('done! don\'t you look awesome. : )')
 
     def build_vpc(self, cidrblock):
@@ -825,5 +827,18 @@ class EnvironmentBuilder(object):
             else:
                 self.log.emit('registering {} role to {} load balancer ...'.format(lb_cfg['instance_role'], lb_fullname))
                 self.evpc.elb.register_role_with_load_balancer(lb_fullname, lb_cfg['instance_role'])
+
+    def tags(self, tag_cfg):
+        reserved_tags = ['Name', 'role', 'aws:autoscaling:groupName', 'key_pairs' , 'private_hosted_zone_id', 'vpc_name']
+        safe_tags = {}
+        for key, value in tag_cfg.items():
+            if key not in reserved_tags:
+                safe_tags[key] = value
+
+        taggable_resources = self.evpc.taggable_resources
+        for resource in taggable_resources:
+            if safe_tags:
+                self.log.emit('tagging {} with {} ...'.format(resource, safe_tags))
+                update_tags(resource, **safe_tags)
 
 

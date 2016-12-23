@@ -7,6 +7,7 @@ from botoform.util import (
   tag_filter,
   write_private_key,
   update_tags,
+  collection_to_list,
 )
 
 from instance import EnrichedInstance
@@ -546,5 +547,19 @@ class EnrichedVPC(object):
                 sgs[sg_name]['outbound'] += rules
 
         return sgs
+
+    @property
+    def taggable_resources(self):
+        """Return a list of tagable objects related to this VPC."""
+        instances = self.instances
+        resources = [self, self.dhcp_options]
+        resources += instances
+        for instance in instances:
+            resources += collection_to_list(instance.volumes)
+        resources += collection_to_list(self.internet_gateways)
+        resources += collection_to_list(self.subnets)
+        resources += collection_to_list(self.security_groups)
+        resources += collection_to_list(self.route_tables)
+        return resources
 
 

@@ -204,8 +204,11 @@ def get_ids(objects):
     """
     return [o.id for o in objects if o is not None]
 
+def collection_to_list(collection):
+    return list(collection.all())
+
 def collection_len(collection):
-    return len(list(collection.all()))
+    return len(collection_to_list(collection))
 
 def make_filter(key, values):
     """

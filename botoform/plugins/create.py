@@ -32,10 +32,6 @@ class Create(ClassPlugin):
           default=list(), action='append', metavar='key=val',
           help='Extra Jinja2 context: --extra-vars key=val,key2=val2,key3=val3'
         )
-        parser.add_argument('-t', '--tags',
-          default=list(), action='append', metavar='key=val',
-          help='AWS resource: --tags key=val,key2=val2,key3=val3'
-        )
         parser.add_argument('-d', '--dry-run',
           default=False, action='store_true',
           help='Do not create VPC, load & rendered config then emit dict'
@@ -52,9 +48,6 @@ class Create(ClassPlugin):
 
         :returns: None
         """
-        # TODO: tags not implemented, not used. Pass to template or builder?
-        aws_tags = key_value_to_dict(args.tags)
-
         # get extra_vars (context_vars) from command line.
         context_vars = key_value_to_dict(args.extra_vars)
         # get directionary from ArgParse Namespace object and merge into context_vars.

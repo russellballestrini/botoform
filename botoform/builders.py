@@ -833,7 +833,7 @@ class EnvironmentBuilder(object):
         safe_tags = {}
         for key, value in tag_cfg.items():
             if key not in reserved_tags:
-                safe_tags[key] = value
+                safe_tags[key] = str(value)
 
         taggable_resources = self.evpc.taggable_resources
         for resource in taggable_resources:

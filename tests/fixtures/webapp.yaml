@@ -10,6 +10,10 @@ includes:
 # for example, when creating new vpc, use -e 'vpc_cidr=192.168.21.0/24'
 vpc_cidr: {{ vpc_cidr }}
 
+# Sometimes you want to pay a bunch of money for a dedicated hypervisor. 
+# set vpc_tenancy to 'dedicated' or 'default' or not at all.
+#vpc_tenancy: {{ vpc_tenancy | default('default') }}
+
 # optional way to add tags (key:value) to all resources.
 tags:
   env: dev

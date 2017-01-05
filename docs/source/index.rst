@@ -26,7 +26,7 @@ Quickstart
    :maxdepth: 2
    :glob:
 
-   guides/quickstart
+   guides/quickstart.rst
 
 Tools
 =====
@@ -47,6 +47,8 @@ End user YAML Schema Reference for describing VPCs and related AWS resources.
    :glob:
 
    schema/index.rst
+
+You may optionally use :ref:`Jinja2` in your YAML config.
 
 Developer Reference
 ===================

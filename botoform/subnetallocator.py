@@ -7,8 +7,9 @@ def allocate(cidrs, sizes):
     
     For example::
     
-      >>> allocate('10.10.10.0/24', [27,27,28,29])
-      [IPNetwork('10.10.10.0/27'), IPNetwork('10.10.10.32/27'), IPNetwork('10.10.10.64/28'), IPNetwork('10.10.10.80/29')]
+      >>> allocate('10.10.10.0/24', [28,27,29])
+      [IPNetwork('10.10.10.0/27'), IPNetwork('10.10.10.32/28'), IPNetwork('10.10.10.48/29')]
+      
     """
 
     if isinstance(cidrs, str):

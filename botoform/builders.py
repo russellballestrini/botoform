@@ -73,8 +73,10 @@ class EnvironmentBuilder(object):
         # set a var for no_cfg.
         no_cfg = {}
 
-        # builds the vpc.
-        self.build_vpc(config.get('vpc_cidr', None))
+        # build the vpc.
+        vpc_cidr    = config.get('vpc_cidr', '172.31.0.0/16')
+        vpc_tenancy = config.get('vpc_tenancy', 'default')
+        self.build_vpc(vpc_cidr, vpc_tenancy)
 
         # attach EnrichedVPC to self.
         self.evpc = EnrichedVPC(self.vpc_name, self.boto.region_name, self.boto.profile_name, self.log)
@@ -137,10 +139,15 @@ class EnvironmentBuilder(object):
 
         self.log.emit('done! don\'t you look awesome. : )')
 
-    def build_vpc(self, cidrblock):
+    def build_vpc(self, cidrblock='172.31.0.0/16', tenancy='default'):
         """Build VPC"""
-        self.log.emit('creating vpc ({}, {})'.format(self.vpc_name, cidrblock))
-        vpc = self.boto.ec2.create_vpc(CidrBlock = cidrblock)
+        msg_vpc = 'creating vpc ({}, {}) with {} tenancy'
+        self.log.emit(msg_vpc.format(self.vpc_name, cidrblock, tenancy))
+
+        vpc = self.boto.ec2.create_vpc(
+                  CidrBlock = cidrblock,
+                  InstanceTenancy = tenancy,
+        )
 
         self.log.emit('tagging vpc (Name:{})'.format(self.vpc_name), 'debug')
         update_tags(vpc, Name = self.vpc_name)

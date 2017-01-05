@@ -76,8 +76,9 @@ The full YAML Schema_ Reference documentation is in progress.
 
 For now please look here for examples:
 
-https://github.com/russellballestrini/botoform/blob/master/tests/fixtures/webapp.yaml
+ https://github.com/russellballestrini/botoform/blob/master/tests/fixtures/webapp.yaml
 
+You may optionally use Jinja2 in your YAML config.
 
 Misc
 ====

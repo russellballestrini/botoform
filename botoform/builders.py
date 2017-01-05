@@ -139,7 +139,7 @@ class EnvironmentBuilder(object):
 
         self.log.emit('done! don\'t you look awesome. : )')
 
-    def build_vpc(self, cidrblock, tenancy='default'):
+    def build_vpc(self, cidrblock='172.31.0.0/16', tenancy='default'):
         """Build VPC"""
         msg_vpc = 'creating vpc ({}, {}) with {} tenancy'
         self.log.emit(msg_vpc.format(self.vpc_name, cidrblock, tenancy))

@@ -4,6 +4,11 @@ def allocate(cidrs, sizes):
     """
     Accept network block CIDRs and list of subnetwork CIDR sizes.
     Return a list of IPNetwork objects allocated from the network block.
+    
+    For example::
+    
+      >>> allocate('10.10.10.0/24', [27,27,28,29])
+      [IPNetwork('10.10.10.0/27'), IPNetwork('10.10.10.32/27'), IPNetwork('10.10.10.64/28'), IPNetwork('10.10.10.80/29')]
     """
 
     if isinstance(cidrs, str):

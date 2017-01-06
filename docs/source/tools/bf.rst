@@ -11,6 +11,8 @@ Currently Implemented subcommands::
 
  {atmosphere,shell,cli,dump,lock,create,stop,start,unlock,repl,destroy}
 
+.. _bf create:
+
 create
 ------
 

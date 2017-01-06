@@ -14,7 +14,12 @@ Botoform_ provides tools to manage the lifecycle of related AWS resources.
 We use a simple YAML schema to document resources as infrastructure.
 The YAML schema has self documenting qualities and works with version control.
 
-The tools use the YAML architecture to create and manage environments.
+In this example we use the :ref:`bf` :ref:`bf create` tool to build
+the infrastructure defined in ``helloworld.yaml``:
+
+.. image:: _static/botoform-helloworld.gif
+
+The :ref:`bf` tools use YAML architecture to create and manage environments.
 Botoform_ allows reproduction of any environment, no matter how complex.
 
 Botoform_ abstracts and enriches the Boto3_ and Botocore_ projects.
@@ -65,6 +70,7 @@ Developer Python Library Reference for modifying or extending Botoform.
 .. these currently don't work / exists
    :ref:`genindex`
    :ref:`modindex`
+
 
 .. external link references:
 

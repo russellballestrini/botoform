@@ -217,12 +217,16 @@ class EnvironmentBuilder(object):
         """Creates DHCP Options Set and associates with VPC"""
         self.log.emit('creating DHCP Options Set for {}'.format(self.evpc.name))
 
-        cfg = dhcp_options_cfg
-
         dhcp_configurations = [
-            { 'Key' : 'domain-name-servers', 'Values' : cfg['domain-name-servers']},
             { 'Key' : 'domain-name', 'Values' : [self.evpc.route53.private_zone_name] },
         ]
+
+        # only add domain-name-servers if not empty...
+        if dhcp_options_cfg.get('domain-name-servers', []):
+            dhcp_configurations.append({
+                'Key' : 'domain-name-servers',
+                'Values' : dhcp_options_cfg['domain-name-servers']
+            })
 
         self.create_dhcp_options(dhcp_configurations)
         
@@ -323,9 +327,15 @@ class EnvironmentBuilder(object):
                 Name = longname,
                 description = sn.get('description', ''),
             )
-            # Modifying the subnet's public IP addressing behavior.
+
             if sn.get('public', False) == True:
-                subnet.map_public_ip_on_launch = True
+                # Modify the subnet's public IP addressing behavior.
+                msg_mod = 'subnet {} will map public IPs on launch'
+                self.log.emit(msg_mod.format(longname))
+                self.boto.ec2_client.modify_subnet_attribute(
+                    SubnetId = subnet.id,
+                    MapPublicIpOnLaunch = {'Value': True},
+                )
 
     def associate_route_tables_with_subnets(self, subnet_cfg):
         for sn_name, sn_data in subnet_cfg.items():

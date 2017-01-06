@@ -53,7 +53,7 @@ class ConfigLoader(object):
 
     def _load_includes(self, config):
         """Load YAML path includes and return config. Will clobber existing."""
-        for key, path in config['includes'].items():
+        for key, path in config.get('includes', {}).items():
             config[key] = self._load(template_path=path)[key]
         return config
 

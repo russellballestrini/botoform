@@ -330,7 +330,7 @@ class EnvironmentBuilder(object):
 
             if sn.get('public', False) == True:
                 # Modify the subnet's public IP addressing behavior.
-                msg_mod = 'subnet {} will map public IPs on launch'
+                msg_mod = 'modifying subnet to map public IPs on instance launch ({})'
                 self.log.emit(msg_mod.format(longname))
                 self.boto.ec2_client.modify_subnet_attribute(
                     SubnetId = subnet.id,

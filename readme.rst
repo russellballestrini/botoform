@@ -3,21 +3,30 @@ Botoform
 
 **Architect infrastructure on AWS using YAML.**
 
-.. contents:: 
 
 Botoform_ provides tools to manage the lifecycle of related AWS resources.
 We use a simple YAML schema to document resources and infrastructure.
 The YAML schema has self documenting qualities and works with version control.
 
-The tools use the YAML architecture to create and manage environments.
+In this example we use the ``bf create`` tool to build
+the infrastructure defined in ``helloworld.yaml``:
+
+.. image:: https://raw.githubusercontent.com/russellballestrini/botoform/master/docs/source/_static/botoform-helloworld.gif
+
+The ``bf`` tools use the YAML architecture to create and manage environments.
 Botoform_ allows reproduction of any environment, no matter how complex.
 
 Botoform_ abstracts and enriches the Boto3_ and Botocore_ projects.
 
+.. contents::
+   :maxdepth: 1
+
 Documentation
 =============
 
-We use Sphinx_ and host the full documentation at botoform.readthedocs.org_. 
+The full documentation lives here: botoform.readthedocs.org_
+
+We use Sphinx_ to write and build the documentation.
 
 Quickstart
 ------------------
@@ -25,7 +34,7 @@ Quickstart
 The `Quickstart Guide`_ will teach you how to setup your aws credential config file
 and create and destroy a real test VPC using botoform.
 
-Hello World
+helloworld.yaml
 ------------------
 
 Here we show a small example of what botoform can do.

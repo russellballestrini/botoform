@@ -15,8 +15,8 @@ You may optionally use :ref:`Jinja2` in your YAML config.
 
    *
 
-helloworld.yaml
-===============
+Hello World
+################
 
 Smallest botoform template, :download:`helloworld.yaml <../examples/helloworld.yaml>`:
 

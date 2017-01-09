@@ -33,15 +33,6 @@ Quickstart
 
    guides/quickstart.rst
 
-Tools
-=====
-
-.. toctree::
-   :maxdepth: 3
-   :glob:
-
-   tools/index.rst
-
 Schema Reference
 ================
 
@@ -54,6 +45,15 @@ End user YAML Schema Reference for describing VPCs and related AWS resources.
    schema/index.rst
 
 You may optionally use :ref:`Jinja2` in your YAML config.
+
+Tools
+=====
+
+.. toctree::
+   :maxdepth: 3
+   :glob:
+
+   tools/index.rst
 
 Developer Reference
 ===================

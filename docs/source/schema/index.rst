@@ -15,3 +15,10 @@ You may optionally use :ref:`Jinja2` in your YAML config.
 
    *
 
+helloworld.yaml
+===============
+
+Smallest botoform template, :helloworld.yaml:`helloworld.yaml <../examples/helloworld.yaml>`:
+
+.. literalinclude:: ../examples/helloworld.yaml
+   :language: yaml

@@ -15,6 +15,8 @@ You may optionally use :ref:`Jinja2` in your YAML config.
 
    *
 
+.. _hello world:
+
 Hello World
 ################
 

@@ -15,7 +15,7 @@ We use a simple YAML schema to document resources as infrastructure.
 The YAML schema has self documenting qualities and works with version control.
 
 In this example we use the :ref:`bf` :ref:`bf create` tool to build
-the infrastructure defined in ``helloworld.yaml``:
+the infrastructure defined in :ref:`helloworld.yaml <hello world>`:
 
 .. image:: _static/botoform-helloworld.gif
 

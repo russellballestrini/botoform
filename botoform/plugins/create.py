@@ -34,7 +34,7 @@ class Create(ClassPlugin):
         )
         parser.add_argument('-d', '--dry-run',
           default=False, action='store_true',
-          help='Do not create VPC, load & rendered config then emit dict'
+          help='Do not create VPC, load & render config then emit dict'
         )
 
 

@@ -5,8 +5,6 @@ from botoform.util import (
   output_formatter,
 )
 
-from argparse import SUPPRESS
-
 import botocore.session
 
 import boto3
@@ -42,11 +40,7 @@ class Atmosphere(ClassPlugin):
 
         :returns: None
         """
-        # remove the vpc_name positional argument, its not needed.
-        vpc_name_positional_arg = parser._actions[-1]
-        vpc_name_positional_arg.container._remove_action(vpc_name_positional_arg)
-
-        parser.add_argument('--skip-evpc', default=True, help=SUPPRESS)
+        ClassPlugin.remove_vpc_name_from_parser(parser)
         parser.add_argument('--output-format',
           choices=['yaml', 'json'], default='yaml',
           help='the desired format of any possible output')

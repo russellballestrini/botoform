@@ -27,6 +27,7 @@ setup(
     install_requires = requires,
     entry_points = {
       'botoform.plugins' : [
+        'list = botoform.plugins.list:ListVpcs',
         'create = botoform.plugins.create:Create',
         'stop = botoform.plugins.stop:stop',
         'start = botoform.plugins.start:start',

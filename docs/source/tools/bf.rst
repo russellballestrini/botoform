@@ -9,9 +9,28 @@ For a list built-in subcommands and interactive help, run ``bf --help``.
 
 Currently Implemented subcommands::
 
- {atmosphere,shell,cli,dump,lock,create,stop,start,unlock,repl,destroy}
+ {atmosphere,shell,cli,dump,list,lock,create,stop,start,unlock,repl,destroy}
 
 .. _bf create:
+
+list
+------
+
+List all existing VPC names.
+
+For example:
+
+.. code-block:: bash
+
+ bf list
+
+You can also pass the particular AWS profile and/or region:
+
+.. code-block:: bash
+
+ bf --profile developmemt --region us-west-2 list
+
+
 
 create
 ------

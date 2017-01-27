@@ -53,8 +53,14 @@ class ConfigLoader(object):
 
     def _load_includes(self, config):
         """Load YAML path includes and return config. Will clobber existing."""
-        for key, path in config.get('includes', {}).items():
-            config[key] = self._load(template_path=path)[key]
+        for key, paths in config.get('includes', {}).items():
+            if key not in config:
+                config[key] = {}
+            if not isinstance(paths, list):
+                # convert a single path string into a list.
+                paths = [paths]
+            for path in paths:
+                config[key].update(self._load(template_path=path)[key])
         return config
 
     def _sg_rule_tuples(self, config):

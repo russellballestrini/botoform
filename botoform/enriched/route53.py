@@ -92,7 +92,9 @@ class EnrichedRoute53(object):
         """return private change doc for a role."""
         if instances is None:
             instances = evpc.get_role(role_name)
-        return self._pcd(role_name, [instance.private_ip_address for instance in instances])
+        # route53 limits to 100 per resource record set, we slice to this limit.
+        #  reference: http://docs.aws.amazon.com/Route53/latest/DeveloperGuide/DNSLimitations.html#limits-api-entities
+        return self._pcd(role_name, [instance.private_ip_address for instance in instances[:100]])
 
     def _pcd(self, hostname, private_ip_addresses):
         """

@@ -1,4 +1,7 @@
-from botoform.util import output_formatter
+from botoform.util import (
+  output_formatter,
+  key_value_to_dict
+)
 
 from botoform.builders import EnvironmentBuilder
 
@@ -6,9 +9,16 @@ from botoform.config import ConfigLoader
 
 from collections import defaultdict
 
-def get_builder_for_existing_vpc(evpc, config_path):
-    loader = ConfigLoader(context_vars={'vpc_name' : evpc.name, 'vpc_cidr' : evpc.cidr_block})
-    config = loader.load(config_path)
+def get_builder_for_existing_vpc(evpc, args):
+    # get extra_vars (context_vars) from command line.
+    context_vars = key_value_to_dict(args.extra_vars)
+    # get dictionary from ArgParse Namespace object and merge into context_vars.
+    context_vars.update(vars(args))
+    # add some vars from evpc object.
+    context_vars.update({'vpc_name' : evpc.name, 'vpc_cidr' : evpc.cidr_block})
+
+    loader = ConfigLoader(context_vars = context_vars)
+    config = loader.load(args.config)
     builder = EnvironmentBuilder(evpc.name, config, evpc.boto.region_name, evpc.boto.profile_name)
     builder.evpc = evpc
     builder.amis = config['amis']
@@ -23,7 +33,7 @@ def tags(args, evpc):
 
     :returns: None
     """
-    builder = get_builder_for_existing_vpc(evpc, args.config)
+    builder = get_builder_for_existing_vpc(evpc, args)
     builder.finish_instance_roles(builder.config['instance_roles'])
     builder.tags(builder.config.get('tags', {}))
     builder.log.emit('done tagging resources.')
@@ -37,7 +47,7 @@ def instance_roles(args, evpc):
 
     :returns: None
     """
-    builder = get_builder_for_existing_vpc(evpc, args.config)
+    builder = get_builder_for_existing_vpc(evpc, args)
     builder.instance_roles(builder.config['instance_roles'])
     builder.wait_for_instance_roles_to_exist(builder.config['instance_roles'])
     builder.finish_instance_roles(builder.config['instance_roles'])
@@ -51,7 +61,7 @@ def private_zone(args, evpc):
 
     :returns: None
     """
-    builder = get_builder_for_existing_vpc(evpc, args.config)
+    builder = get_builder_for_existing_vpc(evpc, args)
     builder.finish_instance_roles(builder.config['instance_roles'])
     evpc.route53.create_private_zone()
     evpc.route53.refresh_private_zone()
@@ -65,7 +75,7 @@ def security_groups(args, evpc):
 
     :returns: None
     """
-    builder = get_builder_for_existing_vpc(evpc, args.config)
+    builder = get_builder_for_existing_vpc(evpc, args)
     builder.security_groups(builder.config.get('security_groups', {}))
 
     security_groups_config  = builder.config.get('security_groups', {})
@@ -112,10 +122,10 @@ class Refresh(object):
         parser.add_argument('refresh_subcommand', choices=refresh_subcommands)
         parser.add_argument('config',
           help='The botoform YAML config template.')
-        #parser.add_argument('-e', '--extra-vars',
-        #  default=list(), action='append', metavar='key=val',
-        #  help='Extra Jinja2 context: --extra-vars key=val,key2=val2,key3=val3'
-        #)
+        parser.add_argument('-e', '--extra-vars',
+          default=list(), action='append', metavar='key=val',
+          help='Extra Jinja2 context: --extra-vars key=val,key2=val2,key3=val3'
+        )
 
     @staticmethod
     def main(args, evpc):

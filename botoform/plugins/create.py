@@ -50,7 +50,7 @@ class Create(ClassPlugin):
         """
         # get extra_vars (context_vars) from command line.
         context_vars = key_value_to_dict(args.extra_vars)
-        # get directionary from ArgParse Namespace object and merge into context_vars.
+        # get dictionary from ArgParse Namespace object and merge into context_vars.
         context_vars.update(vars(args))
 
         loader = ConfigLoader(context_vars = context_vars)

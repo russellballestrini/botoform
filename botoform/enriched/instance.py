@@ -130,19 +130,27 @@ class EnrichedInstance(object):
         """Return True if this instance was autoscaled else False"""
         return False if self.autoscale_group is None else True
 
-    def disable_source_dest_check(self, boolean):
+    def _source_dest_check(self, boolean):
         self.modify_attribute(SourceDestCheck={'Value':boolean})
 
-    def disable_api_termination(self, boolean):
+    def source_dest_check_enable(self):
+        """Enable source destination checking. Default."""
+        self._source_dest_check(True)
+
+    def source_dest_check_disable(self):
+        """Disable source destination checking. Needed for NATs and Routers."""
+        self._source_dest_check(False)
+
+    def _api_termination(self, boolean):
         self.modify_attribute(DisableApiTermination={'Value':boolean})
 
     def lock(self):
         """Lock this instance to prevent termination."""
-        self.disable_api_termination(True)
+        self._api_termination(True)
 
     def unlock(self):
         """Unlock this instance to allow termination."""
-        self.disable_api_termination(False)
+        self._api_termination(False)
 
     @property
     def eips(self):

@@ -288,7 +288,7 @@ class EnvironmentBuilder(object):
                             nat_instance = instance
 
                     self.log.emit('disable source dest check for {}'.format(nat_instance.identity))
-                    nat_instance.disable_source_dest_check(False)
+                    nat_instance.source_dest_check_disable()
 
                     route_table.create_route(
                         DestinationCidrBlock = destination,
@@ -723,6 +723,11 @@ class EnvironmentBuilder(object):
             if requires_eip and len(instance.eips) == 0:
                # if instance role should have an eip but doesn't have one, add one.
                self.add_eip_to_instance(instance)
+
+            source_dest_check = instance_role_cfg.get(instance.role, {}).get('source_dest_check', True)
+            if source_dest_check == False:
+               self.log.emit('disable source dest check for {}'.format(instance.identity))
+               instance.source_dest_check_disable()
 
         try:
             self.log.emit('locking new normal (not autoscaled) instances to prevent termination')

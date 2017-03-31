@@ -79,19 +79,40 @@ class EnrichedRoute53(object):
 
     def refresh_private_zone(self):
         if not self.private_zone_id: return None
-        change_docs = [self._ipcd(i) for i in self.evpc.instances]
+        instance_change_docs = [self._ipcd(i) for i in self.evpc.instances]
+        role_change_docs = [self._rpcd(role_name, instances) for role_name, instances in self.evpc.roles.items()]
+        change_docs = instance_change_docs + role_change_docs
         self.change_private_zone(change_docs)
 
     def _ipcd(self, instance):
-        """generate a change doc for the instance's private ip address for private zone."""
-        return {
+        """return private change doc for an instance."""
+        return self._pcd(instance.hostname, [instance.private_ip_address])
+
+    def _rpcd(self, role_name, instances=None):
+        """return private change doc for a role."""
+        if instances is None:
+            instances = evpc.get_role(role_name)
+        return self._pcd(role_name, [instance.private_ip_address for instance in instances])
+
+    def _pcd(self, hostname, private_ip_addresses):
+        """
+        Generate a private change doc for the private zone.
+
+        :param hostname: hostname part of the DNS A record
+        :param private_ip_addresses: list of private ip addresses
+
+        :returns: dict (change document)
+        """
+        change_doc = {
                  'Action': 'UPSERT',
                  'ResourceRecordSet': {
-                   'Name': '{}.{}'.format(instance.hostname, self.private_zone_name),
+                   'Name': '{}.{}'.format(hostname, self.private_zone_name),
                    'Type': 'A',
                    'TTL': 120,
-                   'ResourceRecords': [{'Value': instance.private_ip_address},],
+                   'ResourceRecords': [],
                  }
                }
-
+        for private_ip_address in private_ip_addresses:
+            change_doc['ResourceRecordSet']['ResourceRecords'].append({'Value': private_ip_address})
+        return change_doc
 

@@ -786,9 +786,17 @@ class EnvironmentBuilder(object):
 
     def load_balancers(self, load_balancer_cfg):
         """Build ELB load balancers."""
+        existing_elb_names = self.evpc.elb.get_related_elb_names()
+
         for lb_name, lb_cfg in load_balancer_cfg.items():
 
             lb_fullname = '{}-{}'.format(self.evpc.name, lb_name)
+
+            if lb_fullname in existing_elb_names:
+                msg = 'skipping load_balancer: {} (it already exists)'
+                self.log.emit(msg.format(lb_fullname), 'debug')
+                continue
+
             self.log.emit('creating {} load_balancer ...'.format(lb_fullname))
 
             # make list of security group ids.

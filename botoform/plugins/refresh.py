@@ -9,6 +9,8 @@ from botoform.config import ConfigLoader
 
 from collections import defaultdict
 
+no_cfg = {}
+
 def get_builder_for_existing_vpc(evpc, args):
     # get extra_vars (context_vars) from command line.
     context_vars = key_value_to_dict(args.extra_vars)
@@ -34,8 +36,8 @@ def tags(args, evpc):
     :returns: None
     """
     builder = get_builder_for_existing_vpc(evpc, args)
-    builder.finish_instance_roles(builder.config['instance_roles'])
-    builder.tags(builder.config.get('tags', {}))
+    builder.finish_instance_roles(builder.config.get('instance_roles', no_cfg))
+    builder.tags(builder.config.get('tags', no_cfg))
     builder.log.emit('done tagging resources.')
 
 def instance_roles(args, evpc):
@@ -48,10 +50,23 @@ def instance_roles(args, evpc):
     :returns: None
     """
     builder = get_builder_for_existing_vpc(evpc, args)
-    builder.instance_roles(builder.config['instance_roles'])
-    builder.autoscaling_instance_roles(builder.config['instance_roles'])
-    builder.wait_for_instance_roles_to_exist(builder.config['instance_roles'])
-    builder.finish_instance_roles(builder.config['instance_roles'])
+    instance_role_cfg = builder.config.get('instance_roles', no_cfg)
+    builder.instance_roles(instance_role_cfg)
+    builder.autoscaling_instance_roles(instance_role_cfg)
+    builder.wait_for_instance_roles_to_exist(instance_role_cfg)
+    builder.finish_instance_roles(instance_role_cfg)
+
+def load_balancers(args, evpc):
+    """
+    Refresh elb Load_balancers.
+
+    :param args: The parsed arguments and flags from the CLI.
+    :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
+
+    :returns: None
+    """
+    builder = get_builder_for_existing_vpc(evpc, args)
+    builder.load_balancers(builder.config.get('load_balancers', no_cfg))
 
 def private_zone(args, evpc):
     """
@@ -63,7 +78,7 @@ def private_zone(args, evpc):
     :returns: None
     """
     builder = get_builder_for_existing_vpc(evpc, args)
-    builder.finish_instance_roles(builder.config['instance_roles'])
+    builder.finish_instance_roles(builder.config.get('instance_roles', no_cfg))
     evpc.route53.create_private_zone()
     evpc.route53.refresh_private_zone()
 
@@ -77,9 +92,12 @@ def security_groups(args, evpc):
     :returns: None
     """
     builder = get_builder_for_existing_vpc(evpc, args)
-    builder.security_groups(builder.config.get('security_groups', {}))
 
-    security_groups_config  = builder.config.get('security_groups', {})
+    security_groups_config = builder.config.get('security_groups', no_cfg)
+
+    # build the missing security groups.
+    builder.security_groups(security_groups_config)
+
     security_groups_current = evpc.enriched_security_groups
  
     rules_to_add = defaultdict(dict)
@@ -100,8 +118,6 @@ def security_groups(args, evpc):
         if len(to_add_outbound) != 0:
             rules_to_add[sg_name]['outbound'] = list(to_add_outbound)
 
-    #print rules_to_del
-
     builder.security_group_rules(rules_to_add)
 
 refresh_subcommands = {
@@ -109,6 +125,7 @@ refresh_subcommands = {
   'private_zone'    : private_zone,
   'instance_roles'  : instance_roles,
   'security_groups' : security_groups,
+  'load_balancers'  : load_balancers,
 }
 
 class Refresh(object):

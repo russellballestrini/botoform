@@ -620,6 +620,11 @@ class EnvironmentBuilder(object):
 
         long_role_name = '{}-{}'.format(self.evpc.name, role_name)
 
+        if long_role_name in self.evpc.autoscaling.get_related_autoscaling_group_names():
+            msg = 'skipping autoscaling group: {} (it already exists)'
+            self.log.emit(msg.format(long_role_name), 'debug')
+            return None
+
         ami = self.amis[role_data['ami']][self.evpc.region_name]
 
         key_pair = self.evpc.key_pair.get_key_pair(

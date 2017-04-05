@@ -15,7 +15,7 @@ def get_builder_for_existing_vpc(evpc, args):
     # get dictionary from ArgParse Namespace object and merge into context_vars.
     context_vars.update(vars(args))
     # add some vars from evpc object.
-    context_vars.update({'vpc_name' : evpc.name, 'vpc_cidr' : evpc.cidr_block})
+    context_vars.update({'vpc_name' : evpc.name, 'vpc_cidr' : evpc.cidr_block, 'region' : evpc.region_name})
 
     loader = ConfigLoader(context_vars = context_vars)
     config = loader.load(args.config)
@@ -49,6 +49,7 @@ def instance_roles(args, evpc):
     """
     builder = get_builder_for_existing_vpc(evpc, args)
     builder.instance_roles(builder.config['instance_roles'])
+    builder.autoscaling_instance_roles(builder.config['instance_roles'])
     builder.wait_for_instance_roles_to_exist(builder.config['instance_roles'])
     builder.finish_instance_roles(builder.config['instance_roles'])
 
@@ -80,14 +81,14 @@ def security_groups(args, evpc):
 
     security_groups_config  = builder.config.get('security_groups', {})
     security_groups_current = evpc.enriched_security_groups
-    
+ 
     rules_to_add = defaultdict(dict)
     rules_to_del = defaultdict(dict)
 
     for sg_name in security_groups_config:
         config  = security_groups_config[sg_name]
         current = security_groups_current[sg_name]
-        
+       
         to_add_inbound  = set(config.get('inbound', [])) - set(current.get('inbound',[]))
         to_add_outbound = set(config.get('outbound', [])) - set(current.get('outbound',[]))
 

@@ -110,6 +110,7 @@ def security_groups(args, evpc):
         to_add_inbound  = set(config.get('inbound', [])) - set(current.get('inbound',[]))
         to_add_outbound = set(config.get('outbound', [])) - set(current.get('outbound',[]))
 
+        #print(to_add_inbound)
         #to_remove_inbound  = set(current.get('inbound', [])) - set(config.get('inbound',[]))
         #to_remove_outbound = set(current.get('outbound', [])) - set(config.get('outbound',[]))
 

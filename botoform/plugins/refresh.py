@@ -1,6 +1,7 @@
 from botoform.util import (
   output_formatter,
-  key_value_to_dict
+  key_value_to_dict,
+  normalize_sg_rules,
 )
 
 from botoform.builders import EnvironmentBuilder
@@ -106,20 +107,27 @@ def security_groups(args, evpc):
     for sg_name in security_groups_config:
         config  = security_groups_config[sg_name]
         current = security_groups_current[sg_name]
-       
-        to_add_inbound  = set(config.get('inbound', [])) - set(current.get('inbound',[]))
-        to_add_outbound = set(config.get('outbound', [])) - set(current.get('outbound',[]))
 
-        #print(to_add_inbound)
+        config_inbound   = set(normalize_sg_rules(config.get('inbound', [])))
+        current_inbound  = set(normalize_sg_rules(current.get('inbound', [])))
+
+        config_outbound  = set(normalize_sg_rules(config.get('outbound', [])))
+        current_outbound = set(normalize_sg_rules(current.get('outbound', [])))
+
+        to_add_inbound  = list(config_inbound - current_inbound)
+        to_add_outbound = list(config_outbound - current_outbound)
+
         #to_remove_inbound  = set(current.get('inbound', [])) - set(config.get('inbound',[]))
         #to_remove_outbound = set(current.get('outbound', [])) - set(config.get('outbound',[]))
 
         if len(to_add_inbound) != 0:
-            rules_to_add[sg_name]['inbound'] = list(to_add_inbound)
+            rules_to_add[sg_name]['inbound'] = to_add_inbound
+
         if len(to_add_outbound) != 0:
-            rules_to_add[sg_name]['outbound'] = list(to_add_outbound)
+            rules_to_add[sg_name]['outbound'] = to_add_outbound
 
     builder.security_group_rules(rules_to_add)
+
 
 refresh_subcommands = {
   'tags'            : tags,

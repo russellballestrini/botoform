@@ -361,6 +361,14 @@ def get_port_range(raw_range, ip_protocol='tcp'):
         port_range = [raw_range, raw_range]
     return tuple(map(int, port_range))
 
+def normalize_sg_rules(sg_rules):
+    """accept a list of security group rule tuples, return list with normalized port ranges."""
+    return [(rule[0], rule[1], normalize_sg_port(rule)) for rule in sg_rules]
+
+def normalize_sg_port(sg_rule_tuple):
+    """accept a security group rule tuple, return normalized port range."""
+    return get_port_range(sg_rule_tuple[2], sg_rule_tuple[1])
+
 def get_block_device_map_from_role_config(role_cfg):
     """accept role config data and return a Boto3 friendly BlockDeviceMappings."""
     block_device_map = []

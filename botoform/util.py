@@ -348,6 +348,10 @@ def get_port_range(raw_range, ip_protocol='tcp'):
     if not raw_range:
         raise Exception('Missing or empty port range')
 
+    if isinstance(raw_range, tuple):
+        # exit early if raw_range is already a tuple.
+        return raw_range
+
     if ip_protocol == 'icmp':
         return (-1, -1)
 

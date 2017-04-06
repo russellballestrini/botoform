@@ -92,6 +92,9 @@ class TestGetPortRange(TestCase):
     def test_5000_5009_port_with_whitespace(self):
         self.assertTupleEqual(get_port_range(' 5000-  5009'), (5000, 5009))
 
+    def test_tuple_returns_tuple(self):
+        # allows get_port_range to be called many times on its own results.
+        self.assertTupleEqual(get_port_range((53, 53)), (53, 53))
 
 def test_make_tag_dict():
     class TestSubject(object):

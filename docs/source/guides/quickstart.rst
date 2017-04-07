@@ -24,6 +24,7 @@ Automatic install from source with botoform-bootstrap.sh
 .. Note:: You should always review scripts prior to piping them from the Internet into your shell.
 
 This script automates the steps in the `manual install from source`_ section.
+
 The following one-liner will install botoform (``bf``) into your home directory:
 
 .. code-block:: bash

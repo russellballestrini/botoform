@@ -65,6 +65,7 @@ So far we have implemented the following subcommands:
 
 * ``instance_roles``
 * ``security_groups``
+* ``load_balacers``
 * ``tags``
 * ``private_zone``
 

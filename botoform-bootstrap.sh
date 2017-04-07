@@ -22,7 +22,7 @@ set -o nounset
 # Install dependencies into virtualenv.
 python setup.py develop
 
-echo "Verifying that the `bf` tool runs, running help to show usage."
+echo "Verifying that the 'bf' tool runs, running help to show usage."
 
 # run help, should show usage.
 bf --help
@@ -32,7 +32,7 @@ echo ""
 echo "Botoform was installed successfully!"
 echo ""
 
-echo "Please configure your AWS Configuration file: `~/.aws/config`"
+echo "Please configure your AWS Configuration file: ~/.aws/config"
 echo ""
 echo "For help go to: "
 echo "   https://botoform.readthedocs.io/en/latest/guides/quickstart.html#configuration"

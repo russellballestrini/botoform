@@ -15,9 +15,9 @@ echo "Assuming virtualenv is installed."
 virtualenv env
 
 # Activate virtualenv.
-set -o nounset
-source env/bin/activate
 set +o nounset
+source env/bin/activate
+set -o nounset
 
 # Install dependencies into virtualenv.
 python setup.py develop

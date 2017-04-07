@@ -65,14 +65,18 @@ class EnrichedAutoscaling(object):
             self.get_related_launch_config_descriptions()
         )
 
+    def scale_related_autoscaling_group(self, autoscaling_group_name, count):
+        self.update_auto_scaling_group(
+           AutoScalingGroupName = autoscaling_group_name,
+           MinSize = count,
+           MaxSize = count,
+           DesiredCapacity = count,
+        )
+
     def delete_related_autoscaling_groups(self):
         autoscaling_group_names = self.get_related_autoscaling_group_names()
         for autoscaling_group_name in autoscaling_group_names:
-            self.update_auto_scaling_group(
-              AutoScalingGroupName = autoscaling_group_name,
-              MinSize=0,
-              DesiredCapacity = 0
-            )
+            self.scale_related_autoscaling_group(autoscaling_group_name, 0)
 
         for autoscaling_group_name in autoscaling_group_names:
             self.delete_auto_scaling_group(AutoScalingGroupName = autoscaling_group_name, ForceDelete = True)

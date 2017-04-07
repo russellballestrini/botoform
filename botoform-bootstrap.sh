@@ -32,8 +32,19 @@ echo ""
 echo "Botoform was installed successfully!"
 echo ""
 
-echo "Please configure your AWS Configuration file: ~/.aws/config"
+echo "Next Steps:"
+echo ""
+echo "1. Please configure your AWS Configuration file: ~/.aws/config"
 echo ""
 echo "For help go to: "
-echo "   https://botoform.readthedocs.io/en/latest/guides/quickstart.html#configuration"
+echo "    https://botoform.readthedocs.io/en/latest/guides/quickstart.html#configuration"
 echo ""
+echo "2. Please 'source' the newly created virtualenv:"
+echo ""
+echo "    source $HOME/botoform/env/bin/activate"
+echo ""
+echo "3. Get familiar with the 'bf' tool."
+echo ""
+
+
+

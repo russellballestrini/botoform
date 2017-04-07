@@ -11,7 +11,7 @@ Currently Implemented subcommands::
 
  {atmosphere,shell,cli,dump,list,lock,create,stop,start,unlock,repl,destroy}
 
-.. _bf create:
+.. _bf list:
 
 list
 ------
@@ -30,7 +30,7 @@ You can also pass the particular AWS profile and/or region:
 
  bf --profile developmemt --region us-west-2 list
 
-
+.. _bf create:
 
 create
 ------

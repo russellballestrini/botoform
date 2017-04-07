@@ -93,6 +93,8 @@ Setup your `AWS CLI config <http://docs.aws.amazon.com/cli/latest/userguide/cli-
  aws_access_key_id = AKIAIOSFODNN7EXAMPLE
  aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
  region = us-west-2
+ 
+You are now ready to begin `using Botoform`_!
 
 
 Using Botoform

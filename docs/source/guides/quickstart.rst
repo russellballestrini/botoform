@@ -9,8 +9,8 @@ Installation
 Virtualenv
 ------------
 
-Both the automatic and manual install assume that the virtualenv tool is installed.
-If you do not have virtualenv installed, you may do the following:
+Both the automatic and manual install assume that the ``virtualenv`` tool is installed.
+If you do not have ``virtualenv`` installed, you may do the following:
 
 .. code-block:: bash
 
@@ -31,12 +31,6 @@ The following one-liner will install botoform (``bf``) into your home directory:
  wget -O - https://raw.githubusercontent.com/russellballestrini/botoform/master/botoform-bootstrap.sh | sh
  
 Once installed, you should setup your AWS `Configuration`_ file with your access keys.
-
-Whenever you want to use the ``bf`` tool, you need to activate the virtualenv:
-
-.. code-block::
-
- source $HOME/botoform/env/bin/activate
 
 You should now `Verify the botoform install`_
 
@@ -70,7 +64,13 @@ You should now `Verify the botoform install`_
 Verify the botoform install
 ----------------------------
 
-Verify installation by running:
+Whenever you want to use the ``bf`` tool, you need to activate the virtualenv:
+
+.. code-block::
+
+ source $HOME/botoform/env/bin/activate
+
+You may verify installation by running:
 
 .. code-block:: bash
 
@@ -90,6 +90,7 @@ Setup your `AWS CLI config <http://docs.aws.amazon.com/cli/latest/userguide/cli-
  aws_access_key_id = AKIAIOSFODNN7EXAMPLE
  aws_secret_access_key = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
  region = us-west-2
+
 
 Using Botoform
 ==============

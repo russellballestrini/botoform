@@ -44,7 +44,9 @@ Verify installation by running:
 Configuration
 =============
 
-Setup your `AWS CLI config <http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files>`_ file, for example:
+Setup your `AWS CLI config <http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html#cli-config-files>`_ file, for example -
+
+``~/.aws/config``:
 
 .. code-block:: bash
 

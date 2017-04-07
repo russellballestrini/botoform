@@ -23,16 +23,14 @@ Automatic install from source with botoform-bootstrap.sh
 
 .. Note:: You should always review scripts prior to piping them from the Internet into your shell.
 
-This script automates the steps in the `Manual install from source`_ section.
+This script automates the steps in the `manual install from source`_ section.
 The following one-liner will install botoform (``bf``) into your home directory:
 
 .. code-block:: bash
 
  wget -O - https://raw.githubusercontent.com/russellballestrini/botoform/master/botoform-bootstrap.sh | sh
  
-Once installed, you should setup your AWS `Configuration`_ file with your access keys.
-
-You should now `Verify the botoform install`_
+Next you should `verify the botoform install`_.
 
 Manual install from source
 -------------------------------
@@ -58,7 +56,7 @@ Install dependencies into virtualenv:
 
   python setup.py develop
   
-You should now `Verify the botoform install`_
+Next you should `verify the botoform install`_.
 
   
 Verify the botoform install
@@ -75,7 +73,11 @@ You may verify installation by running:
 .. code-block:: bash
 
  bf --help
- 
+
+You should see usage information.
+
+Next, edit your AWS `configuration`_ file with your access/secret keys.
+
 
 Configuration
 =============

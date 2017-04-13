@@ -25,17 +25,22 @@ from nested_lookup import nested_lookup
 
 from retrying import retry
 
-# instance profiles / roles require this to work:
-DEFAULT_EC2_TRUST_POLICY = """{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": { "Service": "ec2.amazonaws.com"},
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}"""
+def get_default_ec2_trust_policy(region_name):
+    # instance profiles / roles require this to work:
+    DEFAULT_EC2_TRUST_POLICY = """{
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Principal": { "Service": "%s"},
+          "Action": "sts:AssumeRole"
+        }
+      ]
+    }"""
+    if region_name.startswith('cn-'):
+        # The China region's AWS services are rooted under the .cn TLD.
+        return DEFAULT_EC2_TRUST_POLICY % 'ec2.amazonaws.com.cn'
+    return DEFAULT_EC2_TRUST_POLICY % 'ec2.amazonaws.com'
 
 class EnvironmentBuilder(object):
 
@@ -459,7 +464,7 @@ class EnvironmentBuilder(object):
         )
         iam_role = self.boto.iam.create_role(
             RoleName = instance_profile_name,
-            AssumeRolePolicyDocument = DEFAULT_EC2_TRUST_POLICY,
+            AssumeRolePolicyDocument = get_default_ec2_trust_policy(self.evpc.region_name),
         )
         instance_profile.add_role(
             RoleName = instance_profile_name,

@@ -311,16 +311,17 @@ class EnvironmentBuilder(object):
         for size, cidr in zip(sizes, cidrs):
             subnets.setdefault(size, []).append(cidr)
 
-        for name, sn in subnet_cfg.items():
-            longname = '{}-{}'.format(self.evpc.name, name)
+        for sn_name in sorted(subnet_cfg):
+            sn = subnet_cfg[sn_name]
+            longname = '{}-{}'.format(self.evpc.name, sn_name)
             az_letter = sn.get('availability_zone', None)
             if az_letter is not None:
                 az_name = self.evpc.region_name + az_letter
             else:
-                az_index = int(name.split('-')[-1]) - 1
+                az_index = int(sn_name.split('-')[-1]) - 1
                 az_name = azones[az_index]
 
-            cidr = subnets[sn['size']].pop()
+            cidr = subnets[sn['size']].pop(0)
             self.log.emit('creating subnet {} in {}'.format(cidr, az_name))
             subnet = self.evpc.create_subnet(
                           CidrBlock = str(cidr),
@@ -571,6 +572,10 @@ class EnvironmentBuilder(object):
         profile_name = role_data.get('instance_profile_name', None)
         if profile_name:
             kwargs['IamInstanceProfile'] = { 'Name' : profile_name }
+
+        private_ip_address = role_data.get('private_ip_address', None)
+        if private_ip_address:
+            kwargs['PrivateIpAddress'] = private_ip_address
 
         for subnet in subnets:
             # ensure Run_Instance_Idempotency.html#client-tokens

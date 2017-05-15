@@ -752,8 +752,14 @@ class EnvironmentBuilder(object):
 
     def db_instances(self, db_instance_cfg):
         """Build RDS DB Instances."""
+        existing_rds_names = self.evpc.rds.get_related_db_ids()
 
         for rds_name, db_cfg in db_instance_cfg.items():
+
+            if rds_name in existing_rds_names:
+                msg = 'skipping RDS db_instance: {} (it already exists)'
+                self.log.emit(msg.format(rds_name), 'debug')
+                continue
 
             self.log.emit('creating {} RDS db_instance ...'.format(rds_name))
 

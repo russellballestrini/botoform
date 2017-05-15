@@ -59,7 +59,7 @@ def instance_roles(args, evpc):
 
 def load_balancers(args, evpc):
     """
-    Refresh elb Load_balancers.
+    Refresh ELB load_balancers.
 
     :param args: The parsed arguments and flags from the CLI.
     :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
@@ -68,6 +68,18 @@ def load_balancers(args, evpc):
     """
     builder = get_builder_for_existing_vpc(evpc, args)
     builder.load_balancers(builder.config.get('load_balancers', no_cfg))
+
+def db_instances(args, evpc):
+    """
+    Refresh RDS db_instances.
+
+    :param args: The parsed arguments and flags from the CLI.
+    :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
+
+    :returns: None
+    """
+    builder = get_builder_for_existing_vpc(evpc, args)
+    builder.db_instances(builder.config.get('db_instances', no_cfg))
 
 def private_zone(args, evpc):
     """
@@ -135,6 +147,7 @@ refresh_subcommands = {
   'instance_roles'  : instance_roles,
   'security_groups' : security_groups,
   'load_balancers'  : load_balancers,
+  'db_instances'    : db_instances,
 }
 
 class Refresh(object):

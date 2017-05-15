@@ -791,6 +791,8 @@ class EnvironmentBuilder(object):
               MasterUsername        = db_cfg.get('master_username'),
               MasterUserPassword    = generate_password(16),
               BackupRetentionPeriod = db_cfg.get('backup_retention_period', 0),
+              StorageType           = db_cfg.get('storage_type', 'standard'), # 'gp2'
+              StorageEncrypted      = db_cfg.get('storage_encryption', False),
               Tags = [ { 'Key' : 'vpc_name', 'Value' : self.evpc.vpc_name } ],
             )
 

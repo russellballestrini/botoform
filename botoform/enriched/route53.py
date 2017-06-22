@@ -118,3 +118,39 @@ class EnrichedRoute53(object):
             change_doc['ResourceRecordSet']['ResourceRecords'].append({'Value': private_ip_address})
         return change_doc
 
+    def list_all_resource_record_sets(self, hosted_zone_id):
+        """Handles pagination unlike list_resource_record_sets."""
+        start_record_name=''
+        start_record_type=''
+        record_sets = []
+        while True:
+            if start_record_name and start_record_type:
+                result = self.list_resource_record_sets(
+                    HostedZoneId = hosted_zone_id,
+                    StartRecordName = start_record_name,
+                    StartRecordType = start_record_type,
+                )
+            else:
+                result = self.list_resource_record_sets(
+                    HostedZoneId = hosted_zone_id,
+                )
+            next_page_of_record_sets = result['ResourceRecordSets']
+
+            start_record_name = next_page_of_record_sets[-1]['Name']
+            start_record_type = next_page_of_record_sets[-1]['Type']
+
+            # pop the last record set off the page to prevent duplication.
+            last_record_set_of_page = next_page_of_record_sets.pop()
+
+            if len(next_page_of_record_sets) == 0:
+                # stop looping, we have all the record sets.
+                record_sets.append(last_record_set_of_page)
+                break
+
+            # accumulate record_sets into single list.
+            record_sets += next_page_of_record_sets
+
+        return record_sets
+
+    def list_all_private_resource_record_sets(self):
+        return self.list_all_resource_record_sets(self.private_zone_id)

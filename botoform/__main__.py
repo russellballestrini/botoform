@@ -35,7 +35,7 @@ def load_parsers_from_plugins(subparser, plugins):
             # Assume function plugin w/o 'setup_parser' or 'main' staticmethods.
             plugin_parser.set_defaults(func = plugin_class)
 
-def build_parser(description):
+def build_parser(description, load_subparser_plugins=False):
     """build argparser and attach each plugin's parser to subparser."""
     parser = argparse.ArgumentParser(description = description)
     #requiredNamed = parser.add_argument_group('required named arguments')
@@ -49,31 +49,32 @@ def build_parser(description):
     #parser.add_argument('--quiet', action='store_true', default=False,
     #  help='prevent status messages to STDOUT')
 
-    # create a subparser for our plugins to attach to.
-    subparser = parser.add_subparsers(
+    if load_subparser_plugins:
+        # create a subparser for our plugins to attach to.
+        subparser = parser.add_subparsers(
                           title = 'subcommands',
                           description = 'valid subcommands',
                           help = '--help for additional subcommand help'
                  )
-
-    plugins = load_entry_points('botoform.plugins')
-    load_parsers_from_plugins(subparser, plugins)
+        plugins = load_entry_points('botoform.plugins')
+        load_parsers_from_plugins(subparser, plugins)
+    else:
+        parser.add_argument('vpc_name', help='The VPC\'s Name tag.')
 
     return parser
 
-def main():
-    parser = build_parser('Manage infrastructure on AWS using YAML')
-    args = parser.parse_args()
-
-    if 'skip_evpc' in args.__dict__:
-        evpc = None
-    else:
-        evpc = EnrichedVPC(
-                 vpc_name=args.vpc_name,
-                 region_name=args.region,
-                 profile_name=args.profile,
+def get_evpc_from_args(args):
+    if 'skip_evpc' not in args.__dict__:
+        return EnrichedVPC(
+                 vpc_name = args.vpc_name,
+                 region_name = args.region,
+                 profile_name = args.profile,
                )
 
+def main():
+    parser = build_parser('Manage infrastructure on AWS using YAML', True)
+    args = parser.parse_args()
+    evpc = get_evpc_from_args(args)
     # call the plugin main method.
     args.func(args, evpc)
 

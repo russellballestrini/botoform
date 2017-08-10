@@ -156,13 +156,13 @@ Usage 1 (echo and pipe)::
 
 Usage 2 (redirection)::
 
- bf --profile development exec dogtest01 < unique_running_amis.py
+ bf --profile development exec dogtest01 < unique_active_amis.py
 
-Where `unique_running_amis.py` has the following content::
+Where `unique_active_amis.py` has the following content::
 
  print(set([i.image_id for i in evpc.instances]))
 
-In this example, for following would look something like this::
+In both examples, the output would look something like this::
 
  set(['ami-33333333', 'ami-55555555', 'ami-99999999', 'ami-77777777'])
 

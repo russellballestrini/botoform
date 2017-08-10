@@ -4,6 +4,8 @@ from pkg_resources import iter_entry_points
 
 from botoform.enriched import EnrichedVPC
 
+from os import environ
+
 def get_profile_names():
     """Return a list of profile names in ~/.aws/config"""
     import botocore.session
@@ -39,10 +41,11 @@ def build_parser(description, load_subparser_plugins=False):
     """build argparser and attach each plugin's parser to subparser."""
     parser = argparse.ArgumentParser(description = description)
     #requiredNamed = parser.add_argument_group('required named arguments')
-    parser.add_argument('-p', '--profile', default='default',
-      choices=get_profile_names(),
+    parser.add_argument('-p', '--profile', choices=get_profile_names(),
+      default=environ.get('AWS_DEFAULT_PROFILE', None),
       help='botocore profile name for AWS creds and other vars.')
-    parser.add_argument('-r', '--region', default=None,
+    parser.add_argument('-r', '--region',
+      default=environ.get('AWS_DEFAULT_REGION', None),
       help='AWS region to use')
     #parser.add_argument('--search-regions', action='store_true', default=False,
     #  help='search regions for VPC with given vpc_name')

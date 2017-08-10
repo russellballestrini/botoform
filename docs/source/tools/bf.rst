@@ -145,6 +145,27 @@ shell
 
 An alias to repl_ so it works the same.
 
+exec
+----
+
+Accept a Python program on STDIN and execute it.
+
+Usage 1 (echo and pipe)::
+
+ echo "print(set([i.image_id for i in evpc.instances]))" | bf --profile development exec dogtest01
+
+Usage 2 (redirection)::
+
+ bf --profile development exec dogtest01 < unique_running_amis.py
+
+Where `unique_running_amis.py` has the following content::
+
+ print(set([i.image_id for i in evpc.instances]))
+
+In this example, for following would look something like this::
+
+ set(['ami-33333333', 'ami-55555555', 'ami-99999999', 'ami-77777777'])
+
 dump
 ----
 

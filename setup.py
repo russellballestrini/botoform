@@ -38,6 +38,7 @@ setup(
         'repl = botoform.plugins.repl:REPL',
         'cli = botoform.plugins.repl:REPL',
         'shell = botoform.plugins.repl:REPL',
+        'exec = botoform.plugins.exec:Exec',
         'refresh = botoform.plugins.refresh:Refresh',
         'atmosphere = botoform.plugins.atmosphere:Atmosphere',
       ],

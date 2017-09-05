@@ -681,7 +681,11 @@ class EnvironmentBuilder(object):
             DesiredCapacity = desired_count,
             VPCZoneIdentifier = ','.join(get_ids(subnets)),
             Tags = [
-              { 'Key' : 'role', 'Value' : role_name, 'PropagateAtLaunch' : True, },
+              {
+                  'Key' : 'role', 'Value' : role_name,
+                  'Key' : 'Name', 'Value' : long_role_name,
+                  'PropagateAtLaunch' : True,
+              },
             ]
         )
 

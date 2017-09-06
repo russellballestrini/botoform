@@ -40,4 +40,7 @@ class TestEnrichedInstance(BotoformTestCase):
         # instance3 has a public_ip_address identifier.
         self.assertEqual(len(self.instance3.identifiers), 6)
 
+    def test_is_spot_instance(self):
+        self.assertEqual(self.instance3.is_spot, False)
+        self.assertEqual(self.instance4.is_spot, True)
 

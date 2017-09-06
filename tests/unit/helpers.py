@@ -1,10 +1,6 @@
 from unittest import TestCase
 
-from mock import (
-  mock,
-  Mock,
-  MagicMock,
-)
+import mock
 
 from botoform.enriched import EnrichedVPC
 from botoform.enriched import EnrichedInstance
@@ -16,6 +12,7 @@ class MockInstanceSpec1(object):
             {u'Value': 'webapp01-web01', u'Key': 'Name'}]
     public_ip_address = None
     private_ip_address = '192.168.1.31'
+    spot_instance_request_id = None
 
 
 class MockInstanceSpec2(object):
@@ -26,6 +23,7 @@ class MockInstanceSpec2(object):
             {u'Value': 'webapp01-web-02', u'Key': 'Name'}]
     public_ip_address = None
     private_ip_address = '192.168.1.32'
+    spot_instance_request_id = None
 
 
 class MockInstanceSpec3(object):
@@ -35,6 +33,7 @@ class MockInstanceSpec3(object):
             {u'Value': 'webapp01-proxy01', u'Key': 'Name'}]
     public_ip_address = '54.1.1.3'
     private_ip_address = '192.168.1.33'
+    spot_instance_request_id = None
 
 class MockInstanceSpec4(object):
     """Mock Boto3's ec2.Instance class."""
@@ -46,27 +45,28 @@ class MockInstanceSpec4(object):
            ]
     public_ip_address = '54.1.1.4'
     private_ip_address = '192.168.1.44'
+    spot_instance_request_id = 'sir-xxxxxxx4'
 
 class BotoformTestCase(TestCase):
 
     @mock.patch('botoform.util.BotoConnections.refresh_boto_connections',
                 mock.Mock(return_value=None))
     def setUp(self):
-        MockInstance1 = Mock(name="Instance", return_value = MockInstanceSpec1())
+        MockInstance1 = mock.Mock(name="Instance", return_value = MockInstanceSpec1())
         self.instance1 = EnrichedInstance(MockInstance1())
         self.instance1b = EnrichedInstance(MockInstance1())
 
-        MockInstance2 = Mock(name="Instance", return_value = MockInstanceSpec2())
+        MockInstance2 = mock.Mock(name="Instance", return_value = MockInstanceSpec2())
         self.instance2 = EnrichedInstance(MockInstance2())
 
-        MockInstance3 = Mock(name="Instance", return_value = MockInstanceSpec3())
+        MockInstance3 = mock.Mock(name="Instance", return_value = MockInstanceSpec3())
         self.instance3 = EnrichedInstance(MockInstance3())
 
-        MockInstance4 = Mock(name="Instance", return_value = MockInstanceSpec4())
+        MockInstance4 = mock.Mock(name="Instance", return_value = MockInstanceSpec4())
         self.instance4 = EnrichedInstance(MockInstance4())
 
         self.evpc1 = EnrichedVPC()
-        self.evpc1._ec2_instances = MagicMock(
+        self.evpc1._ec2_instances = mock.MagicMock(
                                       return_value=[
                                         MockInstance1(),
                                         MockInstance2(),

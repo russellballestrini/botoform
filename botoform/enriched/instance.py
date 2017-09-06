@@ -130,6 +130,11 @@ class EnrichedInstance(object):
         """Return True if this instance was autoscaled else False"""
         return False if self.autoscale_group is None else True
 
+    @property
+    def is_spot(self):
+        """Return True is this instance is a spot instance else False"""
+        return False if self.spot_instance_request_id is None else True
+
     def _source_dest_check(self, boolean):
         self.modify_attribute(SourceDestCheck={'Value':boolean})
 
@@ -142,6 +147,8 @@ class EnrichedInstance(object):
         self._source_dest_check(False)
 
     def _api_termination(self, boolean):
+        if self.is_spot:
+            return None
         self.modify_attribute(DisableApiTermination={'Value':boolean})
 
     def lock(self):

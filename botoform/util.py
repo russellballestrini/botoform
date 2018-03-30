@@ -189,7 +189,7 @@ def merge_pages(key, pages):
 
     :returns: A single flat list containing results of all pages.
     """
-    return [page[key] for page in pages]
+    return [item for page in pages for item in page[key]]
 
 def get_ids(objects):
     """

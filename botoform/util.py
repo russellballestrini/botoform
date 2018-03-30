@@ -189,10 +189,7 @@ def merge_pages(key, pages):
 
     :returns: A single flat list containing results of all pages.
     """
-    results = []
-    for page in pages:
-        results += page[key]
-    return results
+    return [page[key] for page in pages]
 
 def get_ids(objects):
     """
@@ -242,11 +239,9 @@ def make_tag_dict(ec2_object):
 
     :returns: A dictionary where tag names are keys and tag values are values.
     """
-    tag_dict = {}
-    if ec2_object.tags is None: return tag_dict
-    for tag in ec2_object.tags:
-        tag_dict[tag['Key']] = tag['Value']
-    return tag_dict
+    if ec2_object.tags is None:
+        return {}
+    return {i["Key"]: i["Value"] for i in ec2_object.tags}
 
 @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
 def update_tags(ec2_object, **kwargs):

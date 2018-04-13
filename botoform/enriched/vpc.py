@@ -3,7 +3,6 @@ from botoform.util import (
   Log,
   reflect_attrs,
   make_tag_dict,
-  make_filter,
   tag_filter,
   write_private_key,
   update_tags,

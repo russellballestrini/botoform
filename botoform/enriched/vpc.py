@@ -1,12 +1,12 @@
 from botoform.util import (
-  BotoConnections,
-  Log,
-  reflect_attrs,
-  make_tag_dict,
-  tag_filter,
-  write_private_key,
-  update_tags,
-  collection_to_list,
+    BotoConnections,
+    Log,
+    reflect_attrs,
+    make_tag_dict,
+    tag_filter,
+    write_private_key,
+    update_tags,
+    collection_to_list,
 )
 
 from instance import EnrichedInstance
@@ -18,16 +18,12 @@ from rds import EnrichedRds
 from key_pair import EnrichedKeyPair
 from route53 import EnrichedRoute53
 
-from enriched import (
-  Enriched,
-  EnrichedRouteTable,
-  EnrichedSubnet,
-  EnrichedSecurityGroup,
-)
+from enriched import Enriched, EnrichedRouteTable, EnrichedSubnet, EnrichedSecurityGroup
 
 from nested_lookup import nested_lookup
 
 from retrying import retry
+
 
 class EnrichedVPC(object):
     """
@@ -43,7 +39,7 @@ class EnrichedVPC(object):
         self.self_attrs = dir(self)
 
         self.log = log if log is not None else Log()
-        
+
         if vpc_name is not None:
             self.vpc_name = vpc_name
             self.connect(vpc_name)
@@ -57,11 +53,11 @@ class EnrichedVPC(object):
 
     def get_vpc_by_name_tag(self, vpc_name):
         """lookup vpc by vpc_name tag. Raises exceptions on insanity."""
-        vpcs = self._get_vpcs_by_filter(tag_filter('Name', vpc_name))
+        vpcs = self._get_vpcs_by_filter(tag_filter("Name", vpc_name))
         if len(vpcs) > 1:
-            raise Exception('Multiple VPCs match tag Name:{}'.format(vpc_name))
+            raise Exception("Multiple VPCs match tag Name:{}".format(vpc_name))
         if len(vpcs) == 0:
-            raise Exception('VPC not found with tag Name:{}'.format(vpc_name))
+            raise Exception("VPC not found with tag Name:{}".format(vpc_name))
         return vpcs[0]
 
     def reflect_attrs(self):
@@ -89,20 +85,24 @@ class EnrichedVPC(object):
         self.route53 = EnrichedRoute53(self)
 
     @property
-    def region_name(self): return self.boto.region_name
+    def region_name(self):
+        return self.boto.region_name
 
     @property
-    def azones(self): return self.boto.azones
+    def azones(self):
+        return self.boto.azones
 
     @property
     def tag_dict(self):
         return make_tag_dict(self.vpc)
 
     @property
-    def name(self): return self.tag_dict.get('Name', None)
+    def name(self):
+        return self.tag_dict.get("Name", None)
 
     @property
-    def identity(self): return self.name or self.id
+    def identity(self):
+        return self.name or self.id
 
     def _ec2_instances(self):
         # external API call to AWS.
@@ -137,7 +137,7 @@ class EnrichedVPC(object):
     def get_running_instances(self, instances=None):
         """Return list running EnrichedInstance object related to this VPC."""
         instances = self.get_instances(instances)
-        return [instance for instance in instances if instance.state['Code'] == 16]
+        return [instance for instance in instances if instance.state["Code"] == 16]
 
     def get_roles(self, instances=None):
         """
@@ -191,7 +191,7 @@ class EnrichedVPC(object):
 
         if len(hits) > 1:
             msg = "Multiple instances '{}' have '{}' identifier."
-            instance_names = ', '.join(map(str, hits))
+            instance_names = ", ".join(map(str, hits))
             raise Exception(msg.format(instance_names, identifier))
 
         return hits[0]
@@ -204,7 +204,7 @@ class EnrichedVPC(object):
     def _identify_instance(self, i, identifiers, roles):
         """Return True if instance is identified / qualified, else False"""
         identifiers = self._set(identifiers)
-        roles       = self._set(roles)
+        roles = self._set(roles)
         return bool(identifiers.intersection(i.identifiers) or i.role in roles)
 
     def find_instances(self, identifiers=None, roles=None, exclude=False):
@@ -245,7 +245,7 @@ class EnrichedVPC(object):
                 hits.append(i)
         return hits
 
-    def include_instances(self, identifiers = None, roles = None):
+    def include_instances(self, identifiers=None, roles=None):
         """
         Accept a list of identifiers and/or roles.
         Return a list of instances which match either qualifier list.
@@ -255,7 +255,7 @@ class EnrichedVPC(object):
         """
         return self.find_instances(identifiers, roles, exclude=False)
 
-    def exclude_instances(self, identifiers = None, roles = None):
+    def exclude_instances(self, identifiers=None, roles=None):
         """
         Accept a list of identifiers and/or roles.
         Return a list of instances which do *not* match either qualifier list.
@@ -266,10 +266,12 @@ class EnrichedVPC(object):
         return self.find_instances(identifiers, roles, exclude=True)
 
     @property
-    def instances(self): return self.get_instances()
+    def instances(self):
+        return self.get_instances()
 
     @property
-    def roles(self): return self.get_roles()
+    def roles(self):
+        return self.get_roles()
 
     def get_main_route_table(self):
         """Return the main (default) route table for VPC."""
@@ -279,12 +281,12 @@ class EnrichedVPC(object):
                 if association.main == True:
                     main_route_table.append(route_table)
         if len(main_route_table) != 1:
-            raise Exception('cannot get main route table! {}'.format(main_route_table))
+            raise Exception("cannot get main route table! {}".format(main_route_table))
         return main_route_table[0]
 
     def _filter_collection_by_name(self, name, collection):
-        names = [name, '{}-{}'.format(self.name, name)]
-        objs = list(collection.filter(Filters=tag_filter('Name', names)))
+        names = [name, "{}-{}".format(self.name, name)]
+        objs = list(collection.filter(Filters=tag_filter("Name", names)))
         return objs[0] if len(objs) == 1 else None
 
     def get_route_table(self, name):
@@ -308,21 +310,16 @@ class EnrichedVPC(object):
     def associate_route_table_with_subnet(self, rt_name, sn_name):
         """Accept a route table name and subnet name, associate them."""
         self.boto.ec2_client.associate_route_table(
-                        RouteTableId = self.get_route_table(rt_name).id,
-                        SubnetId     = self.get_subnet(sn_name).id,
+            RouteTableId=self.get_route_table(rt_name).id,
+            SubnetId=self.get_subnet(sn_name).id,
         )
 
     def get_vpn_gateways(self):
         """Gets all the VGWs attached to the VPC"""
         vgws = self.boto.ec2_client.describe_vpn_gateways(
-            Filters=[
-                     {
-                       'Name': 'attachment.vpc-id',
-                       'Values': [ self.id, ]
-                     },
-                    ]
+            Filters=[{"Name": "attachment.vpc-id", "Values": [self.id]}]
         )
-        return vgws.get('VpnGateways', {})
+        return vgws.get("VpnGateways", {})
 
     def lock_instances(self, instances=None):
         """Lock all or a list of instances."""
@@ -341,93 +338,104 @@ class EnrichedVPC(object):
         return self.boto.ec2_client.describe_vpn_gateways(VpnGatewayIds=[vgw_id])
 
     @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
-    def ensure_vgw_state(vgw_id, desired_state='attached'):
+    def ensure_vgw_state(vgw_id, desired_state="attached"):
         """if vgw is not in expected state, throw exception."""
         vgw = self.get_vgw(vgw_id)
-        self.log.emit('waiting for {} to become {}'.format(vgw_id, desired_state), 'debug')
+        self.log.emit(
+            "waiting for {} to become {}".format(vgw_id, desired_state), "debug"
+        )
         # Janky: this if statement is terrible... but I don't know the structure.
-        if vgw.get('VpnGateways')[0].get('VpcAttachments')[0].get('State') != desired_state:
-            raise Exception('{} not in {} desired_State'.format(vgw_id, desired_state))
+        if (
+            vgw.get("VpnGateways")[0].get("VpcAttachments")[0].get("State")
+            != desired_state
+        ):
+            raise Exception("{} not in {} desired_State".format(vgw_id, desired_state))
 
     def attach_vpn_gateway(self, vgw_id):
         """Attach VPN gateway to the VPC"""
-        self.log.emit('attaching vgw {} to vpc {}'.format(vgw_id, self.vpc_name))
+        self.log.emit("attaching vgw {} to vpc {}".format(vgw_id, self.vpc_name))
         self.boto.ec2_client.attach_vpn_gateway(
-                    DryRun=False,
-                    VpnGatewayId = vgw_id,
-                    VpcId = self.id,                                    
-                )
-        self.ensure_vgw_state(vgw_id, 'attached')
-     
+            DryRun=False, VpnGatewayId=vgw_id, VpcId=self.id
+        )
+        self.ensure_vgw_state(vgw_id, "attached")
+
     def detach_vpn_gateway(self):
         """Detach VPN gateway from VPC"""
         for vgw in self.get_vpn_gateways():
-            vgw_id = vgw.get('VpnGatewayId')
-            self.log.emit('detaching vgw - {} from vpc - {}'.format(vgw_id, self.vpc_name))
+            vgw_id = vgw.get("VpnGatewayId")
+            self.log.emit(
+                "detaching vgw - {} from vpc - {}".format(vgw_id, self.vpc_name)
+            )
             self.boto.ec2_client.detach_vpn_gateway(
-                        DryRun=False,
-                        VpnGatewayId = vgw_id,
-                        VpcId = self.id,                                    
-                    )
-            self.ensure_vgw_state(vgw_id, 'detached')
+                DryRun=False, VpnGatewayId=vgw_id, VpcId=self.id
+            )
+            self.ensure_vgw_state(vgw_id, "detached")
 
     def wait_until_instances(self, instances=None, state=None):
         instances = self.get_instances(instances)
-        msg = 'waiting for {} to transition to {}'
+        msg = "waiting for {} to transition to {}"
         for instance in instances:
             self.log.emit(msg.format(instance.identity, state))
-            if state == 'running':
+            if state == "running":
                 instance.wait_until_running()
-            if state == 'stopped':
+            if state == "stopped":
                 instance.wait_until_stopped()
-            if state == 'terminated':
+            if state == "terminated":
                 instance.wait_until_terminated()
 
     def stop_instances(self, instances=None, wait=True):
         """Stop all or a list of instances."""
         instances = self.get_instances(instances)
         for instance in instances:
-            self.log.emit('stopping {} instance ...'.format(instance.identity))
+            self.log.emit("stopping {} instance ...".format(instance.identity))
             instance.stop()
         if wait == True:
-            self.wait_until_instances(instances, 'stopped')
+            self.wait_until_instances(instances, "stopped")
 
     def start_instances(self, instances=None, wait=True):
         """Start all or a list of instances."""
         instances = self.get_instances(instances)
         for instance in instances:
-            self.log.emit('starting {} instance ...'.format(instance.identity))
+            self.log.emit("starting {} instance ...".format(instance.identity))
             instance.start()
         if wait == True:
-            self.wait_until_instances(instances, 'running')
-        
+            self.wait_until_instances(instances, "running")
+
     def delete_instances(self, instances=None, wait=True):
         """Terminate all or a list of instances."""
         instances = self.get_instances(instances)
         for instance in instances:
-            self.log.emit('terminating {} instance ...'.format(instance.identity))
+            self.log.emit("terminating {} instance ...".format(instance.identity))
             instance.disassociate_eips()
             instance.terminate()
         if wait == True:
-            self.wait_until_instances(instances, 'terminated')
+            self.wait_until_instances(instances, "terminated")
 
     def delete_internet_gateways(self):
         """Delete related internet gatways."""
         for igw in self.internet_gateways.all():
-            self.log.emit('detaching internet gateway - {} from vpc - {}'.format(igw.id, self.vpc_name))
-            igw.detach_from_vpc(VpcId = self.id)
-            self.log.emit('deleting internet gateway - {}'.format(igw.id))
+            self.log.emit(
+                "detaching internet gateway - {} from vpc - {}".format(
+                    igw.id, self.vpc_name
+                )
+            )
+            igw.detach_from_vpc(VpcId=self.id)
+            self.log.emit("deleting internet gateway - {}".format(igw.id))
             igw.delete()
 
     def revoke_inbound_rules_from_sg(self, sg):
         if len(sg.ip_permissions) >= 1:
-            self.log.emit('revoking all inbound rules of security group - {}'.format(sg.id))
-            sg.revoke_ingress(IpPermissions = sg.ip_permissions)
+            self.log.emit(
+                "revoking all inbound rules of security group - {}".format(sg.id)
+            )
+            sg.revoke_ingress(IpPermissions=sg.ip_permissions)
 
     def revoke_outbound_rules_from_sg(self, sg):
         if len(sg.ip_permissions_egress) >= 1:
-            self.log.emit('revoking all outbound rules of security group - {}'.format(sg.id))
-            sg.revoke_egress(IpPermissions = sg.ip_permissions_egress)
+            self.log.emit(
+                "revoking all outbound rules of security group - {}".format(sg.id)
+            )
+            sg.revoke_egress(IpPermissions=sg.ip_permissions_egress)
 
     def revoke_security_group_rules(self, sg):
         self.revoke_inbound_rules_from_sg(sg)
@@ -435,8 +443,8 @@ class EnrichedVPC(object):
 
     @retry(wait_exponential_multiplier=1000, wait_exponential_max=10000)
     def delete_security_group(self, sg):
-        if sg.group_name != 'default':
-            self.log.emit('deleting security group - {}'.format(sg.id))
+        if sg.group_name != "default":
+            self.log.emit("deleting security group - {}".format(sg.id))
             sg.delete()
 
     def delete_security_groups(self):
@@ -451,7 +459,7 @@ class EnrichedVPC(object):
     def delete_subnets(self):
         """Delete related subnets."""
         for sn in self.subnets.all():
-            self.log.emit('deleting subnet - {}'.format(sn.id))
+            self.log.emit("deleting subnet - {}".format(sn.id))
             sn.delete()
 
     def delete_route_tables(self):
@@ -460,19 +468,23 @@ class EnrichedVPC(object):
         for rt in self.route_tables.all():
             if rt.id != main_rt.id:
                 for a in rt.associations:
-                    self.log.emit('dissociating subnet {} from route table {}'.format(a.subnet_id, a.route_table_id))
+                    self.log.emit(
+                        "dissociating subnet {} from route table {}".format(
+                            a.subnet_id, a.route_table_id
+                        )
+                    )
                     a.delete()
-                self.log.emit('deleting route table {}'.format(rt.id))
+                self.log.emit("deleting route table {}".format(rt.id))
                 rt.delete()
 
     def delete_dhcp_options(self):
         """Delete DHCP Options Set"""
-        msg = 'deleting DHCP Options set {}'
+        msg = "deleting DHCP Options set {}"
         self.log.emit(msg.format(self.dhcp_options.id))
         self.dhcp_options.delete()
-        
+
     def terminate(self):
-        """Terminate all resources related to this VPC!"""        
+        """Terminate all resources related to this VPC!"""
         autoscaled_instances = self.get_autoscaled_instances()
         self.delete_instances(self.get_normal_instances())
         self.elb.delete_related_elbs()
@@ -481,39 +493,43 @@ class EnrichedVPC(object):
         self.rds.delete_related_db_instances()
         self.key_pair.delete_key_pairs()
         self.vpc_endpoint.delete_related()
-        self.wait_until_instances(instances=autoscaled_instances, state='terminated')
+        self.wait_until_instances(instances=autoscaled_instances, state="terminated")
         self.delete_security_groups()
         self.delete_subnets()
         self.delete_route_tables()
         self.delete_internet_gateways()
         self.detach_vpn_gateway()
         self.route53.delete_private_zone()
-        self.log.emit('deleting the VPC - {}'.format(self.id))
+        self.log.emit("deleting the VPC - {}".format(self.id))
         self.vpc.delete()
         self.delete_dhcp_options()
 
     def _strip_vpc_name(self, string):
-        return string[len(self.vpc_name)+1:] if string.startswith(self.vpc_name+'-') else string
+        return (
+            string[len(self.vpc_name) + 1 :]
+            if string.startswith(self.vpc_name + "-")
+            else string
+        )
 
     def _permission_to_rules(self, perm):
         rules = []
-        ip_protocol = perm['IpProtocol']
-        from_port = perm.get('FromPort', -1)
-        to_port   = perm.get('ToPort', -1)
+        ip_protocol = perm["IpProtocol"]
+        from_port = perm.get("FromPort", -1)
+        to_port = perm.get("ToPort", -1)
         port_range = from_port
         if from_port != to_port:
-            port_range = '{}-{}'.format(from_port, to_port)
-        if len(perm['IpRanges']) >= 1:
-            for iprange in perm['IpRanges']:
+            port_range = "{}-{}".format(from_port, to_port)
+        if len(perm["IpRanges"]) >= 1:
+            for iprange in perm["IpRanges"]:
                 rule = []
-                rule.append(iprange['CidrIp'])
+                rule.append(iprange["CidrIp"])
                 rule.append(ip_protocol)
                 rule.append(port_range)
                 rules.append(tuple(rule))
-        if len(perm['UserIdGroupPairs']) >= 1:
-            for pair in perm['UserIdGroupPairs']:
+        if len(perm["UserIdGroupPairs"]) >= 1:
+            for pair in perm["UserIdGroupPairs"]:
                 rule = []
-                related_sg = self.boto.ec2.SecurityGroup(id=pair['GroupId'])
+                related_sg = self.boto.ec2.SecurityGroup(id=pair["GroupId"])
                 related_sg_name = self._strip_vpc_name(related_sg.group_name)
                 rule.append(related_sg_name)
                 rule.append(ip_protocol)
@@ -531,19 +547,19 @@ class EnrichedVPC(object):
         sgs = {}
         for sg in self.security_groups.all():
             sg_name = self._strip_vpc_name(sg.group_name)
-            sgs[sg_name] = {'inbound' : []}
+            sgs[sg_name] = {"inbound": []}
             for perm in sg.ip_permissions:
                 rules = self._permission_to_rules(perm)
-                sgs[sg_name]['inbound'] += rules
+                sgs[sg_name]["inbound"] += rules
 
             for perm in sg.ip_permissions_egress:
                 # only add outbound rules if not the default rule.
                 rules = self._permission_to_rules(perm)
-                if len(rules) == 1 and rules[0] == ('0.0.0.0/0', '-1', -1):
+                if len(rules) == 1 and rules[0] == ("0.0.0.0/0", "-1", -1):
                     continue
-                if 'outbound' not in sgs[sg_name]:
-                    sgs[sg_name]['outbound'] = []
-                sgs[sg_name]['outbound'] += rules
+                if "outbound" not in sgs[sg_name]:
+                    sgs[sg_name]["outbound"] = []
+                sgs[sg_name]["outbound"] += rules
 
         return sgs
 
@@ -560,5 +576,3 @@ class EnrichedVPC(object):
         resources += collection_to_list(self.security_groups)
         resources += collection_to_list(self.route_tables)
         return resources
-
-

@@ -6,6 +6,5 @@ def destroy(args, evpc):
     :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
 
     :returns: None
-    """ 
+    """
     evpc.terminate()
-

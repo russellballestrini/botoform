@@ -1,5 +1,6 @@
 from argparse import SUPPRESS
 
+
 class ClassPlugin(object):
     """This is a :ref:`class plugin` for the :ref:`bf` tool."""
 
@@ -45,4 +46,4 @@ class ClassPlugin(object):
         """
         vpc_name_positional_arg = parser._actions[-1]
         vpc_name_positional_arg.container._remove_action(vpc_name_positional_arg)
-        parser.add_argument('--skip-evpc', default=True, help=SUPPRESS)
+        parser.add_argument("--skip-evpc", default=True, help=SUPPRESS)

@@ -1,8 +1,5 @@
-from botoform.util import (
-  reflect_attrs,
-  make_tag_dict,
-  id_to_human,
-)
+from botoform.util import reflect_attrs, make_tag_dict, id_to_human
+
 
 class Enriched(object):
     """
@@ -33,7 +30,7 @@ class Enriched(object):
 
     def __ne__(self, other):
         """Determine if not equal by id"""
-        return (not self.__eq__(other))
+        return not self.__eq__(other)
 
     def __hash__(self):
         return hash(self.id)
@@ -58,7 +55,7 @@ class Enriched(object):
     @property
     def name(self):
         """Return name (AWS Name tag)."""
-        return self.tag_dict.get('Name', None)
+        return self.tag_dict.get("Name", None)
 
     @property
     def identity(self):
@@ -70,11 +67,14 @@ class Enriched(object):
         """Return humanhash of id."""
         return id_to_human(self.id)
 
+
 class EnrichedRouteTable(Enriched):
     pass
 
+
 class EnrichedSubnet(Enriched):
     pass
+
 
 class EnrichedSecurityGroup(Enriched):
     pass

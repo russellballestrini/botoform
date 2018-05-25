@@ -8,6 +8,7 @@ from botoform.plugins import ClassPlugin
 
 from argparse import SUPPRESS
 
+
 class Create(ClassPlugin):
     """
     Create a new VPC and related services, modeled from YAML template.
@@ -25,18 +26,23 @@ class Create(ClassPlugin):
 
         :returns: None
         """
-        parser.add_argument('--skip-evpc', default=True, help=SUPPRESS)
-        parser.add_argument('config',
-          help='The botoform YAML config template.')
-        parser.add_argument('-e', '--extra-vars',
-          default=list(), action='append', metavar='key=val',
-          help='Extra Jinja2 context: --extra-vars key=val,key2=val2,key3=val3'
+        parser.add_argument("--skip-evpc", default=True, help=SUPPRESS)
+        parser.add_argument("config", help="The botoform YAML config template.")
+        parser.add_argument(
+            "-e",
+            "--extra-vars",
+            default=list(),
+            action="append",
+            metavar="key=val",
+            help="Extra Jinja2 context: --extra-vars key=val,key2=val2,key3=val3",
         )
-        parser.add_argument('-d', '--dry-run',
-          default=False, action='store_true',
-          help='Do not create VPC, load & render config then emit dict'
+        parser.add_argument(
+            "-d",
+            "--dry-run",
+            default=False,
+            action="store_true",
+            help="Do not create VPC, load & render config then emit dict",
         )
-
 
     @staticmethod
     def main(args, evpc=None):
@@ -53,15 +59,12 @@ class Create(ClassPlugin):
         # get dictionary from ArgParse Namespace object and merge into context_vars.
         context_vars.update(vars(args))
 
-        loader = ConfigLoader(context_vars = context_vars)
-        config = loader.load(template_path = args.config)
-        ebuilder = EnvironmentBuilder(
-                       args.vpc_name, config, args.region, args.profile)
+        loader = ConfigLoader(context_vars=context_vars)
+        config = loader.load(template_path=args.config)
+        ebuilder = EnvironmentBuilder(args.vpc_name, config, args.region, args.profile)
 
         if args.dry_run:
             print(config)
             return None
 
         ebuilder.apply_all()
-
-

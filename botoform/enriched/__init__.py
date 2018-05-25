@@ -12,9 +12,4 @@ from elasticache import EnrichedElastiCache
 
 from rds import EnrichedRds
 
-from enriched import (
-  Enriched,
-  EnrichedRouteTable,
-  EnrichedSubnet,
-  EnrichedSecurityGroup,
-)
+from enriched import Enriched, EnrichedRouteTable, EnrichedSubnet, EnrichedSecurityGroup

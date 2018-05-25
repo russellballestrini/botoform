@@ -2,6 +2,7 @@ from helpers import BotoformTestCase
 
 from mock import MagicMock
 
+
 class TestEnrichedInstance(BotoformTestCase):
 
     def test_equal(self):
@@ -11,28 +12,28 @@ class TestEnrichedInstance(BotoformTestCase):
         self.assertNotEqual(self.instance1, self.instance2)
 
     def test_hostname(self):
-        self.assertEqual('webapp01-web01', self.instance1.hostname)
+        self.assertEqual("webapp01-web01", self.instance1.hostname)
 
     def test_shortname(self):
-        self.assertEqual('web01', self.instance1.shortname)
+        self.assertEqual("web01", self.instance1.shortname)
 
     def test_role_from_role_tag(self):
-        self.assertEqual('vpn', self.instance4.role)
+        self.assertEqual("vpn", self.instance4.role)
 
     def test_role_from_name_tag(self):
-        self.assertEqual('web', self.instance1.role)
+        self.assertEqual("web", self.instance1.role)
 
     def test_id(self):
-        self.assertEqual('i-mock1111', self.instance1.id)
+        self.assertEqual("i-mock1111", self.instance1.id)
 
     def test_identity_and_str(self):
         """The identity property of EnrichedInstance returns hostname or id."""
-        self.assertEqual('webapp01-web01', self.instance1.identity)
-        self.assertEqual('webapp01-web01', self.instance1.__str__())
+        self.assertEqual("webapp01-web01", self.instance1.identity)
+        self.assertEqual("webapp01-web01", self.instance1.__str__())
         # remove Name tag to cause hostname to be None.
         self.instance1.instance.tags = []
-        self.assertEqual('i-mock1111', self.instance1.identity)
-        self.assertEqual('i-mock1111', self.instance1.__str__())
+        self.assertEqual("i-mock1111", self.instance1.identity)
+        self.assertEqual("i-mock1111", self.instance1.__str__())
 
     def test_identifiers(self):
         self.assertEqual(len(self.instance1.identifiers), 5)
@@ -43,4 +44,3 @@ class TestEnrichedInstance(BotoformTestCase):
     def test_is_spot_instance(self):
         self.assertEqual(self.instance3.is_spot, False)
         self.assertEqual(self.instance4.is_spot, True)
-

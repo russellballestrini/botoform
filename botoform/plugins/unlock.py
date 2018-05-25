@@ -6,6 +6,5 @@ def unlock(args, evpc):
     :param evpc: An instance of :meth:`botoform.enriched.vpc.EnrichedVPC`.
 
     :returns: None
-    """ 
+    """
     evpc.unlock_instances()
-

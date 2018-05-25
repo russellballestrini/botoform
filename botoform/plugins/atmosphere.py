@@ -1,9 +1,6 @@
 from botoform.plugins import ClassPlugin
 
-from botoform.util import (
-  make_tag_dict,
-  output_formatter,
-)
+from botoform.util import make_tag_dict, output_formatter
 
 import botocore.session
 
@@ -11,17 +8,20 @@ import boto3
 
 from nested_lookup import nested_lookup
 
+
 def get_all_sessions():
     sessions = []
     aws_config = botocore.session.get_session().full_config
-    for profile_name in aws_config['profiles']:
+    for profile_name in aws_config["profiles"]:
         session = botocore.session.Session(profile=profile_name)
         sessions.append(session)
     return sessions
 
+
 def get_region_names(session):
-    ec2 = session.create_client('ec2', region_name='us-east-1')
-    return nested_lookup('RegionName', ec2.describe_regions())
+    ec2 = session.create_client("ec2", region_name="us-east-1")
+    return nested_lookup("RegionName", ec2.describe_regions())
+
 
 class Atmosphere(ClassPlugin):
     """
@@ -41,9 +41,12 @@ class Atmosphere(ClassPlugin):
         :returns: None
         """
         ClassPlugin.remove_vpc_name_from_parser(parser)
-        parser.add_argument('--output-format',
-          choices=['yaml', 'json'], default='yaml',
-          help='the desired format of any possible output')
+        parser.add_argument(
+            "--output-format",
+            choices=["yaml", "json"],
+            default="yaml",
+            help="the desired format of any possible output",
+        )
 
     @staticmethod
     def main(args, evpc=None):
@@ -66,11 +69,10 @@ class Atmosphere(ClassPlugin):
             for region_name in regions:
                 if region_name not in vpcs[session.profile]:
                     vpcs[session.profile][region_name] = {}
-                ec2 = boto3.resource('ec2', region_name=region_name)
+                ec2 = boto3.resource("ec2", region_name=region_name)
                 for vpc in ec2.vpcs.all():
                     vpc_tags = make_tag_dict(vpc)
-                    vpc_name = vpc_tags.get('Name', vpc.id)
+                    vpc_name = vpc_tags.get("Name", vpc.id)
                     vpcs[session.profile][region_name][vpc_name] = vpc.id
 
         print(output_formatter(vpcs, args.output_format))
-

@@ -1,5 +1,6 @@
 import sys
 
+
 def Exec(args, evpc):
     """
     Accept a Python program on STDIN and execute it.

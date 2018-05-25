@@ -1,10 +1,7 @@
 from botoform.plugins import ClassPlugin
 
-from botoform.util import (
-  BotoConnections,
-  make_tag_dict,
-  output_formatter,
-)
+from botoform.util import BotoConnections, make_tag_dict, output_formatter
+
 
 class ListVpcs(ClassPlugin):
     """
@@ -24,9 +21,12 @@ class ListVpcs(ClassPlugin):
         :returns: None
         """
         ClassPlugin.remove_vpc_name_from_parser(parser)
-        parser.add_argument('--output-format',
-          choices=['yaml', 'json'], default='yaml',
-          help='the desired format of any possible output')
+        parser.add_argument(
+            "--output-format",
+            choices=["yaml", "json"],
+            default="yaml",
+            help="the desired format of any possible output",
+        )
 
     @staticmethod
     def main(args, evpc=None):
@@ -40,8 +40,6 @@ class ListVpcs(ClassPlugin):
         bconn = BotoConnections(args.region, args.profile)
         for vpc in bconn.ec2.vpcs.all():
             vpc_tags = make_tag_dict(vpc)
-            vpc_name = vpc_tags.get('Name', vpc.id)
+            vpc_name = vpc_tags.get("Name", vpc.id)
             vpc_names.append(vpc_name)
         print(output_formatter(vpc_names, args.output_format))
-
-

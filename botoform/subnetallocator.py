@@ -1,5 +1,6 @@
 import netaddr
 
+
 def allocate(cidrs, sizes):
     """
     Accept network block CIDRs and list of subnetwork CIDR sizes.
@@ -42,7 +43,10 @@ def allocate(cidrs, sizes):
             need_count = 0
 
     if need_count != 0:
-        raise Exception("Not enough room! Need %d more subnets of size %d but can't get any" % (need_count, need_size))
+        raise Exception(
+            "Not enough room! Need %d more subnets of size %d but can't get any"
+            % (need_count, need_size)
+        )
 
     # Split off remainder and allocate that
     allocated_cidrs += allocate(remaining_cidrs, sizes)

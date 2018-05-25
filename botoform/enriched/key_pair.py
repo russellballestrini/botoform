@@ -1,9 +1,7 @@
 from time import strftime
 
-from botoform.util import (
-  update_tags,
-  write_private_key,
-)
+from botoform.util import update_tags, write_private_key
+
 
 class EnrichedKeyPair(object):
 
@@ -14,10 +12,10 @@ class EnrichedKeyPair(object):
     @property
     def key_names(self):
         """Return a list of ssh key pair names from AWS VPC tag."""
-        key_name_csv = self.evpc.tag_dict.get('key_pairs', None)
+        key_name_csv = self.evpc.tag_dict.get("key_pairs", None)
         key_names = []
         if key_name_csv:
-            key_names = key_name_csv.split(',')
+            key_names = key_name_csv.split(",")
         return key_names
 
     @property
@@ -30,7 +28,7 @@ class EnrichedKeyPair(object):
 
     def get_key_name(self, short_key_pair_name):
         """Returns full key_name if key exists, else None"""
-        name = '{}-{}'.format(self.evpc.name, short_key_pair_name)
+        name = "{}-{}".format(self.evpc.name, short_key_pair_name)
         for key_name in self.key_names:
             if key_name.startswith(name):
                 return key_name
@@ -42,14 +40,13 @@ class EnrichedKeyPair(object):
         key_name = self.get_key_name(short_key_pair_name)
         if key_name is not None:
             return self.evpc.boto.ec2.KeyPair(key_name)
-            
+
     def _update_key_pairs_tag(self, key_names):
-        update_tags(self.evpc, key_pairs = ','.join(key_names))
+        update_tags(self.evpc, key_pairs=",".join(key_names))
 
     def delete_key_pairs_tag(self):
         self.evpc.boto.ec2_client.delete_tags(
-          Resources=[self.evpc.id],
-          Tags=[{'Key' : 'key_pairs'}],
+            Resources=[self.evpc.id], Tags=[{"Key": "key_pairs"}]
         )
 
     def create_key_pair(self, short_key_pair_name):
@@ -60,11 +57,9 @@ class EnrichedKeyPair(object):
             return None
 
         date_time = strftime("%Y%m%d-%H%M")
-        key_pair_name = '{}-{}-{}'.format(
-                            self.evpc.name,
-                            short_key_pair_name,
-                            date_time,
-                        )
+        key_pair_name = "{}-{}-{}".format(
+            self.evpc.name, short_key_pair_name, date_time
+        )
 
         key_pair = self.evpc.boto.ec2_client.create_key_pair(KeyName=key_pair_name)
         write_private_key(key_pair)
@@ -93,5 +88,3 @@ class EnrichedKeyPair(object):
         for key_pair in self.key_pairs.values():
             key_pair.delete()
         self.delete_key_pairs_tag()
-
-

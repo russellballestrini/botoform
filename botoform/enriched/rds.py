@@ -2,10 +2,8 @@ from datetime import datetime
 
 from nested_lookup import nested_lookup
 
-from ..util import (
-  reflect_attrs,
-  generate_password,
-)
+from ..util import reflect_attrs, generate_password
+
 
 class EnrichedRds(object):
 
@@ -21,11 +19,11 @@ class EnrichedRds(object):
 
     def get_all_db_descriptions(self):
         """return a list of all db description dictionaries."""
-        return self.describe_db_instances()['DBInstances']
+        return self.describe_db_instances()["DBInstances"]
 
     def _related_db_filter(self, db_description):
         """return True if db related to VPC else False."""
-        return db_description['DBSubnetGroup']['VpcId'] == self.evpc.vpc.id
+        return db_description["DBSubnetGroup"]["VpcId"] == self.evpc.vpc.id
 
     def get_related_db_descriptions(self):
         """return a list of db description dictionaries related to this VPC."""
@@ -33,26 +31,23 @@ class EnrichedRds(object):
 
     def get_related_db_ids(self):
         """return a list of db instance identifiers related to this VPC."""
-        return nested_lookup(
-                   'DBInstanceIdentifier',
-                   self.get_related_db_descriptions(),
-               )
+        return nested_lookup("DBInstanceIdentifier", self.get_related_db_descriptions())
 
     def get_related_db_endpoints(self):
         """return a list of cache cluster dns endpoints related to this VPC"""
-        return nested_lookup('Endpoint', self.get_related_db_descriptions())
+        return nested_lookup("Endpoint", self.get_related_db_descriptions())
 
     def get_related_connection_data(self):
         """return a dictionary of DB Connection data related to this VPC"""
         db_connection_data = {}
         for description in self.get_related_db_descriptions():
-            db_connection_data[description['DBInstanceIdentifier']] = {
-              'host' : description['Endpoint']['Address'],
-              'port' : description['Endpoint']['Port'],
-              'master_username' : description['MasterUsername'],
-              'database_name' : description.get('DBName', None),
-              'engine' : description['Engine'],
-              'engine_version' : description['EngineVersion'],
+            db_connection_data[description["DBInstanceIdentifier"]] = {
+                "host": description["Endpoint"]["Address"],
+                "port": description["Endpoint"]["Port"],
+                "master_username": description["MasterUsername"],
+                "database_name": description.get("DBName", None),
+                "engine": description["Engine"],
+                "engine_version": description["EngineVersion"],
             }
         return db_connection_data
 
@@ -70,9 +65,9 @@ class EnrichedRds(object):
         rds_ids:
             optional list of rds_ids (names) to delete instead.
         """
-        date = datetime.now().strftime('%Y-%m-%d-%H%m')
+        date = datetime.now().strftime("%Y-%m-%d-%H%m")
         descriptions = self.get_related_db_descriptions()
-        related_db_ids = nested_lookup('DBInstanceIdentifier', descriptions)
+        related_db_ids = nested_lookup("DBInstanceIdentifier", descriptions)
 
         if db_ids is None:
             db_ids = related_db_ids
@@ -83,30 +78,29 @@ class EnrichedRds(object):
         # get sibling db subnet group ids.
         subnet_ids = []
         for desc in descriptions:
-            if desc['DBInstanceIdentifier'] in db_ids:
-                 subnet_ids.append(desc['DBSubnetGroup']['DBSubnetGroupName'])
+            if desc["DBInstanceIdentifier"] in db_ids:
+                subnet_ids.append(desc["DBSubnetGroup"]["DBSubnetGroupName"])
 
         for db_id in db_ids:
             # delete the db_instance.
-            self.evpc.log.emit('deleting rds: {}'.format(db_id))
+            self.evpc.log.emit("deleting rds: {}".format(db_id))
             if skip_snapshot:
                 self.delete_db_instance(
-                    DBInstanceIdentifier = db_id,
-                    SkipFinalSnapshot = skip_snapshot,
+                    DBInstanceIdentifier=db_id, SkipFinalSnapshot=skip_snapshot
                 )
             else:
                 self.delete_db_instance(
-                    DBInstanceIdentifier = db_id,
-                    FinalDBSnapshotIdentifier = '{}-{}'.format(db_id, date),
+                    DBInstanceIdentifier=db_id,
+                    FinalDBSnapshotIdentifier="{}-{}".format(db_id, date),
                 )
 
         # wait for all db_ids to reach db_instance_deleted state.
-        self.evpc.log.emit('waiting for rds delete ...')
-        self.wait_for_related_dbs('db_instance_deleted', db_ids)
+        self.evpc.log.emit("waiting for rds delete ...")
+        self.wait_for_related_dbs("db_instance_deleted", db_ids)
 
         for subnet_id in subnet_ids:
             # delete the sibling db subnet group.
-            self.delete_db_subnet_group(DBSubnetGroupName = subnet_id)
+            self.delete_db_subnet_group(DBSubnetGroupName=subnet_id)
 
     def reset_master_passwords(self, db_ids):
         """
@@ -124,4 +118,3 @@ class EnrichedRds(object):
             )
             results[db_id] = new_password
         return results
-

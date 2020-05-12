@@ -73,11 +73,14 @@ class BotoConnections(object):
         self.iam = boto3.resource('iam')
         self.ec2 = boto3.resource('ec2')
         self.ec2_client = boto3.client('ec2')
+        self.ecs_client = boto3.client('ecs')
         self.rds = boto3.client('rds')
         self.elasticache = boto3.client('elasticache')
         self.elb = boto3.client('elb')
         self.autoscaling = boto3.client('autoscaling')
         self.route53 = boto3.client('route53')
+        self.cloudformation = boto3.resource('cloudformation')
+        self.cloudformation_client = boto3.client('cloudformation')
         
     @property
     def azones(self):

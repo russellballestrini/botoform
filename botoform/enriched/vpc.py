@@ -13,6 +13,7 @@ from instance import EnrichedInstance
 from vpc_endpoint import EnrichedVpcEndpoint
 from autoscaling import EnrichedAutoscaling
 from elasticache import EnrichedElastiCache
+from ecs import EnrichedEcs
 from elb import EnrichedElb
 from rds import EnrichedRds
 from key_pair import EnrichedKeyPair
@@ -79,6 +80,7 @@ class EnrichedVPC(object):
         self.vpc_endpoint = EnrichedVpcEndpoint(self)
         self.autoscaling = EnrichedAutoscaling(self)
         self.elasticache = EnrichedElastiCache(self)
+        self.ecs = EnrichedEcs(self)
         self.elb = EnrichedElb(self)
         self.rds = EnrichedRds(self)
         self.key_pair = EnrichedKeyPair(self)

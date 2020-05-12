@@ -6,6 +6,8 @@ from key_pair import EnrichedKeyPair
 
 from instance import EnrichedInstance
 
+from ecs import EnrichedEcs
+
 from elb import EnrichedElb
 
 from elasticache import EnrichedElastiCache

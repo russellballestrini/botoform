@@ -17,9 +17,9 @@ Orphan ECS Services
 
 `01_cloudformation_cleanup.py <https://github.com/russellballestrini/botoform/blob/master/adhoc/01_cloudformation_cleanup.py>`_
 
-```
-bf -p prod exec stage < adhoc/01_cloudformation_cleanup.py
-```
+::
+
+ bf -p prod exec stage < adhoc/01_cloudformation_cleanup.py
 
 In this scenario our stage AWS ECS Cluster has a bunch of orphan ECS Services
 running which are no longer controlled by CloudFormation.

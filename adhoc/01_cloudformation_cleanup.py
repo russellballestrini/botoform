@@ -32,19 +32,19 @@ def get_ecs_service_arns_from_empire_stacks(stacks):
         for output in stack.outputs:
             output_key = output["OutputKey"]
             output_value = output["OutputValue"]
-            if output_key == "Services":
-                # Empire app stacks always define a `Services` output.
-                # split output value string by coma to get separate strings.
-                procs = output_value.split(",")
-                # example entry in the procs list:
+            if output_key == "Services" or "CanaryServices":
+                # output_value == a string 
+                #    of none or many proc_name1=ARN,proc_name2=ARN pairs separated by a coma.
+                # example extry:
                 # "my_proc=arn:aws:ecs:us-east-1:1234567890:service/stage-empire-minion/my-service-my_proc-123456789"
-                # we need the ARN by itself without the proc name.
+                procs = output_value.split(",")
+                # we need the ARNs by themselves without the proc_name.
                 arns = [p.split("=")[-1] for p in procs]
                 ecs_service_arns.extend(arns)
     return ecs_service_arns
 
 
-# get all the ECS Service Arns currently running in the ECS Cluster..
+# get all the ECS Service Arns currently running in the ECS Cluster.
 all_service_arns = evpc.ecs.list_all_service_arns(ECS_CLUSTER)
 
 # get all CloudFormation stacks.
@@ -68,7 +68,7 @@ print(
 orphan_service_arns = set(all_service_arns) - set(empire_service_arns)
 
 for service_arn in orphan_service_arns:
-    print(orphan_service_arns)
+    print(service_arn)
 
 print(
     """The {} ECS Cluster is currently running {} services... 
